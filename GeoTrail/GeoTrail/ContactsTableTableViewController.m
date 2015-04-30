@@ -41,6 +41,7 @@
                                                                delegate:self
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:@"OK", nil];
+            [alertView show];
         }else{
             for (NSInteger i = 0; i < PFObjects.count; i++) {
                 PFObject *thePostedPicture = PFObjects[i];

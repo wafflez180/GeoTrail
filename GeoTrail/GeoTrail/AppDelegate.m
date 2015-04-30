@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import <Parse/Parse.h>
 #import <Crashlytics/Crashlytics.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 @interface AppDelegate ()
 
@@ -31,6 +32,7 @@
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     
     [Crashlytics startWithAPIKey:@"b3f968f6cdf4372d174aad54e4647514c1888e83"];
+    [GMSServices provideAPIKey:@"AIzaSyCOK6ZJYfHYzs_qCHhmP224YzhZEl9hS7E"];
     
     return YES;
 }

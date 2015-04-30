@@ -10,19 +10,19 @@
 #import <AVFoundation/AVFoundation.h>
 #import <ImageIO/ImageIO.h>
 #import <Parse/Parse.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 #import "ViewController.h"
-#import "MKAnnotationCustom.h"
 
 BOOL initialZoomComplete = NO;
 
 @interface ViewController ()
 
 @property (retain) AVCaptureStillImageOutput *stillImageOutput;
-@property (strong, nonatomic) IBOutlet MKMapView *mapView;
 @property (strong, nonatomic) IBOutlet UIImageView *CameraView;
 @property (strong, nonatomic) AVCaptureSession *capturesession;
 @property (weak, nonatomic) IBOutlet UIButton *CameraButton;
+@property (weak, nonatomic) IBOutlet GMSMapView *mapView_;
 @end
 
 @implementation ViewController{
@@ -41,6 +41,7 @@ BOOL initialZoomComplete = NO;
     PFUser *user;
     NSArray *contactNamesArray;
     NSArray *contactIDsArray;
+    CLLocationCoordinate2D currentUserLoc;
 }
 
 - (IBAction)PostPicture:(id)sender {
@@ -48,7 +49,7 @@ BOOL initialZoomComplete = NO;
     UIImage *picture = currentImageTaken;
     NSData* data = UIImageJPEGRepresentation(picture, 0.5f);
     PFFile *imageFile = [PFFile fileWithData:data];
-    CLLocationCoordinate2D userLocationCoords = _mapView.userLocation.coordinate;
+    CLLocationCoordinate2D userLocationCoords = self.mapView_.myLocation.coordinate;
     PFGeoPoint *currentPoint = [PFGeoPoint geoPointWithLatitude:userLocationCoords.latitude
                                                       longitude:userLocationCoords.longitude];
     
@@ -103,9 +104,9 @@ BOOL initialZoomComplete = NO;
         currentImageTaken = nil;
         _CameraView.image = currentImageTaken;
         [UIView animateWithDuration:0.3 animations:^{
-            self.mapView.alpha = 0;
+            self.mapView_.alpha = 0;
         } completion: ^(BOOL finished) {//creates a variable (BOOL) called "finished" that is set to *YES* when animation IS completed.
-            self.mapView.hidden = finished;//if animation is finished ("finished" == *YES*), then hidden = "finished" ... (aka hidden = *YES*)
+            self.mapView_.hidden = finished;//if animation is finished ("finished" == *YES*), then hidden = "finished" ... (aka hidden = *YES*)
         }];
     }else{//IF IT IS PRESS IN CAMERA VIEW: TAKE PICTURE
         if (_capturesession.running) {
@@ -129,10 +130,10 @@ BOOL initialZoomComplete = NO;
     [self prefersStatusBarHidden];
     [self performSelector:@selector(setNeedsStatusBarAppearanceUpdate)];
     [_capturesession stopRunning];
-    self.mapView.alpha = 0;
-    self.mapView.hidden = NO;
+    self.mapView_.alpha = 0;
+    self.mapView_.hidden = NO;
     [UIView animateWithDuration:0.3 animations:^{
-        self.mapView.alpha = 1;
+        self.mapView_.alpha = 1;
     }];
 }
 
@@ -154,33 +155,20 @@ BOOL initialZoomComplete = NO;
     // Do any additional setup after loading the view, typically from a nib.
     initialZoomComplete = NO;
     
-    // set up mapView
-    self.mapView.delegate = self;
-    self.mapView.mapType = MKMapTypeHybrid;
-    self.mapView.showsUserLocation = YES;
+    // Create a GMSCameraPosition that tells the map to display the
+    // coordinate -33.86,151.20 at zoom level 6.
+    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:-33.86
+                                                            longitude:151.20
+                                                                 zoom:6];
+    self.mapView_.camera = camera;
+    self.mapView_.myLocationEnabled = YES;
     
-    // remove existing annotations
-    for (id<MKAnnotation> annotation in self.mapView.annotations)
-    {
-        [self.mapView removeAnnotation:annotation];
-    }
-    
-    // set up location manager
-    locationManager = [[CLLocationManager alloc] init];
-    locationManager.delegate = self;
-    locationManager.distanceFilter = kCLDistanceFilterNone;
-    locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
-    
-    // set up test data
-    testCoordinates = [NSMutableArray array];
-    
-    caltrainSanFranciscoCoordinates = CLLocationCoordinate2DMake(37.776439, -122.394323);
-    appleStoreSanFranciscoCoordinates = CLLocationCoordinate2DMake(37.785857, -122.40654);
-    
-    [testCoordinates addObject:[NSValue valueWithMKCoordinate:caltrainSanFranciscoCoordinates]];
-    [testCoordinates addObject:[NSValue valueWithMKCoordinate:appleStoreSanFranciscoCoordinates]];
-    milesSpanRegion = 3.5;//THE REGIONS VIEW AT DEFAULT IN FUTURE: MAKE REGION EXPAN TO UNLOCKED AREA
-    [self setUpLocation];
+    // Creates a marker in the center of the map.
+    GMSMarker *marker = [[GMSMarker alloc] init];
+    marker.position = CLLocationCoordinate2DMake(-33.86, 151.20);
+    marker.title = @"Sydney";
+    marker.snippet = @"Australia";
+    marker.map = self.mapView_;
     
     [self setUpAVCaptureSession];
         
@@ -235,6 +223,17 @@ BOOL initialZoomComplete = NO;
         [self loadContacts];
     }
 }
+
+-(MKOverlayView *)mapView:(MKMapView *)mapView viewForOverlay:(id<MKOverlay>)overlay{
+    
+    MKPolygonView *polyView = [[MKPolygonView alloc]initWithOverlay:overlay];
+    
+    polyView.fillColor = [UIColor greenColor];
+    [polyView setAlpha:.3];
+    
+    return polyView;
+}
+
 - (IBAction)TappedRefresh:(id)sender {
     PFUser *userID = [PFUser currentUser];
     if (userID != nil) {
@@ -253,7 +252,7 @@ BOOL initialZoomComplete = NO;
                 PFObject *thePostedPicture = PFObjects[i];
                 
                 PFGeoPoint *pictureLocation = [thePostedPicture objectForKey:@"location"];
-                PFFile *picture = [thePostedPicture objectForKey:@"picture"];
+                //PFFile *picture = [thePostedPicture objectForKey:@"picture"];
                 
                 CLLocationCoordinate2D picCoords = CLLocationCoordinate2DMake(pictureLocation.latitude, pictureLocation.longitude);
                 
@@ -278,8 +277,9 @@ BOOL initialZoomComplete = NO;
     // The InBackground methods are asynchronous, so any code after this will run
     // immediately.  Any code that depends on the query result should be moved
     // inside the completion block above.
-
 }
+
+//GET TO WORK TO ADD THE PICTURE LOCATIONS!!!
 
 -(void)loadContacts{
     PFQuery *query = [PFQuery queryWithClassName:@"_User"];
@@ -291,6 +291,7 @@ BOOL initialZoomComplete = NO;
                                                                delegate:self
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:@"OK", nil];
+            [alertView show];
         }else{
             for (NSInteger i = 0; i < PFObjects.count; i++) {
                 PFObject *thePostedPicture = PFObjects[i];
@@ -317,6 +318,7 @@ BOOL initialZoomComplete = NO;
                                                                    delegate:self
                                                           cancelButtonTitle:nil
                                                           otherButtonTitles:@"OK", nil];
+                [alertView show];
             }else{
                 for (NSInteger i = 0; i < PFObjects.count; i++) {
                     [temp addObject:PFObjects[i]];
@@ -329,111 +331,6 @@ BOOL initialZoomComplete = NO;
     }
 }
 
-
-
--(void)resetRegion{
-    MKCoordinateRegion viewRegion = MKCoordinateRegionMakeWithDistance(self.mapView.region.center, (milesSpanRegion * 1609.344), (milesSpanRegion * 1609.344));
-    //1609.344 is one Mile in Meters
-    
-    [self.mapView setRegion:viewRegion animated:YES];
-    
-    [locationManager startUpdatingLocation];
-}
-
-- (void)setUpLocation
-{
-    // prompt for location allowing
-    if ([locationManager respondsToSelector:@selector(requestAlwaysAuthorization)])
-    {
-        [locationManager requestAlwaysAuthorization];
-    }
-    else
-    {
-        // TODO: Else case should provide set-up for iOS 7 devices
-    }
-    
-    [locationManager startUpdatingLocation];
-}
-
-#pragma mark - CLLocationManagerDelegate methods
-
--(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
-{
-    [locationManager stopUpdatingLocation];
-    
-    if(!initialZoomComplete)
-    {
-        CLLocation *location = [locationManager location];
-        CLLocationCoordinate2D coordinate = [location coordinate];
-        
-        float longitude = coordinate.longitude;
-        float latitude = coordinate.latitude;
-        
-        CLLocationCoordinate2D zoomLocation;
-        zoomLocation.latitude = latitude;
-        zoomLocation.longitude= longitude;
-        MKCoordinateRegion viewRegion = MKCoordinateRegionMakeWithDistance(zoomLocation, (milesSpanRegion * 1609.344), (milesSpanRegion * 1609.344));
-        //1609.344 is one Mile in Meters
-        
-        [self.mapView setRegion:viewRegion animated:NO];
-        
-        [locationManager startUpdatingLocation];
-        
-        initialZoomComplete = YES;
-    }
-}
-
-- (void) locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
-{
-    [locationManager stopUpdatingLocation];
-    
-    // TODO: Notify user that location was not found
-}
-
-#pragma mark - MKMapViewDelegate methods
-
-- (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)annotation
-{
-    // If it's the user location, just return nil COMMENTED OUT -----------------------------
-//    if ([annotation isKindOfClass:[MKUserLocation class]])
-//        return nil;
-    
-    // Handle any custom annotations.
-    if ([annotation isKindOfClass:[MKAnnotationCustom class]])
-    {
-        // Try to dequeue an existing annotation view first
-        MKAnnotationView *annotationView = (MKAnnotationView *)[mapView dequeueReusableAnnotationViewWithIdentifier:@"CustomAnnotationViewIdentifier"];
-        
-        if (!annotationView)
-        {
-            // If an existing pin view was not available, create one.
-            annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:@"CustomAnnotationViewIdentifier"];
-            annotationView.canShowCallout = YES;
-            
-            // set pin image
-            UIImage *pinImage = [UIImage imageNamed:@"pin.png"];
-            annotationView.image = pinImage;
-            
-            // set callout
-            /*UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
-            annotationView.rightCalloutAccessoryView = rightButton;*/
-        }
-        else
-        {
-            annotationView.annotation = annotation;
-        }
-        
-        return annotationView;
-    }
-    
-    return nil;
-}
-// USER PRESSED ON THE ANNOTATION
-- (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view
-{
-    [mapView setCenterCoordinate:[view.annotation coordinate] animated:YES];
-}
-
 # pragma mark - Helper methods
 
 - (void)plot:(NSArray *)objectsToPlot :(NSString *)Username
@@ -444,18 +341,15 @@ BOOL initialZoomComplete = NO;
     {
         // make CLLocationCoordinate2D
         CLLocationCoordinate2D coordinate = coordinateValue.MKCoordinateValue;
-        bool alreadyTaken;
-        alreadyTaken = false;
-        for (int i = 0; i < _mapView.annotations.count; i++) {
-            MKAnnotationCustom *temp = _mapView.annotations[i];
-            if (coordinate.longitude == temp.coordinate.longitude && coordinate.latitude == temp.coordinate.latitude) {
-                alreadyTaken = true;
-            }
-        }
-            MKAnnotationCustom *annotation = [[MKAnnotationCustom alloc] initWithName:Username
-                                                                           coordinate:coordinate];
-            // add annotation
-            [self.mapView addAnnotation:annotation];
+        
+        GMSMarker *marker = [[GMSMarker alloc] init];
+        marker.position = coordinate;
+        marker.appearAnimation = kGMSMarkerAnimationPop;
+        marker.icon = [UIImage imageNamed:@"pin.png"];
+        // add annotation
+        marker.title = Username;
+        marker.snippet = @"In-Range";
+        marker.map = self.mapView_;
     }
 }
 
