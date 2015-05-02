@@ -42,6 +42,12 @@ BOOL initialZoomComplete = NO;
     NSArray *contactNamesArray;
     NSArray *contactIDsArray;
     CLLocationCoordinate2D currentUserLoc;
+    NSMutableArray *hexArray;
+    NSMutableArray *northWestHexArray;
+    NSMutableArray *southWestHexArray;
+    NSMutableArray *southEastHexArray;
+    NSMutableArray *northEastHexArray;
+    NSMutableArray *hexUnlockedArray;
 }
 
 - (IBAction)PostPicture:(id)sender {
@@ -153,22 +159,24 @@ BOOL initialZoomComplete = NO;
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    initialZoomComplete = NO;
     
     // Create a GMSCameraPosition that tells the map to display the
-    // coordinate -33.86,151.20 at zoom level 6.
-    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:-33.86
-                                                            longitude:151.20
-                                                                 zoom:6];
-    self.mapView_.camera = camera;
-    self.mapView_.myLocationEnabled = YES;
+    // coordinate user location at zoom level 6.
     
-    // Creates a marker in the center of the map.
-    GMSMarker *marker = [[GMSMarker alloc] init];
-    marker.position = CLLocationCoordinate2DMake(-33.86, 151.20);
-    marker.title = @"Sydney";
-    marker.snippet = @"Australia";
-    marker.map = self.mapView_;
+    self.mapView_.delegate = self;
+    self.mapView_.myLocationEnabled = YES;
+    self.mapView_.mapType = kGMSTypeHybrid;
+    self.mapView_.settings.rotateGestures = false;
+    [self.mapView_ setMinZoom:3 maxZoom:25];
+    
+    hexArray = [[NSMutableArray alloc]init];
+    northWestHexArray = [[NSMutableArray alloc]init];
+    southWestHexArray = [[NSMutableArray alloc]init];
+    southEastHexArray = [[NSMutableArray alloc]init];
+    northEastHexArray = [[NSMutableArray alloc]init];
+    hexUnlockedArray = [[NSMutableArray alloc]init];
+
+    [self setCameraToUserLoc];
     
     [self setUpAVCaptureSession];
         
@@ -222,7 +230,200 @@ BOOL initialZoomComplete = NO;
         [self uploadPostsOnMap:userID :@"You"];//SET UP ALL CURRENT USER'S PICTURES
         [self loadContacts];
     }
+    
+    [self addHexagons];
 }
+- (IBAction)ZoomOut:(id)sender {
+    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
+                                                            longitude:self.mapView_.myLocation.coordinate.longitude
+                                 
+                                                                 zoom:1];
+    self.mapView_.camera = camera;
+}
+
+-(void)addHexagons{
+    float oneMileLat = 0.01449275362319;
+    float oneMileLong = 0.01445671659053;
+    
+    float width = (90 * oneMileLat);
+    float height = (100 * oneMileLong);
+    float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+    float topMidHeights = height - botMidHeights;
+    
+    int hexCounter;
+    hexCounter = 0;
+    
+    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
+
+    for (int x = -90; topH.latitude <= 90; x++) {//PERFORM AS UNTILL IT HITS THE LAST LATITUDE (-90 --> 90)
+        float OddHexWidth;
+        if (x%2 == 0) {//IF IT IS ODD ADD MORE WIDTH (in order for hex to be touching borders)
+            OddHexWidth = 0;
+        }else{
+            OddHexWidth = width/2;
+        }
+        CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
+        
+        for (int i =-180 ; topRightH.longitude <= 180; i++) {//PERFORM AS UNTILL IT HITS THE LAST LONGTITUDE (-180 --> 180)
+            GMSMutablePath *hexH = [[GMSMutablePath path] init];
+            
+            float latCoords = (topMidHeights*x);//INCREASE THE LAT COORD
+            float longCoords = OddHexWidth+(width*i);//INCREASE THE LONG COORD
+            
+            CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
+            CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
+            CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
+                                   topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
+                                   topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
+            CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
+            
+            [hexH addCoordinate:bottomH];
+            [hexH addCoordinate:bottomLeftH];
+            [hexH addCoordinate:topLeftH];
+            [hexH addCoordinate:topH];
+            [hexH addCoordinate:topRightH];
+            [hexH addCoordinate:bottomRightH];
+
+            GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+            [hexArray addObject:polygon2];
+            
+            if (topH.latitude > 0 && topH.longitude < 0) {// IF IT IS IN THE NORTHEAST HEMI
+                [northEastHexArray addObject:polygon2];
+            }else if (topH.latitude > 0 && topH.longitude >= 0) {// IF IT IS IN THE NORTHWEST HEMI
+                [northWestHexArray addObject:polygon2];
+            }else if (topH.latitude <= 0 && topH.longitude < 0) {// IF IT IS IN THE SOUTHEAST HEMI
+                [southEastHexArray addObject:polygon2];
+            }else if (topH.latitude > 0 && topH.longitude >= 0) {// IF IT IS IN THE SOUTHWEST HEMI
+                [southWestHexArray addObject:polygon2];
+            }
+            
+            hexCounter++;
+        }
+    }
+    [self getHexsInView];
+    NSLog(@"THERE ARE %i HEXAGONS ON THIS MAP",hexCounter);
+}
+
+-(void)getHexsInView{
+    //ADD A WAITING FEATURE FOR EVERYTHIN TO LOAD!!!
+    
+    // Create the polygon, and assign it to the map.
+    [self.mapView_ clear];
+    int unlockedHexsInViewCounter;
+    unlockedHexsInViewCounter=0;
+    
+    CGPoint point = self.mapView_.center;
+    CLLocationCoordinate2D centerCoord = [self.mapView_.projection coordinateForPoint:point];
+    
+    NSArray *hexArraySearch;
+    
+    if (centerCoord.latitude >= 0 && centerCoord.longitude <= 0) {// IF IT IS IN THE NORTHEAST HEMI
+        hexArraySearch = [NSArray arrayWithArray:northEastHexArray];
+    }else if (centerCoord.latitude >= 0 && centerCoord.longitude >= 0) {// IF IT IS IN THE NORTHWEST HEMI
+        hexArraySearch = [NSArray arrayWithArray:northWestHexArray];
+    }else if (centerCoord.latitude <= 0 && centerCoord.longitude <= 0) {// IF IT IS IN THE SOUTHEAST HEMI
+        hexArraySearch = [NSArray arrayWithArray:southEastHexArray];
+    }else if (centerCoord.latitude >= 0 && centerCoord.longitude >= 0) {// IF IT IS IN THE SOUTHWEST HEMI
+        hexArraySearch = [NSArray arrayWithArray:southWestHexArray];
+    }
+    
+    for (int i = 0; i < hexArraySearch.count; i++) {
+        GMSPolygon *hexPolygon = hexArraySearch[i];
+        
+        if (!hexPolygon) {//ADD IN TO CHECK IF IT IS A UNLOCKED HEXAGON
+            hexPolygon.fillColor = [UIColor colorWithRed:0 green:1 blue:0 alpha:0];
+            hexPolygon.strokeColor = [UIColor blueColor];
+            hexPolygon.strokeWidth = 1;
+            hexPolygon.map = self.mapView_;
+            unlockedHexsInViewCounter++;
+        }else{
+            hexPolygon.fillColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
+            hexPolygon.strokeColor = [UIColor redColor];
+            hexPolygon.strokeWidth = 1;
+            hexPolygon.map = self.mapView_;
+        }
+    }
+    
+    NSLog(@"USER HAS %i UNLOCKED HEXS IN VIEW", unlockedHexsInViewCounter);
+}
+
+- (void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position{
+    CGPoint point = self.mapView_.center;
+    CLLocationCoordinate2D centerCoord = [self.mapView_.projection coordinateForPoint:point];
+    
+    NSArray *hexArraySearch;
+    
+    if (centerCoord.latitude >= 0 && centerCoord.longitude <= 0) {// IF IT IS IN THE NORTHEAST HEMI
+        hexArraySearch = [NSArray arrayWithArray:northEastHexArray];
+    }else if (centerCoord.latitude >= 0 && centerCoord.longitude >= 0) {// IF IT IS IN THE NORTHWEST HEMI
+        hexArraySearch = [NSArray arrayWithArray:northWestHexArray];
+    }else if (centerCoord.latitude <= 0 && centerCoord.longitude <= 0) {// IF IT IS IN THE SOUTHEAST HEMI
+        hexArraySearch = [NSArray arrayWithArray:southEastHexArray];
+    }else if (centerCoord.latitude >= 0 && centerCoord.longitude >= 0) {// IF IT IS IN THE SOUTHWEST HEMI
+        hexArraySearch = [NSArray arrayWithArray:southWestHexArray];
+    }
+    GMSPolygon *hexPoly = hexArraySearch[30]; //GET A POLYGON AND SEE IF IT IS ALREADY ON THE MAP
+    if (hexPoly.map != self.mapView_) {
+        [self getHexsInView];
+    }
+}
+
+-(void)addRects{
+    float oneMileLat = 0.01449275362319;
+    float oneMileLong = 0.01445671659053;
+    
+    // Create a rectangular path
+    GMSMutablePath *rect = [GMSMutablePath path];
+    float latCoord = (4 * oneMileLat);
+    float longCoord = (5 * oneMileLong);
+    CLLocationCoordinate2D bottomRight = CLLocationCoordinate2DMake(0, -180);
+    CLLocationCoordinate2D bottomLeft = CLLocationCoordinate2DMake(0, -170);
+    CLLocationCoordinate2D topLeft = CLLocationCoordinate2DMake(10, -170);
+    CLLocationCoordinate2D topRight = CLLocationCoordinate2DMake(10, -180);
+    
+    [rect addCoordinate:bottomRight];
+    [rect addCoordinate:bottomLeft];
+    [rect addCoordinate:topLeft];
+    [rect addCoordinate:topRight];
+    
+    // Create the polygon, and assign it to the map.
+    GMSPolygon *polygon = [GMSPolygon polygonWithPath:rect];
+    polygon.fillColor = [UIColor colorWithRed:0 green:0 blue:1 alpha:1];
+    polygon.strokeColor = [UIColor redColor];
+    polygon.strokeWidth = 5;
+    polygon.map = self.mapView_;
+    
+    double length = bottomRight.longitude - bottomLeft.longitude;
+    if (length < 1) {
+        length*=-1;
+    }
+    CLLocationCoordinate2D topRightL = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
+    
+    for (int i =1 ; topRightL.longitude <= 180; i++) {
+        GMSMutablePath *rect1 = [[GMSMutablePath path] init];
+        
+        CLLocationCoordinate2D bottomRightL = CLLocationCoordinate2DMake(bottomRight.latitude, bottomRight.longitude + (length * (i)));
+        CLLocationCoordinate2D bottomLeftL = CLLocationCoordinate2DMake(bottomLeft.latitude, bottomLeft.longitude + (length * (i)));;
+        CLLocationCoordinate2D topLeftL = CLLocationCoordinate2DMake(topLeft.latitude, topLeft.longitude - length + (length*(i+1)));
+        topRightL = CLLocationCoordinate2DMake(topRight.latitude, topRight.longitude - length + (length*(i+1)));
+        
+        [rect1 addCoordinate:bottomRightL];
+        [rect1 addCoordinate:bottomLeftL];
+        [rect1 addCoordinate:topLeftL];
+        [rect1 addCoordinate:topRightL];
+        
+        NSLog(@"\nBot Left Latitude: %f\n", bottomLeftL.latitude);
+        NSLog(@"\nTop Left Latitude: %f\n", topLeftL.latitude);
+        
+        // Create the polygon, and assign it to the map.
+        GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:rect1];
+        polygon2.fillColor = [UIColor colorWithRed:0 green:1 blue:0 alpha:1];
+        polygon2.strokeColor = [UIColor redColor];
+        polygon2.strokeWidth = 5;
+        polygon2.map = self.mapView_;
+    }
+}
+
 
 -(MKOverlayView *)mapView:(MKMapView *)mapView viewForOverlay:(id<MKOverlay>)overlay{
     
@@ -335,6 +536,7 @@ BOOL initialZoomComplete = NO;
 
 - (void)plot:(NSArray *)objectsToPlot :(NSString *)Username
 {
+    [self setCameraToUserLoc];
     // add all annotations
     // NOTE: coordinateValue can be any type from which a CLLocationCoordinate2D can be determined
     for (NSValue *coordinateValue in objectsToPlot)
@@ -351,6 +553,14 @@ BOOL initialZoomComplete = NO;
         marker.snippet = @"In-Range";
         marker.map = self.mapView_;
     }
+}
+
+-(void)setCameraToUserLoc{
+    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
+                                                            longitude:self.mapView_.myLocation.coordinate.longitude
+                                 
+                                                                 zoom:6];
+    self.mapView_.camera = camera;
 }
 
 - (void)didReceiveMemoryWarning {

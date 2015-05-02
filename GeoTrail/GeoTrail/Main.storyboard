@@ -113,7 +113,13 @@
                             <constraint firstItem="pFw-Uh-f4S" firstAttribute="top" secondItem="Wzi-jQ-8qs" secondAttribute="bottom" constant="-80" id="y5C-u1-95t"/>
                         </constraints>
                     </view>
-                    <toolbarItems/>
+                    <toolbarItems>
+                        <barButtonItem title="ZoomOut" id="6UZ-BE-PQi">
+                            <connections>
+                                <action selector="ZoomOut:" destination="BYZ-38-t0r" id="AgP-Gs-wHn"/>
+                            </connections>
+                        </barButtonItem>
+                    </toolbarItems>
                     <navigationItem key="navigationItem" title="GeoTrail" id="n87-AH-cdt">
                         <barButtonItem key="leftBarButtonItem" systemItem="refresh" id="w3G-AN-efJ">
                             <connections>
