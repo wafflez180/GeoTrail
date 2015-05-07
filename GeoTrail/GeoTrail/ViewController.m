@@ -48,6 +48,11 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *southEastHexArray;
     NSMutableArray *northEastHexArray;
     NSMutableArray *hexUnlockedArray;
+    NSMutableArray *hexInViewArray;
+    
+    NSMutableArray *centerLATs;
+    NSMutableArray *centerLONGs;
+    int indexOfCenterHex;
 }
 
 - (IBAction)PostPicture:(id)sender {
@@ -167,7 +172,7 @@ BOOL initialZoomComplete = NO;
     self.mapView_.myLocationEnabled = YES;
     self.mapView_.mapType = kGMSTypeHybrid;
     self.mapView_.settings.rotateGestures = false;
-    [self.mapView_ setMinZoom:3 maxZoom:25];
+    [self.mapView_ setMinZoom:5 maxZoom:25];
     
     hexArray = [[NSMutableArray alloc]init];
     northWestHexArray = [[NSMutableArray alloc]init];
@@ -175,6 +180,7 @@ BOOL initialZoomComplete = NO;
     southEastHexArray = [[NSMutableArray alloc]init];
     northEastHexArray = [[NSMutableArray alloc]init];
     hexUnlockedArray = [[NSMutableArray alloc]init];
+    hexInViewArray = [[NSMutableArray alloc]init];
 
     [self setCameraToUserLoc];
     
@@ -231,7 +237,7 @@ BOOL initialZoomComplete = NO;
         [self loadContacts];
     }
     
-    [self addHexagons];
+    //[self addHexagons];
 }
 - (IBAction)ZoomOut:(id)sender {
     GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
@@ -245,7 +251,7 @@ BOOL initialZoomComplete = NO;
     float oneMileLat = 0.01449275362319;
     float oneMileLong = 0.01445671659053;
     
-    float width = (90 * oneMileLat);
+    float width = (100 * oneMileLat);
     float height = (100 * oneMileLong);
     float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
     float topMidHeights = height - botMidHeights;
@@ -253,9 +259,14 @@ BOOL initialZoomComplete = NO;
     int hexCounter;
     hexCounter = 0;
     
+    NSMutableArray *centerArray = [[NSMutableArray alloc] init];
+    NSMutableArray *centerArrayLAT = [[NSMutableArray alloc] init];
+    NSMutableArray *centerArrayLONG = [[NSMutableArray alloc] init];
+    
     CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
 
     for (int x = -90; topH.latitude <= 90; x++) {//PERFORM AS UNTILL IT HITS THE LAST LATITUDE (-90 --> 90)
+        
         float OddHexWidth;
         if (x%2 == 0) {//IF IT IS ODD ADD MORE WIDTH (in order for hex to be touching borders)
             OddHexWidth = 0;
@@ -265,6 +276,7 @@ BOOL initialZoomComplete = NO;
         CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
         
         for (int i =-180 ; topRightH.longitude <= 180; i++) {//PERFORM AS UNTILL IT HITS THE LAST LONGTITUDE (-180 --> 180)
+
             GMSMutablePath *hexH = [[GMSMutablePath path] init];
             
             float latCoords = (topMidHeights*x);//INCREASE THE LAT COORD
@@ -285,6 +297,8 @@ BOOL initialZoomComplete = NO;
             [hexH addCoordinate:bottomRightH];
 
             GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+            polygon2.title = [NSString stringWithFormat:@"%i", i];
+            
             [hexArray addObject:polygon2];
             
             if (topH.latitude > 0 && topH.longitude < 0) {// IF IT IS IN THE NORTHEAST HEMI
@@ -297,10 +311,77 @@ BOOL initialZoomComplete = NO;
                 [southWestHexArray addObject:polygon2];
             }
             
+            //find rect that encloses all coords
+            
+            float maxLat = -200;
+            float maxLong = -200;
+            float minLat = 999999;
+            float minLong = 999999;
+            
+            for (int i=0 ; i< hexH.count; i++) {
+                CLLocationCoordinate2D location = [hexH coordinateAtIndex:i];
+                
+                if (location.latitude < minLat) {
+                    minLat = location.latitude;
+                }
+                
+                if (location.longitude < minLong) {
+                    minLong = location.longitude;
+                }
+                
+                if (location.latitude > maxLat) {
+                    maxLat = location.latitude;
+                }
+                
+                if (location.longitude > maxLong) {
+                    maxLong = location.longitude;
+                }
+            }
+            
+            //Center point
+            if (topH.latitude > 80 && topH.latitude <= 90) {
+                CLLocationCoordinate2D center = CLLocationCoordinate2DMake((maxLat + minLat) * 0.5, (maxLong + minLong) * 0.5);
+                [centerArrayLAT addObject:[NSNumber numberWithDouble:center.latitude]];
+                [centerArrayLONG addObject:[NSNumber numberWithDouble:center.longitude]];
+            }
+            
             hexCounter++;
         }
     }
-    [self getHexsInView];
+    //[self getHexsInView];
+    NSArray *data1 = centerArrayLAT;
+    NSArray *data2 = centerArrayLONG;
+    // Stitch together a postObject and send this async to Parse
+    PFObject *postObject = [PFObject objectWithClassName:@"HexPolygonMap"];
+    [postObject addObject:data1 forKey:@"Latitude"];
+    [postObject addObject:data2 forKey:@"Longitude"];
+    
+    // Use PFACL to restrict future modifications to this object.
+    PFACL *readOnlyACL = [PFACL ACL];
+    [readOnlyACL setPublicReadAccess:YES];
+    [readOnlyACL setPublicWriteAccess:NO];
+    postObject.ACL = readOnlyACL;
+    
+    [postObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+        if (error) {
+            NSLog(@"Couldn't save!");
+            NSLog(@"%@", error);
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"error"]
+                                                                message:nil
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Ok", nil];
+            [alertView show];
+            return;
+        }
+        if (succeeded) {
+            NSLog(@"Successfully saved!");
+            NSLog(@"%@", postObject);
+        } else {
+            NSLog(@"Failed to save.");
+        }
+    }];
+
     NSLog(@"THERE ARE %i HEXAGONS ON THIS MAP",hexCounter);
 }
 
@@ -308,7 +389,6 @@ BOOL initialZoomComplete = NO;
     //ADD A WAITING FEATURE FOR EVERYTHIN TO LOAD!!!
     
     // Create the polygon, and assign it to the map.
-    [self.mapView_ clear];
     int unlockedHexsInViewCounter;
     unlockedHexsInViewCounter=0;
     
@@ -327,28 +407,66 @@ BOOL initialZoomComplete = NO;
         hexArraySearch = [NSArray arrayWithArray:southWestHexArray];
     }
     
-    for (int i = 0; i < hexArraySearch.count; i++) {
-        GMSPolygon *hexPolygon = hexArraySearch[i];
+    CLLocationCoordinate2D topLeftCoord = self.mapView_.projection.visibleRegion.farLeft;
+    CLLocationCoordinate2D topRightCoord = self.mapView_.projection.visibleRegion.farRight;
+    CLLocationCoordinate2D botLeftCoord = self.mapView_.projection.visibleRegion.nearLeft;
+    CLLocationCoordinate2D botRightCoord = self.mapView_.projection.visibleRegion.nearRight;
+    
+    bool allHexsInView = false;
+    
+    bool TopLeftHex = false;
+    bool BotLeftHex = false;
+    bool TopRightHex = false;
+    bool BotRightHex = false;
+    
+    for (int x = 0; x < hexInViewArray.count; x++) {
+        GMSPolygon *hexPolygon = hexInViewArray[x];
         
-        if (!hexPolygon) {//ADD IN TO CHECK IF IT IS A UNLOCKED HEXAGON
-            hexPolygon.fillColor = [UIColor colorWithRed:0 green:1 blue:0 alpha:0];
-            hexPolygon.strokeColor = [UIColor blueColor];
-            hexPolygon.strokeWidth = 1;
-            hexPolygon.map = self.mapView_;
-            unlockedHexsInViewCounter++;
-        }else{
-            hexPolygon.fillColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
-            hexPolygon.strokeColor = [UIColor redColor];
-            hexPolygon.strokeWidth = 1;
-            hexPolygon.map = self.mapView_;
+        if (GMSGeometryContainsLocation(topLeftCoord, hexPolygon.path, YES)) {
+            TopLeftHex = true;
+        } else if (GMSGeometryContainsLocation(topRightCoord, hexPolygon.path, YES)) {
+            TopRightHex = true;
+        } else if (GMSGeometryContainsLocation(botLeftCoord, hexPolygon.path, YES)) {
+            BotLeftHex = true;
+        } else if (GMSGeometryContainsLocation(botRightCoord, hexPolygon.path, YES)) {
+            BotRightHex = true;
         }
     }
     
+    if (TopLeftHex && TopRightHex && BotLeftHex && BotRightHex) {
+        allHexsInView = true;
+    }
+    
+    if (allHexsInView == false) {
+        for (int i = 0; i < hexArraySearch.count; i++) {
+            GMSPolygon *hexPolygon = hexArraySearch[i];
+            CLLocationCoordinate2D hexBot = [hexPolygon.path coordinateAtIndex:0];
+            CLLocationCoordinate2D hexTop = [hexPolygon.path coordinateAtIndex:3];
+            CLLocationCoordinate2D hexLeft = [hexPolygon.path coordinateAtIndex:1];
+            CLLocationCoordinate2D hexRight = [hexPolygon.path coordinateAtIndex:4];
+            
+            if ([self.mapView_.projection containsCoordinate:hexBot] || [self.mapView_.projection containsCoordinate:hexTop] || [self.mapView_.projection containsCoordinate:hexLeft] || [self.mapView_.projection containsCoordinate:hexRight]) {
+                if (!hexPolygon) {//ADD IN TO CHECK IF IT IS A UNLOCKED HEXAGON
+                    hexPolygon.fillColor = [UIColor colorWithRed:0 green:1 blue:0 alpha:0.4];
+                    hexPolygon.strokeColor = [UIColor blueColor];
+                    hexPolygon.strokeWidth = 1;
+                    hexPolygon.map = self.mapView_;
+                    unlockedHexsInViewCounter++;
+                }else{
+                    hexPolygon.fillColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.4];
+                    hexPolygon.strokeColor = [UIColor redColor];
+                    hexPolygon.strokeWidth = 1;
+                    hexPolygon.map = self.mapView_;
+                }
+                [hexInViewArray addObject:hexPolygon];
+            }
+        }
+    }
     NSLog(@"USER HAS %i UNLOCKED HEXS IN VIEW", unlockedHexsInViewCounter);
 }
 
 - (void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position{
-    CGPoint point = self.mapView_.center;
+    /*CGPoint point = self.mapView_.center;
     CLLocationCoordinate2D centerCoord = [self.mapView_.projection coordinateForPoint:point];
     
     NSArray *hexArraySearch;
@@ -365,7 +483,7 @@ BOOL initialZoomComplete = NO;
     GMSPolygon *hexPoly = hexArraySearch[30]; //GET A POLYGON AND SEE IF IT IS ALREADY ON THE MAP
     if (hexPoly.map != self.mapView_) {
         [self getHexsInView];
-    }
+    }*/
 }
 
 -(void)addRects{
@@ -474,10 +592,122 @@ BOOL initialZoomComplete = NO;
         }
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
         [self plot:tempPostedPictureLocations: Username];
+        [self loadPlotHexs];
     }];
     // The InBackground methods are asynchronous, so any code after this will run
     // immediately.  Any code that depends on the query result should be moved
     // inside the completion block above.
+}
+
+-(void)loadPlotHexs{
+    int coordLatRangeIndex=0;
+    float userLat = self.mapView_.myLocation.coordinate.latitude;
+    if (userLat > -90 & userLat <= -80){
+        coordLatRangeIndex=-90;
+    }else if (userLat > -80 & userLat <= -70){
+        coordLatRangeIndex=-80;
+    }else if (userLat > -70 & userLat <= -60){
+        coordLatRangeIndex=-70;
+    }else if (userLat > -60 & userLat <= -50){
+        coordLatRangeIndex=-60;
+    }else if (userLat > -50 & userLat <= -40){
+        coordLatRangeIndex=-50;
+    }else if (userLat > -40 & userLat <= -30){
+        coordLatRangeIndex=-40;
+    }else if (userLat > -30 & userLat <= -20){
+        coordLatRangeIndex=-30;
+    }else if (userLat > -20 & userLat <= -10){
+        coordLatRangeIndex=-20;
+    }else if (userLat > -10 & userLat <= 0){
+        coordLatRangeIndex=-10;
+    }else if (userLat > 0 & userLat <= 10){
+        coordLatRangeIndex=0;
+    }else if (userLat > 10 & userLat <= 20){
+        coordLatRangeIndex=10;
+    }else if (userLat > 20 & userLat <= 30){
+        coordLatRangeIndex=20;
+    }else if (userLat > 30 & userLat <= 40){
+        coordLatRangeIndex=30;
+    }else if (userLat > 40 & userLat <= 50){
+        coordLatRangeIndex=40;
+    }else if (userLat > 50 & userLat <= 60){
+        coordLatRangeIndex=50;
+    }else if (userLat > 60 & userLat <= 70){
+        coordLatRangeIndex=60;
+    }else if (userLat > 70 & userLat <= 80){
+        coordLatRangeIndex=70;
+    }else if (userLat > 80 & userLat <= 90){
+        coordLatRangeIndex=80;
+    }
+    PFQuery *query = [PFQuery queryWithClassName:@"HexPolygonMap"];
+    [query whereKey:@"Index" equalTo:[NSNumber numberWithInt:30]];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (error) {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
+                                                                message:nil
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"OK", nil];
+            [alertView show];
+        }else{
+            for (int i = 0; i < objects.count; i++) {//ERROR HERE IT NEEDS TO RETRIVE THE RIGHT ROW & OBJECT
+                PFObject *centerPointHexArray = objects[i];
+                NSArray *centerLATsTemp = [centerPointHexArray objectForKey:@"Latitude"];
+                NSArray *centerLONGsTemp = [centerPointHexArray objectForKey:@"Longitude"];
+                centerLATs = [[NSMutableArray alloc] initWithArray:[centerLATsTemp objectAtIndex:0]];
+                centerLONGs = [[NSMutableArray alloc] initWithArray:[centerLONGsTemp objectAtIndex:0]];
+                
+                CLLocationDistance shortestDistance = 999999;
+                indexOfCenterHex=0;
+                for (int x = 0; x < centerLATs.count; x++) {
+                    CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([centerLATs[x] doubleValue], [centerLONGs[x] doubleValue]);
+                    CLLocation *hexCenterLoc = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
+                    CLLocationDistance distance = [hexCenterLoc getDistanceFrom: self.mapView_.myLocation];
+                    if ((double)shortestDistance > (double)distance) {
+                        shortestDistance = distance;
+                        indexOfCenterHex = x;
+                    }
+                }
+            }
+        }
+        //ADD THE POLYGON USING THE INDEX
+        [self addHex];
+    }];
+}
+
+-(void)addHex{
+    CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([centerLATs[indexOfCenterHex] doubleValue], [centerLONGs[indexOfCenterHex] doubleValue]);
+    
+    float oneMileLat = 0.01449275362319;
+    float oneMileLong = 0.01445671659053;
+    
+    float width = (100 * oneMileLat);
+    float height = (100 * oneMileLong);
+    float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+    float topMidHeights = height - botMidHeights;
+    
+    GMSMutablePath *hexH = [[GMSMutablePath path] init];
+    
+    float latCoords = coordTemp.latitude;//INCREASE THE LAT COORD
+    float longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
+    
+    CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
+    CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
+    CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
+    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
+    CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
+    CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
+    
+    [hexH addCoordinate:bottomH];
+    [hexH addCoordinate:bottomLeftH];
+    [hexH addCoordinate:topLeftH];
+    [hexH addCoordinate:topH];
+    [hexH addCoordinate:topRightH];
+    [hexH addCoordinate:bottomRightH];
+    
+    GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+    polygon2.fillColor = [UIColor blueColor];
+    polygon2.map = self.mapView_;
 }
 
 //GET TO WORK TO ADD THE PICTURE LOCATIONS!!!
