@@ -50,6 +50,8 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *hexUnlockedArray;
     NSMutableArray *hexInViewArray;
     
+    NSMutableArray *hexCentersOnMap;
+    
     NSMutableArray *centerLATs;
     NSMutableArray *centerLONGs;
     int indexOfCenterHex;
@@ -181,6 +183,7 @@ BOOL initialZoomComplete = NO;
     northEastHexArray = [[NSMutableArray alloc]init];
     hexUnlockedArray = [[NSMutableArray alloc]init];
     hexInViewArray = [[NSMutableArray alloc]init];
+    hexCentersOnMap = [[NSMutableArray alloc]init];
 
     [self setCameraToUserLoc];
     
@@ -237,7 +240,7 @@ BOOL initialZoomComplete = NO;
         [self loadContacts];
     }
     
-    //[self addHexagons];
+    [self addHexagons];
 }
 - (IBAction)ZoomOut:(id)sender {
     GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
@@ -251,20 +254,21 @@ BOOL initialZoomComplete = NO;
     float oneMileLat = 0.01449275362319;
     float oneMileLong = 0.01445671659053;
     
-    float width = (100 * oneMileLat);
-    float height = (100 * oneMileLong);
-    float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+    float width = (5 * oneMileLat);
+    float height = (5 * oneMileLong);
+    float botMidHeights = height / 4.0;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
     float topMidHeights = height - botMidHeights;
     
     int hexCounter;
     hexCounter = 0;
     
-    NSMutableArray *centerArray = [[NSMutableArray alloc] init];
     NSMutableArray *centerArrayLAT = [[NSMutableArray alloc] init];
     NSMutableArray *centerArrayLONG = [[NSMutableArray alloc] init];
     
-    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
+    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(-90, -180); //INITIALIZES VARIABLE
 
+    int latSave=0;//-90 to -89 CAN GO TO 89 only
+    
     for (int x = -90; topH.latitude <= 90; x++) {//PERFORM AS UNTILL IT HITS THE LAST LATITUDE (-90 --> 90)
         
         float OddHexWidth;
@@ -279,8 +283,8 @@ BOOL initialZoomComplete = NO;
 
             GMSMutablePath *hexH = [[GMSMutablePath path] init];
             
-            float latCoords = (topMidHeights*x);//INCREASE THE LAT COORD
-            float longCoords = OddHexWidth+(width*i);//INCREASE THE LONG COORD
+            float latCoords = -90+(topMidHeights*x);//INCREASE THE LAT COORD (the distance between hex's)
+            float longCoords = -180+(OddHexWidth+(width*i));//INCREASE THE LONG COORD
             
             CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
             CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
@@ -311,46 +315,25 @@ BOOL initialZoomComplete = NO;
                 [southWestHexArray addObject:polygon2];
             }
             
-            //find rect that encloses all coords
-            
-            float maxLat = -200;
-            float maxLong = -200;
-            float minLat = 999999;
-            float minLong = 999999;
-            
-            for (int i=0 ; i< hexH.count; i++) {
-                CLLocationCoordinate2D location = [hexH coordinateAtIndex:i];
-                
-                if (location.latitude < minLat) {
-                    minLat = location.latitude;
-                }
-                
-                if (location.longitude < minLong) {
-                    minLong = location.longitude;
-                }
-                
-                if (location.latitude > maxLat) {
-                    maxLat = location.latitude;
-                }
-                
-                if (location.longitude > maxLong) {
-                    maxLong = location.longitude;
-                }
-            }
-            
             //Center point
-            if (topH.latitude > 80 && topH.latitude <= 90) {
-                CLLocationCoordinate2D center = CLLocationCoordinate2DMake((maxLat + minLat) * 0.5, (maxLong + minLong) * 0.5);
+            
+            latSave = -90;//-90 to -89 CAN GO TO 89 only
+            
+            if (topH.latitude > latSave && topH.latitude <= latSave+0.1) {//SET A CAP LIMIT OF 100 and then send it to the server
+                CLLocationCoordinate2D center = [self getCenterOfHex:hexH];
                 [centerArrayLAT addObject:[NSNumber numberWithDouble:center.latitude]];
                 [centerArrayLONG addObject:[NSNumber numberWithDouble:center.longitude]];
             }
             
             hexCounter++;
         }
-    }
+    }// ONLY UNCOMMENT TO UPLOAD ALL THE HEXS TO THE SERVER
     //[self getHexsInView];
     NSArray *data1 = centerArrayLAT;
     NSArray *data2 = centerArrayLONG;
+    
+    NSLog(@"\n\nSaving to Parse: %lu objects\n\n", data1.count + data2.count);
+
     // Stitch together a postObject and send this async to Parse
     PFObject *postObject = [PFObject objectWithClassName:@"HexPolygonMap"];
     [postObject addObject:data1 forKey:@"Latitude"];
@@ -381,7 +364,6 @@ BOOL initialZoomComplete = NO;
             NSLog(@"Failed to save.");
         }
     }];
-
     NSLog(@"THERE ARE %i HEXAGONS ON THIS MAP",hexCounter);
 }
 
@@ -542,7 +524,6 @@ BOOL initialZoomComplete = NO;
     }
 }
 
-
 -(MKOverlayView *)mapView:(MKMapView *)mapView viewForOverlay:(id<MKOverlay>)overlay{
     
     MKPolygonView *polyView = [[MKPolygonView alloc]initWithOverlay:overlay];
@@ -671,25 +652,25 @@ BOOL initialZoomComplete = NO;
             }
         }
         //ADD THE POLYGON USING THE INDEX
-        [self addHex];
+        [self addUnlockedHexs];
     }];
 }
 
--(void)addHex{
+-(void)addUnlockedHexs{
     CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([centerLATs[indexOfCenterHex] doubleValue], [centerLONGs[indexOfCenterHex] doubleValue]);
     
     float oneMileLat = 0.01449275362319;
     float oneMileLong = 0.01445671659053;
     
-    float width = (100 * oneMileLat);
-    float height = (100 * oneMileLong);
+    float width = (10 * oneMileLat);
+    float height = (10 * oneMileLong);
     float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
     float topMidHeights = height - botMidHeights;
     
     GMSMutablePath *hexH = [[GMSMutablePath path] init];
     
-    float latCoords = coordTemp.latitude;//INCREASE THE LAT COORD
-    float longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
+    float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+    float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD
     
     CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
     CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
@@ -708,6 +689,115 @@ BOOL initialZoomComplete = NO;
     GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
     polygon2.fillColor = [UIColor blueColor];
     polygon2.map = self.mapView_;
+    
+    CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
+    [hexCentersOnMap addObject:towerLocation];
+    [self getSurroundingHexs];
+}
+
+-(void)getSurroundingHexs{
+    CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([centerLATs[indexOfCenterHex] doubleValue], [centerLONGs[indexOfCenterHex] doubleValue]);
+    for (int i = 0; i <= 6; i++) {
+        float oneMileLat = 0.01449275362319;
+        float oneMileLong = 0.01445671659053;
+        
+        float width = (10 * oneMileLat);
+        float height = (10 * oneMileLong);
+        float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+        float topMidHeights = height - botMidHeights;
+        
+        GMSMutablePath *hexH = [[GMSMutablePath path] init];
+        
+        float latCoords;
+        float longCoords;
+        if (i == 6) {//THE BOTTOM LEFT HEX
+            latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
+            longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
+        }else if (i == 5) {//THE BOTTOM RIGHT HEX
+            latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
+            longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
+        }else if (i == 4){//THE TOP LEFT HEX
+            latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
+            longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
+        }else if (i == 3){//THE TOP RIGHT HEX
+            latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
+            longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
+        }else if (i == 2){//THE LEFT HEX
+            latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+            longCoords = coordTemp.longitude - (width * 1.5);//INCREASE THE LONG COORD
+        }else if (i == 1){//THE RIGHT HEX
+            latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+            longCoords = coordTemp.longitude + (width / 2);//INCREASE THE LONG COORD
+        }
+        
+        CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
+        CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
+        CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
+        CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
+        CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
+        CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
+        
+        [hexH addCoordinate:bottomH];
+        [hexH addCoordinate:bottomLeftH];
+        [hexH addCoordinate:topLeftH];
+        [hexH addCoordinate:topH];
+        [hexH addCoordinate:topRightH];
+        [hexH addCoordinate:bottomRightH];
+        
+        CLLocationCoordinate2D center = [self getCenterOfHex:hexH];
+        
+        if ([self checkIfCenterIsOnMap:center] == false) {
+            GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+            polygon2.fillColor = [UIColor redColor];
+            polygon2.strokeWidth = 2;
+            polygon2.strokeColor = [UIColor blueColor];
+            polygon2.map = self.mapView_;
+            
+            CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:center.latitude longitude:center.longitude];
+            [hexCentersOnMap addObject:towerLocation];
+        }
+    }
+}
+
+-(CLLocationCoordinate2D)getCenterOfHex:(GMSMutablePath *)hexH{
+    float maxLat = -200;
+    float maxLong = -200;
+    float minLat = 999999;
+    float minLong = 999999;
+    
+    for (int i=0 ; i< hexH.count; i++) {
+        CLLocationCoordinate2D location = [hexH coordinateAtIndex:i];
+        
+        if (location.latitude < minLat) {
+            minLat = location.latitude;
+        }
+        
+        if (location.longitude < minLong) {
+            minLong = location.longitude;
+        }
+        
+        if (location.latitude > maxLat) {
+            maxLat = location.latitude;
+        }
+        
+        if (location.longitude > maxLong) {
+            maxLong = location.longitude;
+        }
+    }
+    
+        CLLocationCoordinate2D center = CLLocationCoordinate2DMake((maxLat + minLat) * 0.5, (maxLong + minLong) * 0.5);
+    return center;
+}
+
+-(BOOL)checkIfCenterIsOnMap:(CLLocationCoordinate2D)center{
+    bool isTaken = false;
+    for (int i =0; i < hexCentersOnMap.count; i++) {
+        if (center.latitude == [hexCentersOnMap[i] coordinate].latitude && center.longitude == [hexCentersOnMap[i] coordinate].longitude) {
+            isTaken = true;
+            break;
+        }
+    }
+    return isTaken;
 }
 
 //GET TO WORK TO ADD THE PICTURE LOCATIONS!!!
