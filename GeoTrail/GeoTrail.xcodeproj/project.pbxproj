@@ -39,6 +39,7 @@
 		A72B64441AEF051F00C84DE5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B64371AEF051F00C84DE5 /* ViewController.m */; };
 		A72B64471AEF054800C84DE5 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A72B64451AEF054800C84DE5 /* Info.plist */; };
 		A72B644C1AEF065500C84DE5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A72B644B1AEF065500C84DE5 /* Main.storyboard */; };
+		A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */ = {isa = PBXBuildFile; fileRef = A7CEC6BC1B1132870077D6E4 /* eye.png */; };
 		A7CFE6621AED4E110054D33D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CFE6611AED4E110054D33D /* AudioToolbox.framework */; };
 		A7CFE6641AED4E150054D33D /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CFE6631AED4E150054D33D /* CFNetwork.framework */; };
 		A7CFE6661AED4E230054D33D /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CFE6651AED4E230054D33D /* CoreLocation.framework */; };
@@ -107,6 +108,7 @@
 		A72B644B1AEF065500C84DE5 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = GeoTrail/Main.storyboard; sourceTree = SOURCE_ROOT; };
 		A7B3E8451AE724E900FBEACD /* GeoTrail.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeoTrail.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B3E85E1AE724E900FBEACD /* GeoTrailTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GeoTrailTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7CEC6BC1B1132870077D6E4 /* eye.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = eye.png; path = GeoTrail/eye.png; sourceTree = SOURCE_ROOT; };
 		A7CFE6611AED4E110054D33D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		A7CFE6631AED4E150054D33D /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		A7CFE6651AED4E230054D33D /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -216,6 +218,7 @@
 				A72B642E1AEF051F00C84DE5 /* Info.plist */,
 				A72B642C1AEF051F00C84DE5 /* frontCamera.png */,
 				A72B64341AEF051F00C84DE5 /* pin.png */,
+				A7CEC6BC1B1132870077D6E4 /* eye.png */,
 				A72B64351AEF051F00C84DE5 /* viewButton.png */,
 				A72B64301AEF051F00C84DE5 /* main.m */,
 			);
@@ -369,6 +372,7 @@
 				A72B643D1AEF051F00C84DE5 /* Info.plist in Resources */,
 				A72B643C1AEF051F00C84DE5 /* Images.xcassets in Resources */,
 				A72B64421AEF051F00C84DE5 /* pin.png in Resources */,
+				A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */,
 				A72B644C1AEF065500C84DE5 /* Main.storyboard in Resources */,
 				A72B643B1AEF051F00C84DE5 /* frontCamera.png in Resources */,
 				A72B64391AEF051F00C84DE5 /* CameraButton.png in Resources */,
