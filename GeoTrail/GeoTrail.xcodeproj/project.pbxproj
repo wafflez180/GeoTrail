@@ -33,12 +33,25 @@
 		A72B643C1AEF051F00C84DE5 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A72B642D1AEF051F00C84DE5 /* Images.xcassets */; };
 		A72B643D1AEF051F00C84DE5 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A72B642E1AEF051F00C84DE5 /* Info.plist */; };
 		A72B643E1AEF051F00C84DE5 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = A72B642F1AEF051F00C84DE5 /* LaunchScreen.xib */; };
-		A72B643F1AEF051F00C84DE5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B64301AEF051F00C84DE5 /* main.m */; };
-		A72B64421AEF051F00C84DE5 /* pin.png in Resources */ = {isa = PBXBuildFile; fileRef = A72B64341AEF051F00C84DE5 /* pin.png */; };
 		A72B64431AEF051F00C84DE5 /* viewButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A72B64351AEF051F00C84DE5 /* viewButton.png */; };
 		A72B64441AEF051F00C84DE5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B64371AEF051F00C84DE5 /* ViewController.m */; };
 		A72B64471AEF054800C84DE5 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A72B64451AEF054800C84DE5 /* Info.plist */; };
 		A72B644C1AEF065500C84DE5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A72B644B1AEF065500C84DE5 /* Main.storyboard */; };
+		A73C9F8F1B1BE9B80023FA8F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A73C9F8E1B1BE9B80023FA8F /* main.m */; };
+		A7984E701B1A972D00692E01 /* InfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A7984E6F1B1A972D00692E01 /* InfoWindow.xib */; };
+		A7A0EECE1B3473F90044AB3B /* infoWindow.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EECD1B3473F90044AB3B /* infoWindow.png */; };
+		A7A0EEDC1B3475860044AB3B /* CustomInfoWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A0EEDB1B3475860044AB3B /* CustomInfoWindow.m */; };
+		A7A0EEE01B3478460044AB3B /* infoWindowPolaroid.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */; };
+		A7A0EEE41B3479370044AB3B /* infoArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE11B3479370044AB3B /* infoArrow.png */; };
+		A7A0EEE51B3479370044AB3B /* infoLikesIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */; };
+		A7A0EEE61B3479370044AB3B /* infoViewsIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */; };
+		A7A0EEFB1B34923A0044AB3B /* addressbookIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEF51B34923A0044AB3B /* addressbookIcon.png */; };
+		A7A0EEFC1B34923A0044AB3B /* cameraIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEF61B34923A0044AB3B /* cameraIcon.png */; };
+		A7A0EEFD1B34923A0044AB3B /* mainButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEF71B34923A0044AB3B /* mainButton.png */; };
+		A7A0EEFE1B34923A0044AB3B /* pin.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEF81B34923A0044AB3B /* pin.png */; };
+		A7A0EEFF1B34923A0044AB3B /* refreshButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEF91B34923A0044AB3B /* refreshButton.png */; };
+		A7A0EF001B34923A0044AB3B /* settingsButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEFA1B34923A0044AB3B /* settingsButton.png */; };
+		A7A0EF021B3492930044AB3B /* infoViewsSmallIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EF011B3492930044AB3B /* infoViewsSmallIcon.png */; };
 		A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */ = {isa = PBXBuildFile; fileRef = A7CEC6BC1B1132870077D6E4 /* eye.png */; };
 		A7CEC6C81B117A080077D6E4 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CEC6C71B117A080077D6E4 /* CoreMedia.framework */; };
 		A7CEC6CA1B117A0E0077D6E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CEC6C91B117A0E0077D6E4 /* CoreVideo.framework */; };
@@ -101,13 +114,28 @@
 		A72B642D1AEF051F00C84DE5 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = GeoTrail/Images.xcassets; sourceTree = SOURCE_ROOT; };
 		A72B642E1AEF051F00C84DE5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = GeoTrail/Info.plist; sourceTree = SOURCE_ROOT; };
 		A72B642F1AEF051F00C84DE5 /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = LaunchScreen.xib; path = GeoTrail/LaunchScreen.xib; sourceTree = SOURCE_ROOT; };
-		A72B64301AEF051F00C84DE5 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = GeoTrail/main.m; sourceTree = SOURCE_ROOT; };
-		A72B64341AEF051F00C84DE5 /* pin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = pin.png; path = GeoTrail/pin.png; sourceTree = SOURCE_ROOT; };
 		A72B64351AEF051F00C84DE5 /* viewButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = viewButton.png; path = GeoTrail/viewButton.png; sourceTree = SOURCE_ROOT; };
 		A72B64361AEF051F00C84DE5 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ViewController.h; path = GeoTrail/ViewController.h; sourceTree = SOURCE_ROOT; };
 		A72B64371AEF051F00C84DE5 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ViewController.m; path = GeoTrail/ViewController.m; sourceTree = SOURCE_ROOT; };
 		A72B64451AEF054800C84DE5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = GeoTrailTests/Info.plist; sourceTree = SOURCE_ROOT; };
 		A72B644B1AEF065500C84DE5 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = GeoTrail/Main.storyboard; sourceTree = SOURCE_ROOT; };
+		A73C9F8E1B1BE9B80023FA8F /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = GeoTrail/main.m; sourceTree = SOURCE_ROOT; };
+		A7984E6F1B1A972D00692E01 /* InfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = InfoWindow.xib; path = GeoTrail/InfoWindow.xib; sourceTree = SOURCE_ROOT; };
+		A7A0EECD1B3473F90044AB3B /* infoWindow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoWindow.png; path = GeoTrail/infoWindow.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEDA1B3475860044AB3B /* CustomInfoWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomInfoWindow.h; path = GeoTrail/CustomInfoWindow.h; sourceTree = SOURCE_ROOT; };
+		A7A0EEDB1B3475860044AB3B /* CustomInfoWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomInfoWindow.m; path = GeoTrail/CustomInfoWindow.m; sourceTree = SOURCE_ROOT; };
+		A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoWindowPolaroid.png; path = GeoTrail/infoWindowPolaroid.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEE11B3479370044AB3B /* infoArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoArrow.png; path = GeoTrail/infoArrow.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoLikesIcon.png; path = GeoTrail/infoLikesIcon.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoViewsIcon.png; path = GeoTrail/infoViewsIcon.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEE81B34850B0044AB3B /* Rajdhani-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Rajdhani-Medium.ttf"; path = "GeoTrail/Rajdhani-Medium.ttf"; sourceTree = SOURCE_ROOT; };
+		A7A0EEF51B34923A0044AB3B /* addressbookIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = addressbookIcon.png; path = GeoTrail/addressbookIcon.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEF61B34923A0044AB3B /* cameraIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = cameraIcon.png; path = GeoTrail/cameraIcon.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEF71B34923A0044AB3B /* mainButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mainButton.png; path = GeoTrail/mainButton.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEF81B34923A0044AB3B /* pin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = pin.png; path = GeoTrail/pin.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEF91B34923A0044AB3B /* refreshButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = refreshButton.png; path = GeoTrail/refreshButton.png; sourceTree = SOURCE_ROOT; };
+		A7A0EEFA1B34923A0044AB3B /* settingsButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = settingsButton.png; path = GeoTrail/settingsButton.png; sourceTree = SOURCE_ROOT; };
+		A7A0EF011B3492930044AB3B /* infoViewsSmallIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoViewsSmallIcon.png; path = GeoTrail/infoViewsSmallIcon.png; sourceTree = SOURCE_ROOT; };
 		A7B3E8451AE724E900FBEACD /* GeoTrail.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeoTrail.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B3E85E1AE724E900FBEACD /* GeoTrailTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GeoTrailTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7CEC6BC1B1132870077D6E4 /* eye.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = eye.png; path = GeoTrail/eye.png; sourceTree = SOURCE_ROOT; };
@@ -217,16 +245,31 @@
 				A72B64371AEF051F00C84DE5 /* ViewController.m */,
 				A72B642A1AEF051F00C84DE5 /* ContactsTableTableViewController.h */,
 				A72B642B1AEF051F00C84DE5 /* ContactsTableTableViewController.m */,
+				A7A0EEDA1B3475860044AB3B /* CustomInfoWindow.h */,
+				A7A0EEDB1B3475860044AB3B /* CustomInfoWindow.m */,
 				A72B642D1AEF051F00C84DE5 /* Images.xcassets */,
+				A73C9F8E1B1BE9B80023FA8F /* main.m */,
+				A7984E6F1B1A972D00692E01 /* InfoWindow.xib */,
 				A72B644B1AEF065500C84DE5 /* Main.storyboard */,
 				A72B642F1AEF051F00C84DE5 /* LaunchScreen.xib */,
+				A7A0EEE81B34850B0044AB3B /* Rajdhani-Medium.ttf */,
+				A7A0EEF51B34923A0044AB3B /* addressbookIcon.png */,
+				A7A0EEF61B34923A0044AB3B /* cameraIcon.png */,
+				A7A0EEF71B34923A0044AB3B /* mainButton.png */,
+				A7A0EF011B3492930044AB3B /* infoViewsSmallIcon.png */,
+				A7A0EEF81B34923A0044AB3B /* pin.png */,
+				A7A0EEF91B34923A0044AB3B /* refreshButton.png */,
+				A7A0EEFA1B34923A0044AB3B /* settingsButton.png */,
 				A72B64291AEF051F00C84DE5 /* CameraButton.png */,
 				A72B642E1AEF051F00C84DE5 /* Info.plist */,
+				A7A0EEE11B3479370044AB3B /* infoArrow.png */,
+				A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */,
+				A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */,
+				A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */,
 				A72B642C1AEF051F00C84DE5 /* frontCamera.png */,
-				A72B64341AEF051F00C84DE5 /* pin.png */,
+				A7A0EECD1B3473F90044AB3B /* infoWindow.png */,
 				A7CEC6BC1B1132870077D6E4 /* eye.png */,
 				A72B64351AEF051F00C84DE5 /* viewButton.png */,
-				A72B64301AEF051F00C84DE5 /* main.m */,
 			);
 			name = GeoTrail;
 			path = SnapTrail;
@@ -375,15 +418,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				A72B64431AEF051F00C84DE5 /* viewButton.png in Resources */,
+				A7A0EEE51B3479370044AB3B /* infoLikesIcon.png in Resources */,
 				A72B643E1AEF051F00C84DE5 /* LaunchScreen.xib in Resources */,
 				A72B64471AEF054800C84DE5 /* Info.plist in Resources */,
+				A7A0EF021B3492930044AB3B /* infoViewsSmallIcon.png in Resources */,
+				A7A0EECE1B3473F90044AB3B /* infoWindow.png in Resources */,
 				A72B643D1AEF051F00C84DE5 /* Info.plist in Resources */,
+				A7A0EEFE1B34923A0044AB3B /* pin.png in Resources */,
+				A7A0EEE41B3479370044AB3B /* infoArrow.png in Resources */,
+				A7A0EEFD1B34923A0044AB3B /* mainButton.png in Resources */,
+				A7A0EEFF1B34923A0044AB3B /* refreshButton.png in Resources */,
 				A72B643C1AEF051F00C84DE5 /* Images.xcassets in Resources */,
-				A72B64421AEF051F00C84DE5 /* pin.png in Resources */,
 				A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */,
+				A7A0EEFC1B34923A0044AB3B /* cameraIcon.png in Resources */,
 				A72B644C1AEF065500C84DE5 /* Main.storyboard in Resources */,
 				A72B643B1AEF051F00C84DE5 /* frontCamera.png in Resources */,
+				A7A0EEFB1B34923A0044AB3B /* addressbookIcon.png in Resources */,
+				A7984E701B1A972D00692E01 /* InfoWindow.xib in Resources */,
+				A7A0EEE01B3478460044AB3B /* infoWindowPolaroid.png in Resources */,
+				A7A0EF001B34923A0044AB3B /* settingsButton.png in Resources */,
 				A72B64391AEF051F00C84DE5 /* CameraButton.png in Resources */,
+				A7A0EEE61B3479370044AB3B /* infoViewsIcon.png in Resources */,
 				A700C1251AF1AF8500D24EFA /* GoogleMaps.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -419,9 +474,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7A0EEDC1B3475860044AB3B /* CustomInfoWindow.m in Sources */,
 				A72B64381AEF051F00C84DE5 /* AppDelegate.m in Sources */,
-				A72B643F1AEF051F00C84DE5 /* main.m in Sources */,
 				A72B643A1AEF051F00C84DE5 /* ContactsTableTableViewController.m in Sources */,
+				A73C9F8F1B1BE9B80023FA8F /* main.m in Sources */,
 				A72B64441AEF051F00C84DE5 /* ViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -534,6 +590,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -554,6 +611,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

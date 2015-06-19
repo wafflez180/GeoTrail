@@ -19,20 +19,20 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="s8Z-dG-TcM">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="s8Z-dG-TcM">
                                 <rect key="frame" x="0.0" y="56" width="600" height="500"/>
                             </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="WY9-cl-bVg">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WY9-cl-bVg">
                                 <rect key="frame" x="0.0" y="64" width="600" height="492"/>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wzi-jQ-8qs">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wzi-jQ-8qs">
                                 <rect key="frame" x="21" y="491" width="88" height="45"/>
                                 <state key="normal" title=" Back" image="pin.png"/>
                                 <connections>
                                     <action selector="TappedOnBackToMain:" destination="BYZ-38-t0r" eventType="touchUpInside" id="C7W-Ub-pqb"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OfA-8u-L5e">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OfA-8u-L5e" userLabel="Front Camera Button">
                                 <rect key="frame" x="519" y="74" width="60" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="60" id="Qv9-CP-5US"/>
@@ -45,7 +45,7 @@
                                     <action selector="changeCamView:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lSM-VJ-0Sg"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="GMSMapView">
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="GMSMapView">
                                 <rect key="frame" x="0.0" y="64" width="600" height="492"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -53,7 +53,7 @@
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pFw-Uh-f4S">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pFw-Uh-f4S" userLabel="Camera Button">
                                 <rect key="frame" x="260" y="456" width="80" height="80"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="80" id="4fr-3X-q7P"/>
@@ -67,7 +67,7 @@
                                     <action selector="TappedOnCameraButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="VVx-qz-CbV"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hOU-xI-YLp">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hOU-xI-YLp">
                                 <rect key="frame" x="370" y="486" width="32" height="30"/>
                                 <state key="normal" title="Post">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -76,8 +76,8 @@
                                     <action selector="PostPicture:" destination="BYZ-38-t0r" eventType="touchUpInside" id="W4I-Ph-dVI"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jj5-FO-ZRG">
-                                <rect key="frame" x="145" y="486" width="85" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jj5-FO-ZRG">
+                                <rect key="frame" x="105" y="436" width="85" height="30"/>
                                 <state key="normal" title="View Picture">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -85,7 +85,7 @@
                                     <action selector="ViewPicture:" destination="BYZ-38-t0r" eventType="touchUpInside" id="spH-bZ-vXX"/>
                                 </connections>
                             </button>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="p3O-vl-VfN">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="p3O-vl-VfN">
                                 <rect key="frame" x="0.0" y="64" width="600" height="492"/>
                                 <connections>
                                     <outletCollection property="gestureRecognizers" destination="h5Q-k1-8mZ" appends="YES" id="UzQ-3I-BOV"/>
@@ -97,7 +97,7 @@
                         <constraints>
                             <constraint firstAttribute="trailingMargin" secondItem="OfA-8u-L5e" secondAttribute="trailing" constant="5" id="29q-H6-NgL"/>
                             <constraint firstAttribute="trailingMargin" secondItem="WY9-cl-bVg" secondAttribute="trailing" constant="-16" id="2WI-rm-hQk"/>
-                            <constraint firstItem="pFw-Uh-f4S" firstAttribute="top" secondItem="Jj5-FO-ZRG" secondAttribute="bottom" constant="-60" id="2yg-vO-0tS"/>
+                            <constraint firstItem="pFw-Uh-f4S" firstAttribute="top" secondItem="Jj5-FO-ZRG" secondAttribute="bottom" constant="-10" id="2yg-vO-0tS"/>
                             <constraint firstItem="s8Z-dG-TcM" firstAttribute="topMargin" secondItem="y3c-jy-aDJ" secondAttribute="top" id="3os-eG-Gql"/>
                             <constraint firstAttribute="trailingMargin" secondItem="hOU-xI-YLp" secondAttribute="trailing" constant="80" id="3yC-oA-esu"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="pFw-Uh-f4S" secondAttribute="bottom" constant="20" id="7hX-HJ-c67"/>
@@ -114,7 +114,7 @@
                             <constraint firstItem="ROK-pp-MPu" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Ve2-1g-OYA"/>
                             <constraint firstItem="WY9-cl-bVg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-16" id="XUe-Em-blt"/>
                             <constraint firstItem="hOU-xI-YLp" firstAttribute="leading" secondItem="pFw-Uh-f4S" secondAttribute="trailing" constant="30" id="XvY-bk-Gfy"/>
-                            <constraint firstItem="pFw-Uh-f4S" firstAttribute="leading" secondItem="Jj5-FO-ZRG" secondAttribute="trailing" constant="30" id="a7J-qK-nMk"/>
+                            <constraint firstItem="pFw-Uh-f4S" firstAttribute="leading" secondItem="Jj5-FO-ZRG" secondAttribute="trailing" constant="70" id="a7J-qK-nMk"/>
                             <constraint firstItem="OfA-8u-L5e" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="10" id="cBK-Mv-DDs"/>
                             <constraint firstItem="Wzi-jQ-8qs" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="5" id="e8J-mE-XOH"/>
                             <constraint firstItem="pFw-Uh-f4S" firstAttribute="bottom" secondItem="p3O-vl-VfN" secondAttribute="bottom" constant="-20" id="ehI-fB-9lg"/>
@@ -133,20 +133,18 @@
                             </mask>
                         </variation>
                     </view>
-                    <toolbarItems>
-                        <barButtonItem title="ZoomOut" id="6UZ-BE-PQi">
-                            <connections>
-                                <action selector="ZoomOut:" destination="BYZ-38-t0r" id="AgP-Gs-wHn"/>
-                            </connections>
-                        </barButtonItem>
-                    </toolbarItems>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" title="GeoTrail" id="n87-AH-cdt">
-                        <barButtonItem key="leftBarButtonItem" systemItem="refresh" id="w3G-AN-efJ">
+                        <barButtonItem key="leftBarButtonItem" image="refreshButton.png" id="w3G-AN-efJ">
+                            <inset key="imageInsets" minX="7" minY="13" maxX="22" maxY="13"/>
+                            <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="deviceRGB"/>
                             <connections>
                                 <action selector="TappedRefresh:" destination="BYZ-38-t0r" id="Ban-pP-ibN"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="WJu-ex-anU">
+                        <barButtonItem key="rightBarButtonItem" image="settingsButton.png" id="WJu-ex-anU">
+                            <inset key="imageInsets" minX="35" minY="15" maxX="-5" maxY="15"/>
+                            <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <segue destination="QIl-W8-MDs" kind="show" id="kqj-tx-xjf"/>
                             </connections>
@@ -212,15 +210,17 @@
         <!--Navigation Controller-->
         <scene sceneID="JAY-k2-hwQ">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" toolbarHidden="NO" id="Fby-BN-Clx" sceneMemberID="viewController">
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Fby-BN-Clx" sceneMemberID="viewController">
                     <toolbarItems/>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="nEv-pr-BAD">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="barTintColor" red="0.3490196168422699" green="0.92549026012420654" blue="0.99215692281723022" alpha="1" colorSpace="deviceRGB"/>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="barTintColor" red="0.90196084976196289" green="0.32941177487373352" blue="0.30196079611778259" alpha="1" colorSpace="deviceRGB"/>
                         <textAttributes key="titleTextAttributes">
+                            <fontDescription key="fontDescription" name="BanglaSangamMN" family="Bangla Sangam MN" pointSize="20"/>
                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         </textAttributes>
                     </navigationBar>
@@ -242,6 +242,8 @@
     <resources>
         <image name="CameraButton.png" width="251" height="251"/>
         <image name="frontCamera.png" width="300" height="300"/>
-        <image name="pin.png" width="41" height="45"/>
+        <image name="pin.png" width="40" height="59"/>
+        <image name="refreshButton.png" width="49" height="46"/>
+        <image name="settingsButton.png" width="52" height="52"/>
     </resources>
 </document>

@@ -13,6 +13,7 @@
 #import <CoreMedia/CoreMedia.h>
 #import <CoreVideo/CoreVideo.h>
 #import <CoreMedia/CMSampleBuffer.h>
+#import "CustomInfoWindow.h"
 
 #import <Parse/Parse.h>
 #import <GoogleMaps/GoogleMaps.h>
@@ -62,8 +63,8 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *northEastHexArray;
     NSMutableArray *hexUnlockedArray;
     NSMutableArray *hexInViewArray;
-    
     NSMutableArray *hexCentersOnMap;
+    NSMutableArray *infoWindows;
     
     NSMutableArray *centerCoords;
     
@@ -93,7 +94,7 @@ BOOL initialZoomComplete = NO;
             CLLocationCoordinate2D tempLoc = CLLocationCoordinate2DMake(tempGeo.latitude, tempGeo.longitude);
             if (tempLoc.latitude == selectedMarkerLoc.latitude && tempLoc.longitude == selectedMarkerLoc.longitude) {
                 index = i;
-                foundPic = true;
+                foundPic = true;//ADD THE LIKES AND THE VIEWS IN HERE
             }
         }
     }
@@ -154,7 +155,9 @@ BOOL initialZoomComplete = NO;
     postObject[@"User"] = currentUser;
     postObject[@"location"] = currentPoint;
     postObject[@"picture"] = imageFile;
-    
+    postObject[@"Likes"] = 0;
+    postObject[@"Views"] = 0;
+
     // Use PFACL to restrict future modifications to this object.
     PFACL *readOnlyACL = [PFACL ACL];
     [readOnlyACL setPublicReadAccess:YES];
@@ -182,7 +185,7 @@ BOOL initialZoomComplete = NO;
     }];
     
     
-    
+    [self TappedRefresh:sender];
     [self TappedOnBackToMain:sender];
 }
 
@@ -227,7 +230,6 @@ BOOL initialZoomComplete = NO;
 }
 - (IBAction)TappedOnBackToMain:(id)sender {
     [self.navigationController setNavigationBarHidden:NO animated:YES];
-    [self.navigationController setToolbarHidden:NO animated:YES];
     hideStatusBar = FALSE;
     //RETRACTS THE STATUS BAR
     [self prefersStatusBarHidden];
@@ -260,9 +262,12 @@ BOOL initialZoomComplete = NO;
     // coordinate user location at zoom level 6.
     
     self.mapView_.delegate = self;
-    self.mapView_.myLocationEnabled = YES;
-    self.mapView_.mapType = kGMSTypeHybrid;
+    [self.mapView_ setMyLocationEnabled:TRUE];
+    self.mapView_.mapType = kGMSTypeNormal;
     self.mapView_.settings.rotateGestures = false;
+    [self.mapView_ setBuildingsEnabled:FALSE];
+    [self.mapView_ setBackgroundColor:[UIColor purpleColor]];
+    [self.mapView_ setIndoorEnabled:FALSE];
     [self.mapView_ setMinZoom:5 maxZoom:25];
     
     hexArray = [[NSMutableArray alloc]init];
@@ -275,6 +280,7 @@ BOOL initialZoomComplete = NO;
     hexCentersOnMap = [[NSMutableArray alloc]init];
     PFFilePictureArray = [[NSMutableArray alloc]init];
     postedPictureLocations = [[NSMutableArray alloc]init];
+    infoWindows = [[NSMutableArray alloc] init];
     
     _picView.alpha = 0;
 
@@ -347,6 +353,9 @@ BOOL initialZoomComplete = NO;
     PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
     [query whereKey:@"User" equalTo:posterUser];// "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
     NSMutableArray *tempPostedPictureLocations = [NSMutableArray array];
+    NSMutableArray *tempPostedPictureLikes = [NSMutableArray array];
+    NSMutableArray *tempPostedPictureViews = [NSMutableArray array];
+
     [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
         if (!error) {
             for (NSInteger i = 0; i <PFObjects.count; i++) {
@@ -354,12 +363,16 @@ BOOL initialZoomComplete = NO;
                 
                 PFGeoPoint *pictureLocation = [thePostedPicture objectForKey:@"location"];
                 PFFile *picture = [thePostedPicture objectForKey:@"picture"];
+                NSNumber *likes = [thePostedPicture objectForKey:@"Likes"];
+                NSNumber *views = [thePostedPicture objectForKey:@"Views"];
                 
                 CLLocationCoordinate2D picCoords = CLLocationCoordinate2DMake(pictureLocation.latitude, pictureLocation.longitude);
                 
                 //ADD THE LOCATION TO THE PICTURES LOCATIONS ARRAY
 
                 [tempPostedPictureLocations addObject:[NSValue valueWithMKCoordinate:picCoords]];
+                [tempPostedPictureLikes addObject:likes];
+                [tempPostedPictureViews addObject:views];
                 
                 [postedPictureLocations addObject:pictureLocation];
                 [PFFilePictureArray addObject:picture];
@@ -368,7 +381,7 @@ BOOL initialZoomComplete = NO;
             }
         }
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
-        [self plot:tempPostedPictureLocations: Username];
+        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews];
         [self loadPlotHexs];
     }];
     // The InBackground methods are asynchronous, so any code after this will run
@@ -382,8 +395,13 @@ BOOL initialZoomComplete = NO;
     int coordLatRangeIndex=0;
     double userLong = self.mapView_.myLocation.coordinate.longitude;
     double userLat = self.mapView_.myLocation.coordinate.latitude;
-
-    PFQuery *query = [PFQuery queryWithClassName:@"hexPosCoords"];
+    
+    PFQuery *query;
+    if (userLat >= 0) {
+        query = [PFQuery queryWithClassName:@"hexPosCoords"];
+    }else{
+        query = [PFQuery queryWithClassName:@"hexNegCoords"];
+    }
     
     PFGeoPoint *tempGeo = [PFGeoPoint geoPointWithLatitude:userLat longitude:userLong];
     
@@ -430,7 +448,6 @@ BOOL initialZoomComplete = NO;
 }
 
 -(void)addUnlockedHexs{
-    
     CLLocationCoordinate2D coordTemp = [centerCoords[indexOfCenterHex] coordinate];
     
     float oneMileLat = 0.01449275362319;
@@ -461,7 +478,9 @@ BOOL initialZoomComplete = NO;
     [hexH addCoordinate:bottomRightH];
     
     GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-    polygon2.fillColor = [[UIColor blueColor] colorWithAlphaComponent:0.75];
+    polygon2.fillColor = [[UIColor blueColor] colorWithAlphaComponent:0.2];
+    polygon2.strokeColor = [[UIColor whiteColor] colorWithAlphaComponent:1];
+    polygon2.strokeWidth = 10;
     polygon2.map = self.mapView_;
     
     CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
@@ -523,7 +542,7 @@ BOOL initialZoomComplete = NO;
         
         if ([self checkIfCenterIsOnMap:center] == false) {
             GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-            polygon2.fillColor = [[UIColor redColor] colorWithAlphaComponent:0.5];
+            polygon2.fillColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
             polygon2.strokeWidth = 1;
             polygon2.strokeColor = [UIColor blackColor];
             polygon2.map = self.mapView_;
@@ -613,7 +632,7 @@ BOOL initialZoomComplete = NO;
     
     for (int x = 0; x < hexInViewArray.count; x++) {
         GMSPolygon *hexPolygon = hexInViewArray[x];
-        
+
         if (GMSGeometryContainsLocation(topLeftCoord, hexPolygon.path, YES)) {
             TopLeftHex = true;
         } else if (GMSGeometryContainsLocation(topRightCoord, hexPolygon.path, YES)) {
@@ -712,25 +731,51 @@ BOOL initialZoomComplete = NO;
 
 # pragma mark - Helper methods
 
-- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username
+- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)ViewsArray
 {
     [self setCameraToUserLoc];
     // add all annotations
     // NOTE: coordinateValue can be any type from which a CLLocationCoordinate2D can be determined
+    int counter = 0;
     for (NSValue *coordinateValue in objectsToPlot)
     {
         // make CLLocationCoordinate2D
         CLLocationCoordinate2D coordinate = coordinateValue.MKCoordinateValue;
         
+        NSNumber *likes = LikesArray[counter];
+        NSNumber *views = ViewsArray[counter];
+        
         GMSMarker *marker = [[GMSMarker alloc] init];
         marker.position = coordinate;
         marker.appearAnimation = kGMSMarkerAnimationPop;
         marker.icon = [UIImage imageNamed:@"pin.png"];
-        // add annotation
-        marker.title = Username;
-        marker.snippet = @"In-Range";
+//        // add annotation
+//        marker.title = Username;
+//        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
+        CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+        infoWindow.usernameLabel.text = Username;
+        infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
+        infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
+        infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
+        infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
+        infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
+        infoWindow.coordinate = coordinate;
+        marker.infoWindowAnchor = CGPointMake(0.525f, 0.38f);
+        [infoWindows addObject:infoWindow];
         marker.map = self.mapView_;
+        counter++;
     }
+}
+
+- (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
+    for (int i = 0; i < infoWindows.count; i++) {
+        CustomInfoWindow *window = infoWindows[i];
+        CLLocationCoordinate2D coord = window.coordinate;
+        if(coord.latitude == marker.position.latitude && coord.longitude == marker.position.longitude){
+            return infoWindows[i];
+        }
+    }
+    return infoWindows[infoWindows.count];
 }
 
 -(void)setCameraToUserLoc{
@@ -876,8 +921,10 @@ BOOL initialZoomComplete = NO;
     
     //-- Creata a video device and input from that Device.  Add the input to the capture session.
     AVCaptureDevice * videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if(videoDevice == nil)
+    if(videoDevice == nil){
         assert(0);
+        //DECLARE THAT THE USER'S CAMERA CAN NOT BE USED (NOT AVALIABLE OR SOME SORT)
+    }
     
     //-- Add the device to the session.
     NSError *error;
