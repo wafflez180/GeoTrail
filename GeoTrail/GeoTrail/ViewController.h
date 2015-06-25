@@ -6,8 +6,7 @@
 //  Copyright (c) 2015 Arthur Araujo. All rights reserved.
 //
 #import <CoreLocation/CoreLocation.h>
-#import <MapKit/MapKit.h>
-#import <UIKit/UIKit.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 @interface ViewController : UIViewController <CLLocationManagerDelegate, GMSMapViewDelegate>
 

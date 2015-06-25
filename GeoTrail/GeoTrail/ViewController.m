@@ -6,14 +6,11 @@
 //  Copyright (c) 2015 Arthur Araujo. All rights reserved.
 //
 #import <CoreLocation/CoreLocation.h>
-#import <MapKit/MapKit.h>
-#import <AVFoundation/AVFoundation.h>
 #import <ImageIO/ImageIO.h>
 #import <QuartzCore/QuartzCore.h>
-#import <CoreMedia/CoreMedia.h>
-#import <CoreVideo/CoreVideo.h>
-#import <CoreMedia/CMSampleBuffer.h>
 #import "CustomInfoWindow.h"
+#import "CameraViewController.h"
+#import <MapKit/MapKit.h>
 
 #import <Parse/Parse.h>
 #import <GoogleMaps/GoogleMaps.h>
@@ -23,32 +20,17 @@
 BOOL initialZoomComplete = NO;
 
 @interface ViewController ()
-
-@property (retain) AVCaptureStillImageOutput *stillImageOutput;
-@property (strong, nonatomic) IBOutlet UIImageView *CameraView;
-@property (weak, nonatomic) IBOutlet UIButton *CameraButton;
+@property (weak, nonatomic) IBOutlet UIImageView *picView;
 @property (weak, nonatomic) IBOutlet GMSMapView *mapView_;
 @property (weak, nonatomic) IBOutlet UIButton *viewPictureButton;
-@property (weak, nonatomic) IBOutlet UIImageView *picView;
-@property (weak, nonatomic) IBOutlet UIImageView *imageOutputView;
 @end
 
 @implementation ViewController{
     CLLocationManager *locationManager;
     
-    // test data
-    NSMutableArray *testCoordinates;
-    CLLocationCoordinate2D caltrainSanFranciscoCoordinates;
-    CLLocationCoordinate2D appleStoreSanFranciscoCoordinates;
-    
-    AVCaptureVideoPreviewLayer *_previewLayer;
-    AVCaptureSession *_capturesession;
-    
     int currentRange;
     float milesSpanRegion;
-    bool camViewPosBack; //MAKE NSUSERDEFAULT LATER
     bool hideStatusBar;
-    UIImage *currentImageTaken;
     PFObject *postedPictures;
     PFUser *user;
     NSArray *contactNamesArray;
@@ -113,89 +95,6 @@ BOOL initialZoomComplete = NO;
         }
     }];
 }
-- (IBAction)swipedUp:(id)sender {
-    NSLog(@"UP GESTURE");
-    // Perform your code here
-    [UIView animateWithDuration:0.3 animations:^{
-        _picView.alpha = 0;
-    } completion: ^(BOOL finished) {//creates a variable (BOOL) called "finished" that is set to *YES* when animation IS completed.
-        _picView.hidden = finished;//if animation is finished ("finished" == *YES*), then hidden = "finished" ... (aka hidden = *YES*)
-    }];
-}
-
--(void)PerformAction:(UISwipeGestureRecognizer *)sender {
-    if(sender.direction == UISwipeGestureRecognizerDirectionUp) {
-        NSLog(@"UP GESTURE");
-        // Perform your code here
-        [UIView animateWithDuration:0.3 animations:^{
-            _picView.alpha = 0;
-        } completion: ^(BOOL finished) {//creates a variable (BOOL) called "finished" that is set to *YES* when animation IS completed.
-            _picView.hidden = finished;//if animation is finished ("finished" == *YES*), then hidden = "finished" ... (aka hidden = *YES*)
-        }];
-    }
-}
-
-- (IBAction)PostPicture:(id)sender {
-
-    UIImage *picToPost = currentImageTaken;
-    
-    NSData *imageData = UIImageJPEGRepresentation(picToPost, 0.5f);
-    PFFile *imageFile = [PFFile fileWithData:imageData];
-    
-    _CameraView.image = currentImageTaken;
-
-    CLLocationCoordinate2D userLocationCoords = self.mapView_.myLocation.coordinate;
-    PFGeoPoint *currentPoint = [PFGeoPoint geoPointWithLatitude:userLocationCoords.latitude
-                                                      longitude:userLocationCoords.longitude];
-    
-    PFUser *currentUser = [PFUser currentUser];
-    
-    // Stitch together a postObject and send this async to Parse
-    PFObject *postObject = [PFObject objectWithClassName:@"PostedPictures"];
-    postObject[@"User"] = currentUser;
-    postObject[@"location"] = currentPoint;
-    postObject[@"picture"] = imageFile;
-    postObject[@"Likes"] = 0;
-    postObject[@"Views"] = 0;
-
-    // Use PFACL to restrict future modifications to this object.
-    PFACL *readOnlyACL = [PFACL ACL];
-    [readOnlyACL setPublicReadAccess:YES];
-    [readOnlyACL setPublicWriteAccess:NO];
-    postObject.ACL = readOnlyACL;
-    
-    [postObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-        if (error) {
-            NSLog(@"Couldn't save!");
-            NSLog(@"%@", error);
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"error"]
-                                                                message:nil
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Ok", nil];
-            [alertView show];
-            return;
-        }
-        if (succeeded) {
-            NSLog(@"%@", postObject);
-            NSLog(@"Successfully saved!");
-        } else {
-            NSLog(@"Failed to save.");
-        }
-    }];
-    
-    
-    [self TappedRefresh:sender];
-    [self TappedOnBackToMain:sender];
-}
-
-- (IBAction)ZoomOut:(id)sender {
-    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
-                                                            longitude:self.mapView_.myLocation.coordinate.longitude
-                                 
-                                                                 zoom:1];
-    self.mapView_.camera = camera;
-}
 
 - (IBAction)TappedRefresh:(id)sender {
     PFUser *userID = [PFUser currentUser];
@@ -203,55 +102,6 @@ BOOL initialZoomComplete = NO;
         [self uploadDataOnMap:userID :@"You"];//SET UP ALL CURRENT USER'S PICTURES
         [self loadContacts];
     }
-}
-
-
-- (IBAction)TappedOnCameraButton:(id)sender {
-    if (hideStatusBar == FALSE) {//IF IT IS ON MAIN PAIGE
-        currentImageTaken = nil;
-        [_imageOutputView setImage:nil];
-        [_imageOutputView setHidden:TRUE];
-        [self.navigationController setNavigationBarHidden:YES animated:YES];
-        [self.navigationController setToolbarHidden:YES animated:YES];
-        hideStatusBar = true;
-        //REMOVES THE STATUS BAR
-        [self prefersStatusBarHidden];
-        [self performSelector:@selector(setNeedsStatusBarAppearanceUpdate)];
-        [UIView animateWithDuration:0.3 animations:^{
-            self.mapView_.alpha = 0;
-        } completion: ^(BOOL finished) {//creates a variable (BOOL) called "finished" that is set to *YES* when animation IS completed.
-            self.mapView_.hidden = finished;//if animation is finished ("finished" == *YES*), then hidden = "finished" ... (aka hidden = *YES*)
-        }];
-    }else{//IF IT IS PRESS IN CAMERA VIEW: TAKE PICTURE
-        if (_capturesession.running) {
-            [self captureStillImage];
-        }
-    }
-}
-- (IBAction)TappedOnBackToMain:(id)sender {
-    [self.navigationController setNavigationBarHidden:NO animated:YES];
-    hideStatusBar = FALSE;
-    //RETRACTS THE STATUS BAR
-    [self prefersStatusBarHidden];
-    [self performSelector:@selector(setNeedsStatusBarAppearanceUpdate)];
-    self.mapView_.alpha = 0;
-    self.mapView_.hidden = NO;
-    [UIView animateWithDuration:0.3 animations:^{
-        self.mapView_.alpha = 1;
-    }];
-}
-
--(BOOL)prefersStatusBarHidden{
-    if (hideStatusBar) {
-        return YES;
-    }else{
-        return NO;
-    }
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle
-{
-    return UIStatusBarStyleLightContent;
 }
 
 - (void)viewDidLoad {
@@ -285,11 +135,6 @@ BOOL initialZoomComplete = NO;
     _picView.alpha = 0;
 
     [self setCameraToUserLoc];
-    
-    [self setUpAVCaptureSession];
-        
-    camViewPosBack = true;
-    hideStatusBar = false;
     
     //ASKS USER TO LOGIN/ SIGN UP
     if (!PFUser.currentUser) {
@@ -779,10 +624,10 @@ BOOL initialZoomComplete = NO;
 }
 
 -(void)setCameraToUserLoc{
-    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
-                                                            longitude:self.mapView_.myLocation.coordinate.longitude
-                                 
-                                                                 zoom:10];
+    GMSCameraPosition *camera = [GMSCameraPosition
+                                 cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
+                                 longitude:self.mapView_.myLocation.coordinate.longitude
+                                 zoom:10];
     self.mapView_.camera = camera;
 }
 
@@ -912,161 +757,21 @@ BOOL initialZoomComplete = NO;
     
 }
 ////////////////////////////////////////////////////
+#pragma mark - Navigation
 
-#pragma mark - Camera Still Image Methods (NOT USEFUL AS OF NOW)
-
--(void)setUpAVCaptureSession{
-    //-- Setup Capture Session.
-    _capturesession = [[AVCaptureSession alloc] init];
-    
-    //-- Creata a video device and input from that Device.  Add the input to the capture session.
-    AVCaptureDevice * videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if(videoDevice == nil){
-        assert(0);
-        //DECLARE THAT THE USER'S CAMERA CAN NOT BE USED (NOT AVALIABLE OR SOME SORT)
-    }
-    
-    //-- Add the device to the session.
-    NSError *error;
-    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice
-                                                                        error:&error];
-    if(error)
-        assert(0);
-    
-    [_capturesession addInput:input];
-    
-    //-- Configure the preview layer
-    _previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:_capturesession];
-    _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-    
-    [_previewLayer setFrame:CGRectMake(0, 8,
-                                       self.view.bounds.size.width,
-                                       self.view.bounds.size.height)];
-    
-    //-- Add the layer to the view that should display the camera input
-    [self.CameraView.layer addSublayer:_previewLayer];
-    
-    [_capturesession setSessionPreset:AVCaptureSessionPresetHigh];
-    
-    //-- Start the camera
-    [_capturesession startRunning];
-    
-    [self addStillImageOutput];
-    [self fixPhotoOrientation];
-}
-
--(void)fixPhotoOrientation
-{
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    if (deviceOrientation == UIInterfaceOrientationPortraitUpsideDown)
-        [_previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationPortraitUpsideDown];
-    
-    else if (deviceOrientation == UIInterfaceOrientationPortrait)
-        [_previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-    
-    else if (deviceOrientation == UIInterfaceOrientationLandscapeLeft)
-        [_previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeLeft];
-    
-    else
-        [_previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeRight];
-}
-
-//CHANGE FOR FRONT CAMERA
-- (void)frontCamera {
-    AVCaptureDevice *theDevice;
-    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-    for (AVCaptureDevice *device in devices) {
-        if ([device position] == AVCaptureDevicePositionFront) {
-            theDevice = device;
-        }
-    }
-    AVCaptureDevice *device = theDevice;
-    AVCaptureDeviceInput *deviceInput = [AVCaptureDeviceInput deviceInputWithDevice:device error:nil];
-    //REMOVE THE INPIT
-    AVCaptureInput* currentCameraInput = [_capturesession.inputs objectAtIndex:0];
-    [_capturesession removeInput:currentCameraInput];
-    //ADD NEW INPUT
-    if ([_capturesession canAddInput:deviceInput]){
-        [_capturesession addInput:deviceInput];
-    }
-}
-//CHANGE FOR BACK CAMERA
-- (void)backCamera {
-    AVCaptureDevice *theDevice;
-    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-    for (AVCaptureDevice *device in devices) {
-        if ([device position] == AVCaptureDevicePositionBack) {
-            theDevice = device;
-        }
-    }
-    AVCaptureDevice *device = theDevice;
-    AVCaptureDeviceInput *deviceInput = [AVCaptureDeviceInput deviceInputWithDevice:device error:nil];
-    //REMOVE THE INPIT
-    AVCaptureInput* currentCameraInput = [_capturesession.inputs objectAtIndex:0];
-    [_capturesession removeInput:currentCameraInput];
-    //ADD NEW INPUT
-    if ([_capturesession canAddInput:deviceInput]){
-        [_capturesession addInput:deviceInput];
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    if ([[segue identifier] isEqualToString:@"SegueToCamera"])
+    {
+        // Get reference to the destination view controller
+        CameraViewController *vc = [segue destinationViewController];
+        
+        // Pass any objects to the view controller here, like...
+        CLLocationCoordinate2D coord = self.mapView_.myLocation.coordinate;
+        [vc setUserLocation:coord];
     }
 }
 
-- (IBAction)changeCamView:(id)sender {
-    if(camViewPosBack){//IF IT IS ALREADY ON REAR VIEW
-        [self frontCamera];
-        camViewPosBack = false;
-    }else{//IF IT IS ALREADY ON FRONT VIEW
-        [self backCamera];
-        camViewPosBack = true;
-    }
-}
-
-//////////////////////////////CAPTURING STILL IMAGES USING CAPTURESESSION (NOT IN USE!)/////////
-- (void)addStillImageOutput
-{
-    _stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
-    NSDictionary *outputSettings = [[NSDictionary alloc] initWithObjectsAndKeys: AVVideoCodecJPEG, AVVideoCodecKey, nil];
-    [_stillImageOutput setOutputSettings:outputSettings];
-    [_capturesession addOutput:_stillImageOutput];
-}
-
-- (void)captureStillImage
-{
-    [self fixPhotoOrientation];
-
-    AVCaptureConnection *videoConnection = nil;
-    for (AVCaptureConnection *connection in [[self stillImageOutput] connections]) {
-        for (AVCaptureInputPort *port in [connection inputPorts]) {
-            if ([[port mediaType] isEqual:AVMediaTypeVideo]) {
-                videoConnection = connection;
-                break;
-            }
-        }
-        if (videoConnection) {
-            break;
-        }
-    }
-    
-    NSLog(@"about to request a capture from: %@", [self stillImageOutput]);
-    [[self stillImageOutput] captureStillImageAsynchronouslyFromConnection:videoConnection
-                                                         completionHandler:^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
-                                                             CFDictionaryRef exifAttachments = CMGetAttachment(imageSampleBuffer, kCGImagePropertyExifDictionary, NULL);
-                                                             if (exifAttachments) {
-                                                                 NSLog(@"attachements: %@", exifAttachments);
-                                                             } else {
-                                                                 NSLog(@"no attachments");
-                                                             }
-                                                             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageSampleBuffer];
-                                                             UIImage *image = [[UIImage alloc] initWithData:imageData];
-                                                             currentImageTaken = image;
-                                                             image = nil;
-                                                             [[NSNotificationCenter defaultCenter] postNotificationName:@"imageCapturedSuccessfully" object:nil];
-                                                             
-                                                             [_imageOutputView setHidden:FALSE];
-
-                                                             _imageOutputView.image = currentImageTaken;
-                                                         }];
-}
-
-//////////////////////////////CAPTURING STILL IMAGES USING CAPTURESESSION (NOT IN USE!)/////////
 
 @end
