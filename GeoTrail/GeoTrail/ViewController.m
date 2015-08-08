@@ -23,6 +23,8 @@ BOOL initialZoomComplete = NO;
 @property (weak, nonatomic) IBOutlet UIImageView *picView;
 @property (weak, nonatomic) IBOutlet GMSMapView *mapView_;
 @property (weak, nonatomic) IBOutlet UIButton *viewPictureButton;
+@property (weak, nonatomic) IBOutlet UIButton *nextPicButton;
+@property (weak, nonatomic) IBOutlet UIButton *goToUserLocButton;
 @end
 
 @implementation ViewController{
@@ -33,6 +35,7 @@ BOOL initialZoomComplete = NO;
     bool hideStatusBar;
     PFObject *postedPictures;
     PFUser *user;
+    GMSMarker *prevMarker;
     NSArray *contactNamesArray;
     NSArray *contactIDsArray;
     CLLocationCoordinate2D currentUserLoc;
@@ -47,6 +50,7 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *hexInViewArray;
     NSMutableArray *hexCentersOnMap;
     NSMutableArray *infoWindows;
+    NSMutableArray *GMSMarkersArray;
     
     NSMutableArray *centerCoords;
     
@@ -131,6 +135,7 @@ BOOL initialZoomComplete = NO;
     PFFilePictureArray = [[NSMutableArray alloc]init];
     postedPictureLocations = [[NSMutableArray alloc]init];
     infoWindows = [[NSMutableArray alloc] init];
+    GMSMarkersArray = [[NSMutableArray alloc]init];
     
     _picView.alpha = 0;
 
@@ -234,6 +239,42 @@ BOOL initialZoomComplete = NO;
     // inside the completion block above.
 }
 
+#pragma mark MAPVIEW BUTTONS
+
+- (IBAction)pressedPin:(id)sender {
+    [_mapView_ setSelectedMarker:prevMarker];
+    CLLocation *userLoc = [[CLLocation alloc] initWithLatitude:self.mapView_.myLocation.coordinate.latitude longitude:self.mapView_.myLocation.coordinate.longitude];
+    CLLocationDirection distance = 0.0;
+    int closestMarkerIndex=0;
+    
+    for(int i = 0; i < postedPictureLocations.count; i++){
+        PFGeoPoint *PFCoord = postedPictureLocations[i];
+        CLLocation *coord = [[CLLocation alloc] initWithLatitude:PFCoord.latitude longitude:PFCoord.longitude];
+        if (i == 0) {
+            distance = [coord distanceFromLocation:userLoc];
+        }else{
+            CLLocationDistance newDistance = [coord distanceFromLocation:userLoc];
+            if (newDistance < distance) {//IF THE MARKER IS CLOSE THAN PREVIOUS MARKER THAN MAKE IT THE CLOSEST MARKER
+                distance = newDistance;
+                closestMarkerIndex=i;
+            }
+        }
+    }
+    PFGeoPoint *picLoc = postedPictureLocations[closestMarkerIndex];
+    CLLocationCoordinate2D closestPicLoc = CLLocationCoordinate2DMake(picLoc.latitude, picLoc.longitude);
+    
+    for(int x = 0; x < postedPictureLocations.count; x++){
+        GMSMarker *marker = GMSMarkersArray[x];
+        if(marker.position.latitude == closestPicLoc.latitude && marker.position.longitude == closestPicLoc.longitude){//GET THE MATCHING PICTURE LOCATION WITH THE MARKER ON THE MAP
+            _mapView_.selectedMarker = GMSMarkersArray[x];
+        }
+    }
+}
+
+- (IBAction)pressedCompass:(id)sender {
+    [self setCameraToUserLocAnimated];
+}
+
 #pragma mark Hexagon Methods
 
 -(void)loadPlotHexs{
@@ -323,9 +364,9 @@ BOOL initialZoomComplete = NO;
     [hexH addCoordinate:bottomRightH];
     
     GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-    polygon2.fillColor = [[UIColor blueColor] colorWithAlphaComponent:0.2];
-    polygon2.strokeColor = [[UIColor whiteColor] colorWithAlphaComponent:1];
-    polygon2.strokeWidth = 10;
+    polygon2.fillColor = [UIColor clearColor];
+    polygon2.strokeColor = [self colorWithHexString:@"6F6F6F"];
+    polygon2.strokeWidth = 4;
     polygon2.map = self.mapView_;
     
     CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
@@ -387,9 +428,9 @@ BOOL initialZoomComplete = NO;
         
         if ([self checkIfCenterIsOnMap:center] == false) {
             GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-            polygon2.fillColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
+            polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
             polygon2.strokeWidth = 1;
-            polygon2.strokeColor = [UIColor blackColor];
+            polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
             polygon2.map = self.mapView_;
             
             CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:center.latitude longitude:center.longitude];
@@ -591,9 +632,10 @@ BOOL initialZoomComplete = NO;
         NSNumber *views = ViewsArray[counter];
         
         GMSMarker *marker = [[GMSMarker alloc] init];
+        marker.opacity = 0.9;
         marker.position = coordinate;
         marker.appearAnimation = kGMSMarkerAnimationPop;
-        marker.icon = [UIImage imageNamed:@"pin.png"];
+        marker.icon = [UIImage imageNamed:@"PicCircle"];
 //        // add annotation
 //        marker.title = Username;
 //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
@@ -608,15 +650,24 @@ BOOL initialZoomComplete = NO;
         marker.infoWindowAnchor = CGPointMake(0.525f, 0.38f);
         [infoWindows addObject:infoWindow];
         marker.map = self.mapView_;
+        [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
         counter++;
     }
 }
 
 - (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
+    //RESET THE PREVIOUSLY SELECTED MARKER
+    prevMarker.icon = [UIImage imageNamed:@"PicCircle"];
+    prevMarker.zIndex = 1;
+
     for (int i = 0; i < infoWindows.count; i++) {
         CustomInfoWindow *window = infoWindows[i];
         CLLocationCoordinate2D coord = window.coordinate;
         if(coord.latitude == marker.position.latitude && coord.longitude == marker.position.longitude){
+            marker.icon = [UIImage imageNamed:@"PicCircleSelected"]; // REPLACE WITH SELECTED ICON
+            //TURN THIS INTO AN ANIMATION
+            marker.zIndex = 99999; //MAKE THE ICON IN FRONT OF THE SCREEN
+            prevMarker = marker;
             return infoWindows[i];
         }
     }
@@ -627,8 +678,52 @@ BOOL initialZoomComplete = NO;
     GMSCameraPosition *camera = [GMSCameraPosition
                                  cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
                                  longitude:self.mapView_.myLocation.coordinate.longitude
-                                 zoom:10];
+                                 zoom:11];
     self.mapView_.camera = camera;
+}
+
+-(void)setCameraToUserLocAnimated{
+    GMSCameraPosition *camera = [GMSCameraPosition
+                                 cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
+                                 longitude:self.mapView_.myLocation.coordinate.longitude
+                                 zoom:11];
+    [self.mapView_ animateToCameraPosition:camera];
+}
+
+-(UIColor*)colorWithHexString:(NSString*)hex
+{
+    NSString *cString = [[hex stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+    
+    // String should be 6 or 8 characters
+    if ([cString length] < 6) return [UIColor grayColor];
+    
+    // strip 0X if it appears
+    if ([cString hasPrefix:@"0X"]) cString = [cString substringFromIndex:2];
+    
+    if ([cString length] != 6) return  [UIColor grayColor];
+    
+    // Separate into r, g, b substrings
+    NSRange range;
+    range.location = 0;
+    range.length = 2;
+    NSString *rString = [cString substringWithRange:range];
+    
+    range.location = 2;
+    NSString *gString = [cString substringWithRange:range];
+    
+    range.location = 4;
+    NSString *bString = [cString substringWithRange:range];
+    
+    // Scan values
+    unsigned int r, g, b;
+    [[NSScanner scannerWithString:rString] scanHexInt:&r];
+    [[NSScanner scannerWithString:gString] scanHexInt:&g];
+    [[NSScanner scannerWithString:bString] scanHexInt:&b];
+    
+    return [UIColor colorWithRed:((float) r / 255.0f)
+                           green:((float) g / 255.0f)
+                            blue:((float) b / 255.0f)
+                           alpha:1.0f];
 }
 
 - (void)didReceiveMemoryWarning {
