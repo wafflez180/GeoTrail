@@ -215,7 +215,7 @@ BOOL initialZoomComplete = NO;
                 PFFile *picture = [thePostedPicture objectForKey:@"picture"];
                 NSNumber *likes = [thePostedPicture objectForKey:@"Likes"];
                 NSNumber *views = [thePostedPicture objectForKey:@"Views"];
-                
+              
                 CLLocationCoordinate2D picCoords = CLLocationCoordinate2DMake(pictureLocation.latitude, pictureLocation.longitude);
                 
                 //ADD THE LOCATION TO THE PICTURES LOCATIONS ARRAY
@@ -647,7 +647,6 @@ BOOL initialZoomComplete = NO;
         infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
         infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
         infoWindow.coordinate = coordinate;
-        marker.infoWindowAnchor = CGPointMake(0.525f, 0.38f);
         [infoWindows addObject:infoWindow];
         marker.map = self.mapView_;
         [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
@@ -668,10 +667,43 @@ BOOL initialZoomComplete = NO;
             //TURN THIS INTO AN ANIMATION
             marker.zIndex = 99999; //MAKE THE ICON IN FRONT OF THE SCREEN
             prevMarker = marker;
-            return infoWindows[i];
+            
+            [self DrawInInfoWindow:i];
+            return nil;
         }
     }
-    return infoWindows[infoWindows.count];
+    int index = infoWindows.count;
+    
+    [self DrawInInfoWindow:index];
+    return nil;
+}
+
+-(void)DrawInInfoWindow:(int)index{
+    //PUT THE XIB INTO A UIVIEW AND CONFIGURE WITH TO DEVICE
+    
+    CustomInfoWindow *window = infoWindows[index];
+    
+    int hiddenY = _mapView_.frame.size.height + 5 + window.frame.size.height;
+    int desiredY = _mapView_.frame.size.height + 5;
+    
+    UIView *infoWindowView = [[UIView alloc]initWithFrame:CGRectMake(window.frame.origin.x, hiddenY, _mapView_.bounds.size.width, window.bounds.size.height)];
+    
+    [infoWindowView addSubview:window];
+    
+    [window setFrame:CGRectMake(window.frame.origin.x, window.frame.origin.y, _mapView_.bounds.size.width, window.bounds.size.height)];
+    
+    [self.view addSubview:infoWindowView];
+    
+    //ANIMATE UIVIEW IN
+    
+    [UIView animateWithDuration:0.2
+                          delay:0.0
+                        options: UIViewAnimationCurveEaseIn
+                     animations:^{
+                         infoWindowView.frame = CGRectMake(window.frame.origin.x, desiredY, _mapView_.bounds.size.width, window.bounds.size.height);
+                     }
+                     completion:^(BOOL finished){
+                     }];
 }
 
 -(void)setCameraToUserLoc{

@@ -43,7 +43,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
-                                <rect key="frame" x="546" y="486" width="46" height="45"/>
+                                <rect key="frame" x="546" y="396" width="46" height="45"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Vjy-Bm-JDV" secondAttribute="height" multiplier="23:22" id="PFW-9r-Qzy"/>
                                     <constraint firstAttribute="height" constant="50" id="Rgi-lG-g4R"/>
@@ -68,7 +68,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
-                                <rect key="frame" x="553" y="422" width="32" height="46"/>
+                                <rect key="frame" x="553" y="320" width="32" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="16:23" id="BVW-0R-PsD"/>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="25:34" id="DCE-xb-Zg6"/>
@@ -104,12 +104,12 @@
                             <constraint firstAttribute="trailingMargin" secondItem="ROK-pp-MPu" secondAttribute="trailing" constant="-16" id="SXx-1p-nii"/>
                             <constraint firstItem="y3c-jy-aDJ" firstAttribute="top" secondItem="Jj5-FO-ZRG" secondAttribute="bottom" constant="50" id="TGR-gw-ezZ"/>
                             <constraint firstItem="ROK-pp-MPu" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Ve2-1g-OYA"/>
-                            <constraint firstItem="Vjy-Bm-JDV" firstAttribute="top" secondItem="GuM-m0-6T0" secondAttribute="bottom" constant="18" id="a13-nQ-ir0"/>
+                            <constraint firstItem="Vjy-Bm-JDV" firstAttribute="top" secondItem="GuM-m0-6T0" secondAttribute="bottom" constant="30" id="a13-nQ-ir0"/>
                             <constraint firstAttribute="bottomMargin" secondItem="p3O-vl-VfN" secondAttribute="bottom" id="gHL-9M-PtF"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Jj5-FO-ZRG" secondAttribute="bottom" constant="8" id="ogB-XQ-8Fg"/>
                             <constraint firstItem="p3O-vl-VfN" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-16" id="tF7-qk-eQy"/>
                             <constraint firstItem="p3O-vl-VfN" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="tSM-hR-lFJ"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Vjy-Bm-JDV" secondAttribute="bottom" constant="20" id="ua8-Ou-tuU"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Vjy-Bm-JDV" secondAttribute="bottom" constant="110" id="ua8-Ou-tuU"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">

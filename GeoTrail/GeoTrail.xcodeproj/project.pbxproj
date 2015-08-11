@@ -47,10 +47,8 @@
 		A7A0EECE1B3473F90044AB3B /* infoWindow.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EECD1B3473F90044AB3B /* infoWindow.png */; };
 		A7A0EEDC1B3475860044AB3B /* CustomInfoWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A0EEDB1B3475860044AB3B /* CustomInfoWindow.m */; };
 		A7A0EEE01B3478460044AB3B /* infoWindowPolaroid.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */; };
-		A7A0EEE41B3479370044AB3B /* infoArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE11B3479370044AB3B /* infoArrow.png */; };
 		A7A0EEE51B3479370044AB3B /* infoLikesIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */; };
 		A7A0EEE61B3479370044AB3B /* infoViewsIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */; };
-		A7A0EF021B3492930044AB3B /* infoViewsSmallIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EF011B3492930044AB3B /* infoViewsSmallIcon.png */; };
 		A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */ = {isa = PBXBuildFile; fileRef = A7CEC6BC1B1132870077D6E4 /* eye.png */; };
 		A7CEC6C81B117A080077D6E4 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CEC6C71B117A080077D6E4 /* CoreMedia.framework */; };
 		A7CEC6CA1B117A0E0077D6E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7CEC6C91B117A0E0077D6E4 /* CoreVideo.framework */; };
@@ -131,11 +129,8 @@
 		A7A0EEDA1B3475860044AB3B /* CustomInfoWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomInfoWindow.h; path = GeoTrail/CustomInfoWindow.h; sourceTree = SOURCE_ROOT; };
 		A7A0EEDB1B3475860044AB3B /* CustomInfoWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomInfoWindow.m; path = GeoTrail/CustomInfoWindow.m; sourceTree = SOURCE_ROOT; };
 		A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoWindowPolaroid.png; path = GeoTrail/infoWindowPolaroid.png; sourceTree = SOURCE_ROOT; };
-		A7A0EEE11B3479370044AB3B /* infoArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoArrow.png; path = GeoTrail/infoArrow.png; sourceTree = SOURCE_ROOT; };
 		A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoLikesIcon.png; path = GeoTrail/infoLikesIcon.png; sourceTree = SOURCE_ROOT; };
 		A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoViewsIcon.png; path = GeoTrail/infoViewsIcon.png; sourceTree = SOURCE_ROOT; };
-		A7A0EEE81B34850B0044AB3B /* Rajdhani-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Rajdhani-Medium.ttf"; path = "GeoTrail/Rajdhani-Medium.ttf"; sourceTree = SOURCE_ROOT; };
-		A7A0EF011B3492930044AB3B /* infoViewsSmallIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoViewsSmallIcon.png; path = GeoTrail/infoViewsSmallIcon.png; sourceTree = SOURCE_ROOT; };
 		A7B3E8451AE724E900FBEACD /* GeoTrail.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeoTrail.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B3E85E1AE724E900FBEACD /* GeoTrailTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GeoTrailTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7CEC6BC1B1132870077D6E4 /* eye.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = eye.png; path = GeoTrail/eye.png; sourceTree = SOURCE_ROOT; };
@@ -254,14 +249,11 @@
 				A7984E6F1B1A972D00692E01 /* InfoWindow.xib */,
 				A72B644B1AEF065500C84DE5 /* Main.storyboard */,
 				A72B642F1AEF051F00C84DE5 /* LaunchScreen.xib */,
-				A7A0EEE81B34850B0044AB3B /* Rajdhani-Medium.ttf */,
-				A7A0EF011B3492930044AB3B /* infoViewsSmallIcon.png */,
 				A76CAE9C1B3CA2B000A0F598 /* checkButton.png */,
 				A76CAE9D1B3CA2B000A0F598 /* Xbutton.png */,
 				A76CAEA01B3CAC5300A0F598 /* bottomBarPin.png */,
 				A72B64291AEF051F00C84DE5 /* CameraButton.png */,
 				A72B642E1AEF051F00C84DE5 /* Info.plist */,
-				A7A0EEE11B3479370044AB3B /* infoArrow.png */,
 				A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */,
 				A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */,
 				A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */,
@@ -424,9 +416,7 @@
 				A72B64471AEF054800C84DE5 /* Info.plist in Resources */,
 				A76CAE9E1B3CA2B000A0F598 /* checkButton.png in Resources */,
 				A76CAEA51B3CAE0F00A0F598 /* bottomBarContacts.png in Resources */,
-				A7A0EF021B3492930044AB3B /* infoViewsSmallIcon.png in Resources */,
 				A7A0EECE1B3473F90044AB3B /* infoWindow.png in Resources */,
-				A7A0EEE41B3479370044AB3B /* infoArrow.png in Resources */,
 				A72B643C1AEF051F00C84DE5 /* Images.xcassets in Resources */,
 				A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */,
 				A76CAEA11B3CAC5300A0F598 /* bottomBarPin.png in Resources */,
