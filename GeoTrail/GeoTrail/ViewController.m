@@ -25,7 +25,9 @@ BOOL initialZoomComplete = NO;
 @property (weak, nonatomic) IBOutlet UIButton *viewPictureButton;
 @property (weak, nonatomic) IBOutlet UIButton *nextPicButton;
 @property (weak, nonatomic) IBOutlet UIButton *goToUserLocButton;
+
 @end
+
 
 @implementation ViewController{
     CLLocationManager *locationManager;
@@ -51,6 +53,12 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *hexCentersOnMap;
     NSMutableArray *infoWindows;
     NSMutableArray *GMSMarkersArray;
+    CustomInfoWindow *currentInfoWindow;
+    
+    int _originalY;
+    BOOL _deleteOnDragRelease;
+    CGPoint initialTouchLocation;
+    UIView *_infoWindowView;
     
     NSMutableArray *centerCoords;
     
@@ -615,7 +623,7 @@ BOOL initialZoomComplete = NO;
     }
 }
 
-# pragma mark - Helper methods
+# pragma mark - Info Window Methods
 
 - (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)ViewsArray
 {
@@ -681,30 +689,145 @@ BOOL initialZoomComplete = NO;
 -(void)DrawInInfoWindow:(int)index{
     //PUT THE XIB INTO A UIVIEW AND CONFIGURE WITH TO DEVICE
     
+    //[currentInfoWindow removeFromSuperview]; //REMOVE THE PREVIOUS INFO WINDOW
+    
     CustomInfoWindow *window = infoWindows[index];
     
+    currentInfoWindow = window;
+    
+    [window.imageBG setUserInteractionEnabled:true];
+    
+    _infoWindowView = [[UIView alloc] initWithFrame:self.view.frame];
+    [self.view addSubview:_infoWindowView];
+    
+    //ADD SWIPE UP AND SWIPE DOWN RECOGNIZERS
+    /*
+    UISwipeGestureRecognizer* swipeUpGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleUpSwipeFrom:)];
+    UISwipeGestureRecognizer* swipeDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleDownSwipeFrom:)];
+    
+    [swipeUpGestureRecognizer setDirection:UISwipeGestureRecognizerDirectionUp];
+    [swipeDownGestureRecognizer setDirection:UISwipeGestureRecognizerDirectionDown];
+    
+    swipeUpGestureRecognizer.numberOfTouchesRequired = 1;
+    swipeDownGestureRecognizer.numberOfTouchesRequired = 1;
+    
+        [window.image addGestureRecognizer:swipeDownGestureRecognizer];
+
+    [window.messageBox addGestureRecognizer:swipeUpGestureRecognizer];
+    */
+    // add a pan recognizer
+    UIGestureRecognizer* recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    recognizer.delegate = self;
+    [window addGestureRecognizer:recognizer];
+    /////////////////////////////////////////
+    
     int hiddenY = _mapView_.frame.size.height + 5 + window.frame.size.height;
-    int desiredY = _mapView_.frame.size.height + 5;
+    int desiredY = _mapView_.frame.size.height - window.messageBox.frame.size.height + 5;
     
-    UIView *infoWindowView = [[UIView alloc]initWithFrame:CGRectMake(window.frame.origin.x, hiddenY, _mapView_.bounds.size.width, window.bounds.size.height)];
+    [_infoWindowView addSubview:window];
     
-    [infoWindowView addSubview:window];
-    
-    [window setFrame:CGRectMake(window.frame.origin.x, window.frame.origin.y, _mapView_.bounds.size.width, window.bounds.size.height)];
-    
-    [self.view addSubview:infoWindowView];
-    
+    [window setFrame:CGRectMake(window.frame.origin.x, hiddenY, _mapView_.bounds.size.width, self.view.bounds.size.height)];
+        
+    //CHANGE THE HEIGHT OF THE imageBG to the size of the phone
+    CGRect imageBGrect = currentInfoWindow.imageBG.frame;
+    imageBGrect.size.height = self.mapView_.bounds.size.height;
+    currentInfoWindow.imageBG.frame = imageBGrect;
+    //RESIZE THE XIB TO THE SIZE OF THE CONTENT INSIDE (messagebox & imageGBG)
+    CGRect currentWindowRect = currentInfoWindow.frame;
+    currentWindowRect.size.height = currentInfoWindow.messageBox.bounds.size.height + currentInfoWindow.imageBG.frame.size.height;
+    currentInfoWindow.frame = currentWindowRect;
     //ANIMATE UIVIEW IN
     
-    [UIView animateWithDuration:0.2
-                          delay:0.0
-                        options: UIViewAnimationCurveEaseIn
-                     animations:^{
-                         infoWindowView.frame = CGRectMake(window.frame.origin.x, desiredY, _mapView_.bounds.size.width, window.bounds.size.height);
-                     }
-                     completion:^(BOOL finished){
-                     }];
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.2];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+    
+    //SET THE FRAME WIDTH TO THE Phone WIDTH AND THE HEIGHT TO THE PHONE HEIGHT + MESSAGEBOX
+    currentInfoWindow.frame = CGRectMake(window.frame.origin.x, desiredY, _mapView_.bounds.size.width, window.bounds.size.height + currentInfoWindow.messageBox.frame.size.height - 15);
+    
+    [UIView commitAnimations];
 }
+
+- (void)hideTheTabBarWithAnimation:(BOOL) withAnimation {
+    if (NO == withAnimation) {
+        [self.tabBarController.tabBar setHidden:YES];
+    } else {
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationDelegate:nil];
+        [UIView setAnimationDuration:0.75];
+        
+        [self.tabBarController.tabBar setAlpha:0.0];
+        
+        [UIView commitAnimations];
+    }
+}
+
+#pragma mark - horizontal pan gesture methods
+-(BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer {
+    CGPoint translation = [gestureRecognizer translationInView:currentInfoWindow];
+    // Check for vertical gesture
+    if (fabs(translation.y) > fabs(translation.x)) {
+        return YES;
+    }
+    return NO;
+}
+
+-(void)handlePan:(UIPanGestureRecognizer *)recognizer {
+    // 1
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        // if the gesture has just started, record the current centre location
+        initialTouchLocation = [recognizer locationInView: currentInfoWindow];
+        _originalY = currentInfoWindow.frame.origin.y;
+    }
+    
+    // 2
+    if (recognizer.state == UIGestureRecognizerStateChanged) {
+        // translate the center
+        CGPoint translation = [recognizer translationInView:currentInfoWindow];
+        CGRect rect = currentInfoWindow.frame;
+        rect.origin.y = translation.y + _originalY;
+        //NSLog(@"Translation: %f", translation.y);
+        //NSLog(@"Info Window Y: %f", currentInfoWindow.frame.origin.y);
+        
+        if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
+            //IF THE USER TOUCHES THE MESSAGEBOX
+            currentInfoWindow.frame = rect;
+        }else{
+            //IF THE USER TOUCHES THE IMAGEVIEW
+        }
+        // Change values of other objects during drag
+        
+        
+    }
+    
+    // 3
+    if (recognizer.state == UIGestureRecognizerStateEnded) {
+        if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
+            //IF THE USER TOUCHES THE MESSAGEBOX
+            _mapView_.userInteractionEnabled = false;
+            [self.navigationController setNavigationBarHidden:YES animated:YES];
+            [self hideTheTabBarWithAnimation:true];
+            NSLog(@"Swiped Up");
+            
+            //////////////////////////////////ANIMATIONS//////////////////////////////////
+            //currentInfoWindow.alpha = 0.0;
+            [UIView beginAnimations:nil context:nil];
+            [UIView setAnimationDuration:0.2];
+            [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+            
+            CGRect infoWindowRect = currentInfoWindow.frame;
+            infoWindowRect.origin.y = _originalY - _mapView_.bounds.size.height - 5;
+            currentInfoWindow.frame = infoWindowRect;
+            
+            [UIView commitAnimations];
+            /////////////////////////////////////////////////////////////////////////////
+        }else{
+            //IF THE USER TOUCHES THE IMAGEVIEW
+        }
+    }
+}
+
+# pragma mark - Helper Methods
 
 -(void)setCameraToUserLoc{
     GMSCameraPosition *camera = [GMSCameraPosition

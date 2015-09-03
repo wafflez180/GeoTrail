@@ -20,19 +20,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="GMSMapView">
-                                <rect key="frame" x="0.0" y="64" width="600" height="487"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" none="YES" updatesFrequently="YES"/>
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
                             </view>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="p3O-vl-VfN">
-                                <rect key="frame" x="0.0" y="64" width="600" height="536"/>
-                                <connections>
-                                    <outletCollection property="gestureRecognizers" destination="h5Q-k1-8mZ" appends="YES" id="UzQ-3I-BOV"/>
-                                </connections>
-                            </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jj5-FO-ZRG">
                                 <rect key="frame" x="21" y="513" width="85" height="30"/>
                                 <state key="normal" title="View Picture">
@@ -94,8 +88,9 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
                         <constraints>
+                            <constraint firstItem="ROK-pp-MPu" firstAttribute="bottom" secondItem="8bC-Xf-vdC" secondAttribute="bottomMargin" id="0EZ-WF-exL"/>
+                            <constraint firstItem="ROK-pp-MPu" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="topMargin" id="5Ke-u1-4kg"/>
                             <constraint firstItem="Jj5-FO-ZRG" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="5" id="5Xt-Ek-es3"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="p3O-vl-VfN" secondAttribute="trailing" constant="-16" id="Ck3-g7-ZLp"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Vjy-Bm-JDV" secondAttribute="centerX" constant="15" id="Hqu-Xu-TxW"/>
                             <constraint firstAttribute="trailingMargin" secondItem="GuM-m0-6T0" secondAttribute="centerX" constant="15" id="Irh-VI-Qzy"/>
                             <constraint firstItem="ROK-pp-MPu" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-16" id="JQf-3W-gre"/>
@@ -105,16 +100,15 @@
                             <constraint firstItem="y3c-jy-aDJ" firstAttribute="top" secondItem="Jj5-FO-ZRG" secondAttribute="bottom" constant="50" id="TGR-gw-ezZ"/>
                             <constraint firstItem="ROK-pp-MPu" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Ve2-1g-OYA"/>
                             <constraint firstItem="Vjy-Bm-JDV" firstAttribute="top" secondItem="GuM-m0-6T0" secondAttribute="bottom" constant="30" id="a13-nQ-ir0"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="p3O-vl-VfN" secondAttribute="bottom" id="gHL-9M-PtF"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Jj5-FO-ZRG" secondAttribute="bottom" constant="8" id="ogB-XQ-8Fg"/>
-                            <constraint firstItem="p3O-vl-VfN" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-16" id="tF7-qk-eQy"/>
-                            <constraint firstItem="p3O-vl-VfN" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="tSM-hR-lFJ"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Vjy-Bm-JDV" secondAttribute="bottom" constant="110" id="ua8-Ou-tuU"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
+                                <exclude reference="Ve2-1g-OYA"/>
                                 <exclude reference="TGR-gw-ezZ"/>
                                 <exclude reference="Nf8-c1-Tyo"/>
+                                <exclude reference="PUz-dP-920"/>
                             </mask>
                         </variation>
                     </view>
@@ -136,7 +130,6 @@
                         <outlet property="goToUserLocButton" destination="Vjy-Bm-JDV" id="cdD-bn-JUu"/>
                         <outlet property="mapView_" destination="ROK-pp-MPu" id="6vL-Zq-lR8"/>
                         <outlet property="nextPicButton" destination="GuM-m0-6T0" id="z6g-mi-9o2"/>
-                        <outlet property="picView" destination="p3O-vl-VfN" id="JGq-Fu-LP6"/>
                         <outlet property="viewPictureButton" destination="Jj5-FO-ZRG" id="Pwq-By-KR9"/>
                     </connections>
                 </viewController>
@@ -144,7 +137,6 @@
                 <swipeGestureRecognizer direction="up" id="h5Q-k1-8mZ">
                     <connections>
                         <action selector="swipedUp:" destination="BYZ-38-t0r" id="7Dt-mQ-aRx"/>
-                        <outlet property="delegate" destination="p3O-vl-VfN" id="EaO-JP-GQh"/>
                     </connections>
                 </swipeGestureRecognizer>
             </objects>
