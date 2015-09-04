@@ -64,50 +64,6 @@ BOOL initialZoomComplete = NO;
     
     int indexOfCenterHex;
 }
-
-- (IBAction)ViewPicture:(id)sender {
-    _picView.alpha = 1;
-    
-    if (hideStatusBar == FALSE) {//IF IT IS ON MAIN PAIGE
-        [self.navigationController setNavigationBarHidden:YES animated:YES];
-        [self.navigationController setToolbarHidden:YES animated:YES];
-        hideStatusBar = true;
-        //REMOVES THE STATUS BAR
-        [self prefersStatusBarHidden];
-        [self performSelector:@selector(setNeedsStatusBarAppearanceUpdate)];
-    }
-    
-    CLLocationCoordinate2D selectedMarkerLoc = _mapView_.selectedMarker.position;
-    
-    PFFile *picture;
-    bool foundPic = false;
-    int index=0;
-    for (int i = 0; i < postedPictureLocations.count; i++) {
-        if (foundPic == false) {
-            PFGeoPoint *tempGeo = postedPictureLocations[i];
-            CLLocationCoordinate2D tempLoc = CLLocationCoordinate2DMake(tempGeo.latitude, tempGeo.longitude);
-            if (tempLoc.latitude == selectedMarkerLoc.latitude && tempLoc.longitude == selectedMarkerLoc.longitude) {
-                index = i;
-                foundPic = true;//ADD THE LIKES AND THE VIEWS IN HERE
-            }
-        }
-    }
-    
-    UISwipeGestureRecognizer *up = [[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(PerformAction:)];
-    up.direction = UISwipeGestureRecognizerDirectionUp ;
-    [self.view addGestureRecognizer:up];
-    
-    picture = PFFilePictureArray[index];
-    [picture getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
-        if (!error) {
-            UIImage *image = [UIImage imageWithData:data];
-            
-            //ADD THE IMAGE TO THE PICTURES ARRAY
-            _picView.image = image;
-        }
-    }];
-}
-
 - (IBAction)TappedRefresh:(id)sender {
     PFUser *userID = [PFUser currentUser];
     if (userID != nil) {
@@ -649,8 +605,11 @@ BOOL initialZoomComplete = NO;
 //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
         CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
         infoWindow.usernameLabel.text = Username;
+        infoWindow.usernameImageLabel.text = Username;
         infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
+        infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
         infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
+        infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
         infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
         infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
         infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
@@ -699,22 +658,8 @@ BOOL initialZoomComplete = NO;
     
     _infoWindowView = [[UIView alloc] initWithFrame:self.view.frame];
     [self.view addSubview:_infoWindowView];
-    
-    //ADD SWIPE UP AND SWIPE DOWN RECOGNIZERS
-    /*
-    UISwipeGestureRecognizer* swipeUpGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleUpSwipeFrom:)];
-    UISwipeGestureRecognizer* swipeDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleDownSwipeFrom:)];
-    
-    [swipeUpGestureRecognizer setDirection:UISwipeGestureRecognizerDirectionUp];
-    [swipeDownGestureRecognizer setDirection:UISwipeGestureRecognizerDirectionDown];
-    
-    swipeUpGestureRecognizer.numberOfTouchesRequired = 1;
-    swipeDownGestureRecognizer.numberOfTouchesRequired = 1;
-    
-        [window.image addGestureRecognizer:swipeDownGestureRecognizer];
+    [self.view bringSubviewToFront:_infoWindowView];
 
-    [window.messageBox addGestureRecognizer:swipeUpGestureRecognizer];
-    */
     // add a pan recognizer
     UIGestureRecognizer* recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     recognizer.delegate = self;
@@ -722,7 +667,7 @@ BOOL initialZoomComplete = NO;
     /////////////////////////////////////////
     
     int hiddenY = _mapView_.frame.size.height + 5 + window.frame.size.height;
-    int desiredY = _mapView_.frame.size.height - window.messageBox.frame.size.height + 5;
+    int desiredY = _mapView_.frame.size.height - (window.messageBox.frame.size.height + self.tabBarController.tabBar.frame.size.height - 2);
     
     [_infoWindowView addSubview:window];
     
@@ -743,7 +688,7 @@ BOOL initialZoomComplete = NO;
     [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
     
     //SET THE FRAME WIDTH TO THE Phone WIDTH AND THE HEIGHT TO THE PHONE HEIGHT + MESSAGEBOX
-    currentInfoWindow.frame = CGRectMake(window.frame.origin.x, desiredY, _mapView_.bounds.size.width, window.bounds.size.height + currentInfoWindow.messageBox.frame.size.height - 15);
+    currentInfoWindow.frame = CGRectMake(window.frame.origin.x, desiredY - 100, _mapView_.bounds.size.width, window.bounds.size.height);
     
     [UIView commitAnimations];
 }
@@ -754,13 +699,39 @@ BOOL initialZoomComplete = NO;
     } else {
         [UIView beginAnimations:nil context:nil];
         [UIView setAnimationDelegate:nil];
-        [UIView setAnimationDuration:0.75];
+        [UIView setAnimationDuration:0.2];
         
         [self.tabBarController.tabBar setAlpha:0.0];
         
         [UIView commitAnimations];
     }
 }
+
+- (void)ShowPicture{
+    CLLocationCoordinate2D selectedMarkerLoc = _mapView_.selectedMarker.position;
+    
+    PFFile *picture;
+    bool foundPic = false;
+    int index=0;
+    for (int i = 0; i < postedPictureLocations.count; i++) {
+        if (foundPic == false) {
+            PFGeoPoint *tempGeo = postedPictureLocations[i];
+            CLLocationCoordinate2D tempLoc = CLLocationCoordinate2DMake(tempGeo.latitude, tempGeo.longitude);
+            if (tempLoc.latitude == selectedMarkerLoc.latitude && tempLoc.longitude == selectedMarkerLoc.longitude) {
+                index = i;
+                foundPic = true;//ADD THE LIKES AND THE VIEWS IN HERE
+            }
+        }
+    }
+    picture = PFFilePictureArray[index];
+    [picture getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+        if (!error) {
+            UIImage *image = [UIImage imageWithData:data];
+            currentInfoWindow.image.image = image;
+        }
+    }];
+}
+
 
 #pragma mark - horizontal pan gesture methods
 -(BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer {
@@ -778,6 +749,9 @@ BOOL initialZoomComplete = NO;
         // if the gesture has just started, record the current centre location
         initialTouchLocation = [recognizer locationInView: currentInfoWindow];
         _originalY = currentInfoWindow.frame.origin.y;
+        //LOAD IN ALL OF THE DATA
+        [self ShowPicture];
+        
     }
     
     // 2
@@ -797,7 +771,6 @@ BOOL initialZoomComplete = NO;
         }
         // Change values of other objects during drag
         
-        
     }
     
     // 3
@@ -809,14 +782,14 @@ BOOL initialZoomComplete = NO;
             [self hideTheTabBarWithAnimation:true];
             NSLog(@"Swiped Up");
             
-            //////////////////////////////////ANIMATIONS//////////////////////////////////
+            //////////////////////////////////ANIMATIONS/////////////////////////////////
             //currentInfoWindow.alpha = 0.0;
             [UIView beginAnimations:nil context:nil];
             [UIView setAnimationDuration:0.2];
             [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
             
             CGRect infoWindowRect = currentInfoWindow.frame;
-            infoWindowRect.origin.y = _originalY - _mapView_.bounds.size.height - 5;
+            infoWindowRect.origin.y = -currentInfoWindow.messageBox.frame.size.height;
             currentInfoWindow.frame = infoWindowRect;
             
             [UIView commitAnimations];

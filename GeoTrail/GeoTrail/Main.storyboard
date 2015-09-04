@@ -333,7 +333,7 @@
             <objects>
                 <tableViewController title="Contacts" id="QIl-W8-MDs" customClass="ContactsTableTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="D7d-8D-gLx">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="551"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
@@ -371,7 +371,7 @@
                 <tabBarController automaticallyAdjustsScrollViewInsets="NO" id="hgO-cL-8gP" sceneMemberID="viewController">
                     <toolbarItems/>
                     <nil key="simulatedBottomBarMetrics"/>
-                    <tabBar key="tabBar" contentMode="scaleToFill" translucent="NO" id="xDw-lt-R2Y">
+                    <tabBar key="tabBar" contentMode="scaleToFill" id="xDw-lt-R2Y">
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.1647058874" green="0.73333334920000004" blue="0.61176472900000001" alpha="1" colorSpace="deviceRGB"/>
                         <color key="tintColor" red="0.16470588743686676" green="0.73333334922790527" blue="0.61176472902297974" alpha="1" colorSpace="deviceRGB"/>
@@ -390,11 +390,13 @@
         <!--Homepage Nav Contoller-->
         <scene sceneID="HHF-KE-7Ot">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Eye-6Z-UTx" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController title="Homepage Nav Contoller" automaticallyAdjustsScrollViewInsets="NO" id="mzQ-oF-yxV" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="HomeIcon" id="fR5-t7-ua2">
                         <inset key="imageInsets" minX="0.0" minY="5" maxX="0.0" maxY="-5"/>
                     </tabBarItem>
                     <toolbarItems/>
+                    <nil key="simulatedBottomBarMetrics"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="CFV-EY-XAR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -409,7 +411,6 @@
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="w9k-zi-TS6"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Eye-6Z-UTx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1948" y="1114"/>
         </scene>
