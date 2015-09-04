@@ -56,7 +56,9 @@ BOOL initialZoomComplete = NO;
     CustomInfoWindow *currentInfoWindow;
     
     int _originalY;
+    int _originalNavBarY;
     BOOL _deleteOnDragRelease;
+    BOOL viewingPic;
     CGPoint initialTouchLocation;
     UIView *_infoWindowView;
     
@@ -650,6 +652,8 @@ BOOL initialZoomComplete = NO;
     
     //[currentInfoWindow removeFromSuperview]; //REMOVE THE PREVIOUS INFO WINDOW
     
+    viewingPic = false;
+    
     CustomInfoWindow *window = infoWindows[index];
     
     currentInfoWindow = window;
@@ -688,23 +692,9 @@ BOOL initialZoomComplete = NO;
     [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
     
     //SET THE FRAME WIDTH TO THE Phone WIDTH AND THE HEIGHT TO THE PHONE HEIGHT + MESSAGEBOX
-    currentInfoWindow.frame = CGRectMake(window.frame.origin.x, desiredY - 100, _mapView_.bounds.size.width, window.bounds.size.height);
+    currentInfoWindow.frame = CGRectMake(window.frame.origin.x, desiredY, _mapView_.bounds.size.width, window.bounds.size.height);
     
     [UIView commitAnimations];
-}
-
-- (void)hideTheTabBarWithAnimation:(BOOL) withAnimation {
-    if (NO == withAnimation) {
-        [self.tabBarController.tabBar setHidden:YES];
-    } else {
-        [UIView beginAnimations:nil context:nil];
-        [UIView setAnimationDelegate:nil];
-        [UIView setAnimationDuration:0.2];
-        
-        [self.tabBarController.tabBar setAlpha:0.0];
-        
-        [UIView commitAnimations];
-    }
 }
 
 - (void)ShowPicture{
@@ -749,6 +739,7 @@ BOOL initialZoomComplete = NO;
         // if the gesture has just started, record the current centre location
         initialTouchLocation = [recognizer locationInView: currentInfoWindow];
         _originalY = currentInfoWindow.frame.origin.y;
+        _originalNavBarY = self.navigationController.navigationBar.frame.origin.y;
         //LOAD IN ALL OF THE DATA
         [self ShowPicture];
         
@@ -759,6 +750,8 @@ BOOL initialZoomComplete = NO;
         // translate the center
         CGPoint translation = [recognizer translationInView:currentInfoWindow];
         CGRect rect = currentInfoWindow.frame;
+        CGRect naasvBarRect = self.navigationController.navigationBar.frame;
+
         rect.origin.y = translation.y + _originalY;
         //NSLog(@"Translation: %f", translation.y);
         //NSLog(@"Info Window Y: %f", currentInfoWindow.frame.origin.y);
@@ -766,11 +759,24 @@ BOOL initialZoomComplete = NO;
         if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
             //IF THE USER TOUCHES THE MESSAGEBOX
             currentInfoWindow.frame = rect;
+            
+            // Change values of other objects during drag
+            float percentage = (translation.y/ _originalY) * -1;
+            
+            //CHANGE NAV BAR HEIGHT
+            CGRect navBarRect = self.navigationController.navigationBar.frame;
+            navBarRect.origin.y = (-(navBarRect.size.height + 20) * percentage) + _originalNavBarY;
+            self.navigationController.navigationBar.frame = navBarRect;
+            //CHANGE TAB BAR ALPHA
+            [self.tabBarController.tabBar setAlpha:(1.f - percentage)];
+            //CHANGE MESSAGE BOX ALPHA
+            for (int i = 0; i < [currentInfoWindow subviews].count; i++) {
+                [[[currentInfoWindow subviews] objectAtIndex:i] setAlpha:(1.f - percentage)];
+            }
+            currentInfoWindow.imageBG.alpha = 1;
         }else{
             //IF THE USER TOUCHES THE IMAGEVIEW
         }
-        // Change values of other objects during drag
-        
     }
     
     // 3
@@ -778,8 +784,6 @@ BOOL initialZoomComplete = NO;
         if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
             //IF THE USER TOUCHES THE MESSAGEBOX
             _mapView_.userInteractionEnabled = false;
-            [self.navigationController setNavigationBarHidden:YES animated:YES];
-            [self hideTheTabBarWithAnimation:true];
             NSLog(@"Swiped Up");
             
             //////////////////////////////////ANIMATIONS/////////////////////////////////
@@ -789,8 +793,12 @@ BOOL initialZoomComplete = NO;
             [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
             
             CGRect infoWindowRect = currentInfoWindow.frame;
-            infoWindowRect.origin.y = -currentInfoWindow.messageBox.frame.size.height;
+            infoWindowRect.origin.y = (-currentInfoWindow.messageBox.frame.size.height) + 1;
             currentInfoWindow.frame = infoWindowRect;
+            
+            [self.navigationController setNavigationBarHidden:YES animated:YES];
+            [self.tabBarController.tabBar setAlpha:0.0];
+            
             
             [UIView commitAnimations];
             /////////////////////////////////////////////////////////////////////////////
