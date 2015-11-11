@@ -18,7 +18,8 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [GMSServices provideAPIKey:@"AIzaSyCOK6ZJYfHYzs_qCHhmP224YzhZEl9hS7E"];
+    
     // [Optional] Power your app with Local Datastore. For more info, go to
     // https://parse.com/docs/ios_guide#localdatastore/iOS
     [Parse enableLocalDatastore];
@@ -29,8 +30,6 @@
     
     // [Optional] Track statistics around application opens.
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
-    
-    [GMSServices provideAPIKey:@"AIzaSyCOK6ZJYfHYzs_qCHhmP224YzhZEl9hS7E"];
     
     return YES;
 }

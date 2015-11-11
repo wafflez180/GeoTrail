@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="hgO-cL-8gP">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9059" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="hgO-cL-8gP">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
@@ -19,16 +20,18 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="GMSMapView">
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="GMSMapView">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <accessibility key="accessibilityConfiguration">
-                                    <accessibilityTraits key="traits" none="YES" updatesFrequently="YES"/>
+                                    <accessibilityTraits key="traits" updatesFrequently="YES"/>
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jj5-FO-ZRG">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jj5-FO-ZRG">
                                 <rect key="frame" x="21" y="513" width="85" height="30"/>
+                                <animations/>
                                 <state key="normal" title="View Picture">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -36,8 +39,9 @@
                                     <action selector="ViewPicture:" destination="BYZ-38-t0r" eventType="touchUpInside" id="spH-bZ-vXX"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
                                 <rect key="frame" x="546" y="396" width="46" height="45"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Vjy-Bm-JDV" secondAttribute="height" multiplier="23:22" id="PFW-9r-Qzy"/>
                                     <constraint firstAttribute="height" constant="50" id="Rgi-lG-g4R"/>
@@ -61,8 +65,9 @@
                                     <action selector="pressedCompass:" destination="BYZ-38-t0r" eventType="touchUpInside" id="o9j-ik-NDk"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
                                 <rect key="frame" x="553" y="320" width="32" height="46"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="16:23" id="BVW-0R-PsD"/>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="25:34" id="DCE-xb-Zg6"/>
@@ -85,6 +90,7 @@
                                 </connections>
                             </button>
                         </subviews>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
                         <constraints>
@@ -154,14 +160,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6Lu-eg-6vb">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6Lu-eg-6vb">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <animations/>
                             </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bnS-Sa-Rdc">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bnS-Sa-Rdc">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="551"/>
+                                <animations/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S1I-og-1fL" userLabel="Camera Button">
                                 <rect key="frame" x="260" y="446" width="80" height="80"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="80" id="MuV-zU-jhB"/>
                                     <constraint firstAttribute="width" constant="80" id="Ylz-T8-5ps"/>
@@ -188,8 +197,9 @@
                                     <action selector="TappedOnCameraButton:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="Gju-7m-92e"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OfA-8u-L5e" userLabel="Front Camera Button">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OfA-8u-L5e" userLabel="Front Camera Button">
                                 <rect key="frame" x="502" y="25" width="60" height="60"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="OfA-8u-L5e" secondAttribute="height" multiplier="1:1" id="2CC-en-u6Y"/>
                                     <constraint firstAttribute="width" constant="60" id="Qv9-CP-5US"/>
@@ -202,8 +212,9 @@
                                     <action selector="changeCamView:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="dN3-JM-SIh"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bZ0-wr-7ZD" userLabel="X Button">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bZ0-wr-7ZD" userLabel="X Button">
                                 <rect key="frame" x="31" y="446" width="80" height="80"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="80" id="Utd-ur-rSR"/>
                                     <constraint firstAttribute="height" relation="lessThanOrEqual" constant="80" id="Zw4-sr-Gxo"/>
@@ -224,8 +235,9 @@
                                     <action selector="retakePicture:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="M0M-hf-bLq"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eUe-Z5-wn6" userLabel="Check Button">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eUe-Z5-wn6" userLabel="Check Button">
                                 <rect key="frame" x="489" y="445" width="80" height="80"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="eUe-Z5-wn6" secondAttribute="height" multiplier="1:1" id="Ojl-nq-qaj"/>
                                     <constraint firstAttribute="width" constant="80" id="RFL-cM-oyJ"/>
@@ -250,6 +262,7 @@
                                 </connections>
                             </button>
                         </subviews>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="6Lu-eg-6vb" firstAttribute="leading" secondItem="F80-6G-f2a" secondAttribute="leadingMargin" constant="-16" id="33C-Rg-Ubn"/>
@@ -335,13 +348,18 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="D7d-8D-gLx">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="Pmo-jM-bQb">
+                                <rect key="frame" x="0.0" y="86" width="600" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Pmo-jM-bQb" id="0UQ-v8-YXk">
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                    <animations/>
                                 </tableViewCellContentView>
+                                <animations/>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -373,6 +391,7 @@
                     <nil key="simulatedBottomBarMetrics"/>
                     <tabBar key="tabBar" contentMode="scaleToFill" id="xDw-lt-R2Y">
                         <autoresizingMask key="autoresizingMask"/>
+                        <animations/>
                         <color key="backgroundColor" red="0.1647058874" green="0.73333334920000004" blue="0.61176472900000001" alpha="1" colorSpace="deviceRGB"/>
                         <color key="tintColor" red="0.16470588743686676" green="0.73333334922790527" blue="0.61176472902297974" alpha="1" colorSpace="deviceRGB"/>
                         <color key="selectedImageTintColor" red="0.49411767721176147" green="0.54901963472366333" blue="0.55294120311737061" alpha="1" colorSpace="deviceRGB"/>
@@ -390,7 +409,6 @@
         <!--Homepage Nav Contoller-->
         <scene sceneID="HHF-KE-7Ot">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Eye-6Z-UTx" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController title="Homepage Nav Contoller" automaticallyAdjustsScrollViewInsets="NO" id="mzQ-oF-yxV" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="HomeIcon" id="fR5-t7-ua2">
                         <inset key="imageInsets" minX="0.0" minY="5" maxX="0.0" maxY="-5"/>
@@ -400,6 +418,7 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="CFV-EY-XAR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <animations/>
                         <color key="barTintColor" red="0.16470588743686676" green="0.73333334922790527" blue="0.61176472902297974" alpha="1" colorSpace="deviceRGB"/>
                         <textAttributes key="titleTextAttributes">
                             <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="21"/>
@@ -411,6 +430,7 @@
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="w9k-zi-TS6"/>
                     </connections>
                 </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Eye-6Z-UTx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1948" y="1114"/>
         </scene>
@@ -425,6 +445,7 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="EbX-3M-fqT">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <animations/>
                         <color key="barTintColor" red="0.1647058874" green="0.73333334920000004" blue="0.61176472900000001" alpha="1" colorSpace="deviceRGB"/>
                         <textAttributes key="titleTextAttributes">
                             <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="21"/>

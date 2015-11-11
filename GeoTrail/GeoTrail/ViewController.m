@@ -167,11 +167,12 @@ BOOL initialZoomComplete = NO;
 
 -(void)uploadDataOnMap: (PFUser *)posterUser :(NSString *)Username{
     PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
+    NSLog(@"%@",Username);
     [query whereKey:@"User" equalTo:posterUser];// "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
-    NSMutableArray *tempPostedPictureLocations = [NSMutableArray array];
-    NSMutableArray *tempPostedPictureLikes = [NSMutableArray array];
-    NSMutableArray *tempPostedPictureViews = [NSMutableArray array];
-
+    NSMutableArray *tempPostedPictureLocations = [[NSMutableArray alloc] init];
+    NSMutableArray *tempPostedPictureLikes = [[NSMutableArray alloc] init];
+    NSMutableArray *tempPostedPictureViews = [[NSMutableArray alloc] init];
+    NSLog(@"\nUPLOAD DATA ON MAP: %@",Username);
     [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
         if (!error) {
             for (NSInteger i = 0; i <PFObjects.count; i++) {
@@ -181,20 +182,23 @@ BOOL initialZoomComplete = NO;
                 PFFile *picture = [thePostedPicture objectForKey:@"picture"];
                 NSNumber *likes = [thePostedPicture objectForKey:@"Likes"];
                 NSNumber *views = [thePostedPicture objectForKey:@"Views"];
-              
-                CLLocationCoordinate2D picCoords = CLLocationCoordinate2DMake(pictureLocation.latitude, pictureLocation.longitude);
+                
+               // NSLog(@"\nPicture Coords:\nX: %f\nY: %f", pictureLocation.latitude, pictureLocation.longitude);
+                CLLocation *picCoords = [[CLLocation alloc] initWithLatitude:pictureLocation.latitude longitude:pictureLocation.longitude];
                 
                 //ADD THE LOCATION TO THE PICTURES LOCATIONS ARRAY
-
-                [tempPostedPictureLocations addObject:[NSValue valueWithMKCoordinate:picCoords]];
+                [tempPostedPictureLocations addObject:picCoords];
                 [tempPostedPictureLikes addObject:likes];
                 [tempPostedPictureViews addObject:views];
                 
                 [postedPictureLocations addObject:pictureLocation];
                 [PFFilePictureArray addObject:picture];
                 
-                NSLog(@"\nPic Coordinates: \n%f\n%f", pictureLocation.latitude, pictureLocation.longitude);
+               // NSLog(@"\nPic Coordinates: \n%f\n%f", pictureLocation.latitude, pictureLocation.longitude);
             }
+        }else{
+            // Log details of the failure
+            NSLog(@"Error: %@ %@", error, [error userInfo]);
         }
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
         [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews];
@@ -268,7 +272,7 @@ BOOL initialZoomComplete = NO;
                                                       otherButtonTitles:@"OK", nil];
             [alertView show];
         }else{
-             NSLog(@"OBJECT COUNT: %lu", (unsigned long)objects.count);
+            // NSLog(@"OBJECT COUNT: %lu", (unsigned long)objects.count);
             
             centerCoords = [[NSMutableArray alloc]init];
             
@@ -284,7 +288,7 @@ BOOL initialZoomComplete = NO;
                 [centerCoords addObject:coordinate];
                 
                 CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(centerGeoPoints.latitude, centerGeoPoints.longitude);
-                NSLog(@"\nLAT: %f\n LONG: %f\n", coordTemp.latitude, coordTemp.longitude);
+                //NSLog(@"\nLAT: %f\n LONG: %f\n", coordTemp.latitude, coordTemp.longitude);
 
                 CLLocation *hexCenterLoc = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
                 CLLocationDistance distance = [hexCenterLoc getDistanceFrom: self.mapView_.myLocation];
@@ -532,7 +536,7 @@ BOOL initialZoomComplete = NO;
 #pragma mark Loading Contacts Methods
 
 -(void)loadContacts{
-    PFQuery *query = [PFQuery queryWithClassName:@"_User"];
+    PFQuery *query = [PFUser query];
     [query whereKey:@"username" equalTo:[[PFUser currentUser] username]]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
     [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
         if (error) {
@@ -546,7 +550,7 @@ BOOL initialZoomComplete = NO;
             for (NSInteger i = 0; i < PFObjects.count; i++) {
                 PFObject *thePostedPicture = PFObjects[i];
                 NSArray *contacts = [thePostedPicture objectForKey:@"Contacts"];
-                
+                NSLog(@"Added Contact");
                 contactNamesArray = contacts;
             }
         }
@@ -575,7 +579,9 @@ BOOL initialZoomComplete = NO;
                 }
             }
             contactIDsArray = [NSArray arrayWithArray:temp];
-            
+            if(contactIDsArray == nil){
+                NSLog(@"\nSending in Nil contact Array");
+            }
             [self uploadDataOnMap: contactIDsArray[n]: contactNamesArray[n]];//SET UP ALL CURRENT USER'S PICTURES
         }];
     }
@@ -589,10 +595,10 @@ BOOL initialZoomComplete = NO;
     // add all annotations
     // NOTE: coordinateValue can be any type from which a CLLocationCoordinate2D can be determined
     int counter = 0;
-    for (NSValue *coordinateValue in objectsToPlot)
+    for (CLLocation *coordinateValue in objectsToPlot)
     {
         // make CLLocationCoordinate2D
-        CLLocationCoordinate2D coordinate = coordinateValue.MKCoordinateValue;
+        CLLocationCoordinate2D coordinate = coordinateValue.coordinate;
         
         NSNumber *likes = LikesArray[counter];
         NSNumber *views = ViewsArray[counter];
@@ -659,21 +665,26 @@ BOOL initialZoomComplete = NO;
     currentInfoWindow = window;
     
     [window.imageBG setUserInteractionEnabled:true];
-    
+    /*
     _infoWindowView = [[UIView alloc] initWithFrame:self.view.frame];
     [self.view addSubview:_infoWindowView];
     [self.view bringSubviewToFront:_infoWindowView];
-
+*/
     // add a pan recognizer
     UIGestureRecognizer* recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     recognizer.delegate = self;
     [window addGestureRecognizer:recognizer];
     /////////////////////////////////////////
-    
     int hiddenY = _mapView_.frame.size.height + 5 + window.frame.size.height;
     int desiredY = _mapView_.frame.size.height - (window.messageBox.frame.size.height + self.tabBarController.tabBar.frame.size.height - 2);
+    /*
+    [_infoWindowView setUserInteractionEnabled:false];
+
+     [_infoWindowView addSubview:window];
     
-    [_infoWindowView addSubview:window];
+    _infoWindowView.backgroundColor = [[UIColor redColor] colorWithAlphaComponent:0.3];
+     */
+    [self.view addSubview:window];
     
     [window setFrame:CGRectMake(window.frame.origin.x, hiddenY, _mapView_.bounds.size.width, self.view.bounds.size.height)];
         
@@ -693,7 +704,7 @@ BOOL initialZoomComplete = NO;
     
     //SET THE FRAME WIDTH TO THE Phone WIDTH AND THE HEIGHT TO THE PHONE HEIGHT + MESSAGEBOX
     currentInfoWindow.frame = CGRectMake(window.frame.origin.x, desiredY, _mapView_.bounds.size.width, window.bounds.size.height);
-    
+
     [UIView commitAnimations];
 }
 
@@ -785,7 +796,6 @@ BOOL initialZoomComplete = NO;
             //IF THE USER TOUCHES THE MESSAGEBOX
             _mapView_.userInteractionEnabled = false;
             NSLog(@"Swiped Up");
-            
             //////////////////////////////////ANIMATIONS/////////////////////////////////
             //currentInfoWindow.alpha = 0.0;
             [UIView beginAnimations:nil context:nil];
