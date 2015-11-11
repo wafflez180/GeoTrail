@@ -665,11 +665,7 @@ BOOL initialZoomComplete = NO;
     currentInfoWindow = window;
     
     [window.imageBG setUserInteractionEnabled:true];
-    /*
-    _infoWindowView = [[UIView alloc] initWithFrame:self.view.frame];
-    [self.view addSubview:_infoWindowView];
-    [self.view bringSubviewToFront:_infoWindowView];
-*/
+    
     // add a pan recognizer
     UIGestureRecognizer* recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     recognizer.delegate = self;
@@ -677,13 +673,7 @@ BOOL initialZoomComplete = NO;
     /////////////////////////////////////////
     int hiddenY = _mapView_.frame.size.height + 5 + window.frame.size.height;
     int desiredY = _mapView_.frame.size.height - (window.messageBox.frame.size.height + self.tabBarController.tabBar.frame.size.height - 2);
-    /*
-    [_infoWindowView setUserInteractionEnabled:false];
-
-     [_infoWindowView addSubview:window];
     
-    _infoWindowView.backgroundColor = [[UIColor redColor] colorWithAlphaComponent:0.3];
-     */
     [self.view addSubview:window];
     
     [window setFrame:CGRectMake(window.frame.origin.x, hiddenY, _mapView_.bounds.size.width, self.view.bounds.size.height)];
@@ -753,7 +743,6 @@ BOOL initialZoomComplete = NO;
         _originalNavBarY = self.navigationController.navigationBar.frame.origin.y;
         //LOAD IN ALL OF THE DATA
         [self ShowPicture];
-        
     }
     
     // 2
