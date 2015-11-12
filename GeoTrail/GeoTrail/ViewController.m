@@ -38,6 +38,7 @@ BOOL initialZoomComplete = NO;
     PFObject *postedPictures;
     PFUser *user;
     GMSMarker *prevMarker;
+    int prevInfoWindowMarkerIndex;
     NSArray *contactNamesArray;
     NSArray *contactIDsArray;
     CLLocationCoordinate2D currentUserLoc;
@@ -59,6 +60,7 @@ BOOL initialZoomComplete = NO;
     int _originalNavBarY;
     BOOL _deleteOnDragRelease;
     BOOL viewingPic;
+    BOOL draggedPicUp;
     CGPoint initialTouchLocation;
     UIView *_infoWindowView;
     
@@ -633,6 +635,9 @@ BOOL initialZoomComplete = NO;
     //RESET THE PREVIOUSLY SELECTED MARKER
     prevMarker.icon = [UIImage imageNamed:@"PicCircle"];
     prevMarker.zIndex = 1;
+    //MOVE THE PREVIOUS WINDOW OUT
+    CustomInfoWindow *iWindow = infoWindows[prevInfoWindowMarkerIndex];
+    [iWindow setCenter:CGPointMake(iWindow.center.x,iWindow.center.y*10)];
 
     for (int i = 0; i < infoWindows.count; i++) {
         CustomInfoWindow *window = infoWindows[i];
@@ -642,6 +647,7 @@ BOOL initialZoomComplete = NO;
             //TURN THIS INTO AN ANIMATION
             marker.zIndex = 99999; //MAKE THE ICON IN FRONT OF THE SCREEN
             prevMarker = marker;
+            prevInfoWindowMarkerIndex = i;
             
             [self DrawInInfoWindow:i];
             return nil;
@@ -663,6 +669,8 @@ BOOL initialZoomComplete = NO;
     CustomInfoWindow *window = infoWindows[index];
     
     currentInfoWindow = window;
+    
+    [currentInfoWindow setAlpha:1.0];
     
     [window.imageBG setUserInteractionEnabled:true];
     
@@ -698,7 +706,7 @@ BOOL initialZoomComplete = NO;
     [UIView commitAnimations];
 }
 
-- (void)ShowPicture{
+- (void)LoadPicture{
     CLLocationCoordinate2D selectedMarkerLoc = _mapView_.selectedMarker.position;
     
     PFFile *picture;
@@ -742,7 +750,7 @@ BOOL initialZoomComplete = NO;
         _originalY = currentInfoWindow.frame.origin.y;
         _originalNavBarY = self.navigationController.navigationBar.frame.origin.y;
         //LOAD IN ALL OF THE DATA
-        [self ShowPicture];
+        [self LoadPicture];
     }
     
     // 2
@@ -750,14 +758,15 @@ BOOL initialZoomComplete = NO;
         // translate the center
         CGPoint translation = [recognizer translationInView:currentInfoWindow];
         CGRect rect = currentInfoWindow.frame;
-        CGRect naasvBarRect = self.navigationController.navigationBar.frame;
-
-        rect.origin.y = translation.y + _originalY;
+        
         //NSLog(@"Translation: %f", translation.y);
         //NSLog(@"Info Window Y: %f", currentInfoWindow.frame.origin.y);
         
         if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
             //IF THE USER TOUCHES THE MESSAGEBOX
+            draggedPicUp = true;
+            
+            rect.origin.y = translation.y + _originalY;
             currentInfoWindow.frame = rect;
             
             // Change values of other objects during drag
@@ -769,13 +778,18 @@ BOOL initialZoomComplete = NO;
             self.navigationController.navigationBar.frame = navBarRect;
             //CHANGE TAB BAR ALPHA
             [self.tabBarController.tabBar setAlpha:(1.f - percentage)];
-            //CHANGE MESSAGE BOX ALPHA
-            for (int i = 0; i < [currentInfoWindow subviews].count; i++) {
-                [[[currentInfoWindow subviews] objectAtIndex:i] setAlpha:(1.f - percentage)];
-            }
             currentInfoWindow.imageBG.alpha = 1;
-        }else{
+        }else if(draggedPicUp){
             //IF THE USER TOUCHES THE IMAGEVIEW
+            if ((translation.y + _originalY ) <= rect.origin.y) {//WHEN USER SWIPES UP
+                rect.origin.y = translation.y + _originalY;
+            }
+            currentInfoWindow.frame = rect;
+            
+            //RESET MARKER
+            [_mapView_ setSelectedMarker:nil];
+            prevMarker.icon = [UIImage imageNamed:@"PicCircle"];
+            prevMarker.zIndex = 1;
         }
     }
     
@@ -784,7 +798,7 @@ BOOL initialZoomComplete = NO;
         if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
             //IF THE USER TOUCHES THE MESSAGEBOX
             _mapView_.userInteractionEnabled = false;
-            NSLog(@"Swiped Up");
+            //NSLog(@"Swiped Up");
             //////////////////////////////////ANIMATIONS/////////////////////////////////
             //currentInfoWindow.alpha = 0.0;
             [UIView beginAnimations:nil context:nil];
@@ -798,11 +812,25 @@ BOOL initialZoomComplete = NO;
             [self.navigationController setNavigationBarHidden:YES animated:YES];
             [self.tabBarController.tabBar setAlpha:0.0];
             
-            
             [UIView commitAnimations];
             /////////////////////////////////////////////////////////////////////////////
-        }else{
+        }else if (draggedPicUp){
             //IF THE USER TOUCHES THE IMAGEVIEW
+            draggedPicUp = false;
+            _mapView_.userInteractionEnabled = true;
+            
+            [UIView beginAnimations:nil context:nil];
+            [UIView setAnimationDuration:0.2];
+            [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+            
+            CGRect infoWindowRect = currentInfoWindow.frame;
+            infoWindowRect.origin.y = -(self.view.center.y * 2);
+            currentInfoWindow.frame = infoWindowRect;
+            
+            [self.navigationController setNavigationBarHidden:NO animated:YES];
+            [self.tabBarController.tabBar setAlpha:1.0];
+            
+            [UIView commitAnimations];
         }
     }
 }
