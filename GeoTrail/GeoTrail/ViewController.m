@@ -22,7 +22,6 @@ BOOL initialZoomComplete = NO;
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIImageView *picView;
 @property (weak, nonatomic) IBOutlet GMSMapView *mapView_;
-@property (weak, nonatomic) IBOutlet UIButton *viewPictureButton;
 @property (weak, nonatomic) IBOutlet UIButton *nextPicButton;
 @property (weak, nonatomic) IBOutlet UIButton *goToUserLocButton;
 
@@ -39,8 +38,9 @@ BOOL initialZoomComplete = NO;
     PFUser *user;
     GMSMarker *prevMarker;
     int prevInfoWindowMarkerIndex;
-    NSArray *contactNamesArray;
-    NSArray *contactIDsArray;
+    NSMutableArray *contactNamesArray;
+    NSMutableArray *contactIDsArray;
+    NSMutableArray *contactUnlockedHexsArray;
     CLLocationCoordinate2D currentUserLoc;
     NSMutableArray *PFFilePictureArray;
     NSMutableArray *postedPictureLocations;
@@ -54,6 +54,7 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *hexCentersOnMap;
     NSMutableArray *infoWindows;
     NSMutableArray *GMSMarkersArray;
+    
     CustomInfoWindow *currentInfoWindow;
     
     int _originalY;
@@ -67,12 +68,14 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *centerCoords;
     
     int indexOfCenterHex;
+    int userUnlockedHexs;
 }
 - (IBAction)TappedRefresh:(id)sender {
     PFUser *userID = [PFUser currentUser];
     if (userID != nil) {
-        [self uploadDataOnMap:userID :@"You"];//SET UP ALL CURRENT USER'S PICTURES
-        [self loadContacts];
+        [self loadPlotHexs];
+        [self uploadDataOnMap:userID :@"You": [NSNumber numberWithInt:userUnlockedHexs]];//SET UP ALL CURRENT USER'S PICTURES
+        [self loadUserContacts];
     }
 }
 
@@ -92,6 +95,8 @@ BOOL initialZoomComplete = NO;
     [self.mapView_ setIndoorEnabled:FALSE];
     [self.mapView_ setMinZoom:5 maxZoom:25];
     
+    contactUnlockedHexsArray = [[NSMutableArray alloc] init];
+    contactIDsArray = [[NSMutableArray alloc] init];
     hexArray = [[NSMutableArray alloc]init];
     northWestHexArray = [[NSMutableArray alloc]init];
     southWestHexArray = [[NSMutableArray alloc]init];
@@ -143,8 +148,8 @@ BOOL initialZoomComplete = NO;
                 // Success!
                 PFUser *userID = [PFUser currentUser];
                 if (userID != nil) {
-                    [self uploadDataOnMap:userID :@"You"];//SET UP ALL CURRENT USER'S PICTURES
-                    [self loadContacts];
+                    [self uploadDataOnMap:userID :@"You":[NSNumber numberWithInt:userUnlockedHexs]];//SET UP ALL CURRENT USER'S PICTURES
+                    [self loadUserContacts];
                 }
             }];
         }]];
@@ -153,8 +158,8 @@ BOOL initialZoomComplete = NO;
     
     PFUser *userID = [PFUser currentUser];
     if (userID != nil) {
-        [self uploadDataOnMap:userID :@"You"];//SET UP ALL CURRENT USER'S PICTURES
-        [self loadContacts];
+        [self uploadDataOnMap:userID :@"You":[NSNumber numberWithInt:userUnlockedHexs]];//SET UP ALL CURRENT USER'S PICTURES
+        [self loadUserContacts];
     }
     //[self addHexagons];
 }
@@ -167,7 +172,7 @@ BOOL initialZoomComplete = NO;
     
 }
 
--(void)uploadDataOnMap: (PFUser *)posterUser :(NSString *)Username{
+-(void)uploadDataOnMap: (PFUser *)posterUser :(NSString *)Username :(NSNumber *)unlockedHexs{
     PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
     NSLog(@"%@",Username);
     [query whereKey:@"User" equalTo:posterUser];// "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
@@ -203,7 +208,7 @@ BOOL initialZoomComplete = NO;
             NSLog(@"Error: %@ %@", error, [error userInfo]);
         }
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
-        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews];
+        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews:unlockedHexs];
         [self loadPlotHexs];
     }];
     // The InBackground methods are asynchronous, so any code after this will run
@@ -301,11 +306,52 @@ BOOL initialZoomComplete = NO;
             }
         }
         //ADD THE POLYGON USING THE INDEX
-        [self addUnlockedHexs];
+        [self checkUnlockedHexs];
     }];
 }
 
--(void)addUnlockedHexs{
+-(void)checkUnlockedHexs{
+    PFQuery *query = [PFUser query];
+    [query whereKey:@"username" equalTo:[[PFUser currentUser] username]];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if(error){
+            
+        }else{
+            PFObject *theUser;
+            for (int x = 0; x < objects.count; x++) {
+                if (objects[x] == [PFUser currentUser]) {
+                    theUser = objects[x];
+                }
+            }
+            NSMutableArray *unlockedHexs = [[NSMutableArray alloc]initWithArray:[theUser objectForKey:@"UnlockedHexs"]];
+            double currentHexLat = [centerCoords[indexOfCenterHex] coordinate].latitude;
+            double currentHexLong = [centerCoords[indexOfCenterHex] coordinate].longitude;
+            //GO THROUGH ARRAY AND CHECK IF CURRENT HEX ISN'T IN THE ARRAY
+            bool currentHexIsNew = true;
+            for (int i = 0; i < unlockedHexs.count; i++) {
+                PFGeoPoint *unlockedHex = unlockedHexs[i];
+                //IF THE CURRENT HEXAGON THE USER IS IN IS IN THE ARRAY THEN DON'T ADD IT
+                if (fabs(currentHexLat - unlockedHex.latitude) <= 0.00001 && fabs(currentHexLong - unlockedHex.longitude) <= 0.00001) {
+                    currentHexIsNew = false;
+                }
+            }
+            if (currentHexIsNew) {
+                /*--*/
+                userUnlockedHexs = ((int)unlockedHexs.count + 1);
+                PFGeoPoint *newHex = [PFGeoPoint geoPointWithLatitude:currentHexLat longitude:currentHexLong];
+                [[PFUser currentUser] addObject:newHex forKey:@"UnlockedHexs"];
+                [[PFUser currentUser] saveInBackground];
+            }else{
+                userUnlockedHexs = (int)unlockedHexs.count;
+                //NSLog(@"%i",userUnlockedHexs);
+                //NSLog(@"%lu", unlockedHexs.count);
+            }
+            [self loadUnlockedHexs];
+        }
+    }];
+}
+
+-(void)loadUnlockedHexs{
     CLLocationCoordinate2D coordTemp = [centerCoords[indexOfCenterHex] coordinate];
     
     float oneMileLat = 0.01449275362319;
@@ -319,8 +365,7 @@ BOOL initialZoomComplete = NO;
     GMSMutablePath *hexH = [[GMSMutablePath path] init];
     
     float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-    float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD
-    
+    float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD//
     CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
     CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
     CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
@@ -335,14 +380,18 @@ BOOL initialZoomComplete = NO;
     [hexH addCoordinate:topRightH];
     [hexH addCoordinate:bottomRightH];
     
-    GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-    polygon2.fillColor = [UIColor clearColor];
-    polygon2.strokeColor = [self colorWithHexString:@"6F6F6F"];
-    polygon2.strokeWidth = 4;
-    polygon2.map = self.mapView_;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // make some UI changes
+        GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+        polygon2.fillColor = [UIColor clearColor];
+        polygon2.strokeColor = [self colorWithHexString:@"6F6F6F"];
+        polygon2.strokeWidth = 4;
+        polygon2.map = self.mapView_;
+    });
     
-    CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
-    [hexCentersOnMap addObject:towerLocation];
+    CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
+    
+    [hexCentersOnMap addObject:hexCenter];
     [self getSurroundingHexs];
 }
 
@@ -399,14 +448,15 @@ BOOL initialZoomComplete = NO;
         CLLocationCoordinate2D center = [self getCenterOfHex:hexH];
         
         if ([self checkIfCenterIsOnMap:center] == false) {
-            GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-            polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
-            polygon2.strokeWidth = 1;
-            polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
-            polygon2.map = self.mapView_;
-            
-            CLLocation *towerLocation = [[CLLocation alloc] initWithLatitude:center.latitude longitude:center.longitude];
-            [hexCentersOnMap addObject:towerLocation];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+                polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
+                polygon2.strokeWidth = 1;
+                polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
+                polygon2.map = self.mapView_;
+            });
+            CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:center.latitude longitude:center.longitude];
+            [hexCentersOnMap addObject:hexCenter];
         }
     }
 }
@@ -537,7 +587,7 @@ BOOL initialZoomComplete = NO;
 
 #pragma mark Loading Contacts Methods
 
--(void)loadContacts{
+-(void)loadUserContacts{
     PFQuery *query = [PFUser query];
     [query whereKey:@"username" equalTo:[[PFUser currentUser] username]]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
     [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
@@ -552,46 +602,46 @@ BOOL initialZoomComplete = NO;
             for (NSInteger i = 0; i < PFObjects.count; i++) {
                 PFObject *thePostedPicture = PFObjects[i];
                 NSArray *contacts = [thePostedPicture objectForKey:@"Contacts"];
-                NSLog(@"Added Contact");
-                contactNamesArray = contacts;
+                //NSLog(@"Added Contact");
+                contactNamesArray = [NSMutableArray arrayWithArray:contacts];
             }
         }
-        [self loadContactIDs];
+        [self loadUserContactIDs];
     }];
 }
 
--(void)loadContactIDs{
-    PFQuery *query = [PFQuery queryWithClassName:@"_User"];
-    contactIDsArray = nil;
-    NSMutableArray *temp = [NSMutableArray array];
-    
-    for (int n = 0; n < contactNamesArray.count; n++) {
-        [query whereKey:@"username" equalTo:contactNamesArray[n]]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
-        [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
-            if (error) {
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
-                                                                    message:nil
-                                                                   delegate:self
-                                                          cancelButtonTitle:nil
-                                                          otherButtonTitles:@"OK", nil];
-                [alertView show];
-            }else{
-                for (NSInteger i = 0; i < PFObjects.count; i++) {
-                    [temp addObject:PFObjects[i]];
-                }
+-(void)loadUserContactIDs{
+    PFQuery *query = [PFUser query];
+    NSArray *array = [NSArray arrayWithArray:contactNamesArray];
+    [query whereKey:@"username" containedIn:array]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
+    [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
+        if (error) {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
+                                                                message:nil
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"OK", nil];
+            [alertView show];
+        }else{
+            //ADDS A CONTACT ID FROM THE CONTACT LIST TO AN ARRAY
+            for (NSInteger i = 0; i < PFObjects.count; i++) {
+                [contactIDsArray addObject:PFObjects[i]];
+                //GET THE USER'S UNLOCKED HEXS NUMBER
+                PFObject *object = PFObjects[i];
+                NSArray *unlockedHexs = [object objectForKey:@"UnlockedHexs"];
+                NSNumber *numHexs = [NSNumber numberWithLong:unlockedHexs.count];
+                [contactUnlockedHexsArray addObject:numHexs];
+                NSLog(@"%@",numHexs);
+                //NSLog(@"%@", [PFObjects[i] objectForKey:@"username"]);
+                [self uploadDataOnMap: contactIDsArray[i]: contactNamesArray[i]: contactUnlockedHexsArray[i]];//SET UP ALL CURRENT USER'S PICTURES
             }
-            contactIDsArray = [NSArray arrayWithArray:temp];
-            if(contactIDsArray == nil){
-                NSLog(@"\nSending in Nil contact Array");
-            }
-            [self uploadDataOnMap: contactIDsArray[n]: contactNamesArray[n]];//SET UP ALL CURRENT USER'S PICTURES
-        }];
-    }
+        }
+    }];
 }
 
 # pragma mark - Info Window Methods
 
-- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)ViewsArray
+- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)ViewsArray :(NSNumber *)unlockedHexs
 {
     [self setCameraToUserLoc];
     // add all annotations
@@ -620,6 +670,7 @@ BOOL initialZoomComplete = NO;
         infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
         infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
         infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
+        infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",unlockedHexs];
         infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
         infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
         infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
@@ -726,6 +777,7 @@ BOOL initialZoomComplete = NO;
     [picture getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
         if (!error) {
             UIImage *image = [UIImage imageWithData:data];
+            currentInfoWindow.image.image = nil;
             currentInfoWindow.image.image = image;
         }
     }];
@@ -749,8 +801,10 @@ BOOL initialZoomComplete = NO;
         initialTouchLocation = [recognizer locationInView: currentInfoWindow];
         _originalY = currentInfoWindow.frame.origin.y;
         _originalNavBarY = self.navigationController.navigationBar.frame.origin.y;
-        //LOAD IN ALL OF THE DATA
-        [self LoadPicture];
+        if (!draggedPicUp) {
+            //LOAD IN ALL OF THE DATA
+            [self LoadPicture];
+        }
     }
     
     // 2
@@ -765,7 +819,7 @@ BOOL initialZoomComplete = NO;
         if (CGRectContainsPoint(currentInfoWindow.messageBox.frame, initialTouchLocation) ) {
             //IF THE USER TOUCHES THE MESSAGEBOX
             draggedPicUp = true;
-            
+
             rect.origin.y = translation.y + _originalY;
             currentInfoWindow.frame = rect;
             
@@ -816,21 +870,25 @@ BOOL initialZoomComplete = NO;
             /////////////////////////////////////////////////////////////////////////////
         }else if (draggedPicUp){
             //IF THE USER TOUCHES THE IMAGEVIEW
-            draggedPicUp = false;
-            _mapView_.userInteractionEnabled = true;
-            
-            [UIView beginAnimations:nil context:nil];
-            [UIView setAnimationDuration:0.2];
-            [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
-            
-            CGRect infoWindowRect = currentInfoWindow.frame;
-            infoWindowRect.origin.y = -(self.view.center.y * 2);
-            currentInfoWindow.frame = infoWindowRect;
-            
-            [self.navigationController setNavigationBarHidden:NO animated:YES];
-            [self.tabBarController.tabBar setAlpha:1.0];
-            
-            [UIView commitAnimations];
+            if (currentInfoWindow.frame.origin.y < ((-currentInfoWindow.messageBox.frame.size.height) + 1)) {//IF USER SWIPED UP
+                draggedPicUp = false;
+                _mapView_.userInteractionEnabled = true;
+                
+                [UIView beginAnimations:nil context:nil];
+                [UIView setAnimationDuration:0.2];
+                [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+                
+                CGRect infoWindowRect = currentInfoWindow.frame;
+                infoWindowRect.origin.y = -(self.view.center.y * 2);
+                currentInfoWindow.frame = infoWindowRect;
+                
+                [self.navigationController setNavigationBarHidden:NO animated:YES];
+                [self.tabBarController.tabBar setAlpha:1.0];
+                
+                [UIView commitAnimations];
+            }else{
+                
+            }
         }
     }
 }

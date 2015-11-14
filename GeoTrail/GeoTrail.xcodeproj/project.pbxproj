@@ -20,7 +20,6 @@
 		A71906961BF3EDCB001995A7 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71906951BF3EDCB001995A7 /* Accounts.framework */; };
 		A71906981BF3EDD0001995A7 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71906971BF3EDD0001995A7 /* Social.framework */; };
 		A72B64381AEF051F00C84DE5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B64281AEF051F00C84DE5 /* AppDelegate.m */; };
-		A72B64391AEF051F00C84DE5 /* CameraButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A72B64291AEF051F00C84DE5 /* CameraButton.png */; };
 		A72B643A1AEF051F00C84DE5 /* ContactsTableTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B642B1AEF051F00C84DE5 /* ContactsTableTableViewController.m */; };
 		A72B643B1AEF051F00C84DE5 /* frontCamera.png in Resources */ = {isa = PBXBuildFile; fileRef = A72B642C1AEF051F00C84DE5 /* frontCamera.png */; };
 		A72B643C1AEF051F00C84DE5 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A72B642D1AEF051F00C84DE5 /* Images.xcassets */; };
@@ -74,7 +73,6 @@
 		A71906971BF3EDD0001995A7 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		A72B64271AEF051F00C84DE5 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = GeoTrail/AppDelegate.h; sourceTree = SOURCE_ROOT; };
 		A72B64281AEF051F00C84DE5 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = GeoTrail/AppDelegate.m; sourceTree = SOURCE_ROOT; };
-		A72B64291AEF051F00C84DE5 /* CameraButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = CameraButton.png; path = GeoTrail/CameraButton.png; sourceTree = SOURCE_ROOT; };
 		A72B642A1AEF051F00C84DE5 /* ContactsTableTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContactsTableTableViewController.h; path = GeoTrail/ContactsTableTableViewController.h; sourceTree = SOURCE_ROOT; };
 		A72B642B1AEF051F00C84DE5 /* ContactsTableTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContactsTableTableViewController.m; path = GeoTrail/ContactsTableTableViewController.m; sourceTree = SOURCE_ROOT; };
 		A72B642C1AEF051F00C84DE5 /* frontCamera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = frontCamera.png; path = GeoTrail/frontCamera.png; sourceTree = SOURCE_ROOT; };
@@ -189,7 +187,6 @@
 				A76CAE9C1B3CA2B000A0F598 /* checkButton.png */,
 				A76CAE9D1B3CA2B000A0F598 /* Xbutton.png */,
 				A76CAEA01B3CAC5300A0F598 /* bottomBarPin.png */,
-				A72B64291AEF051F00C84DE5 /* CameraButton.png */,
 				A72B642E1AEF051F00C84DE5 /* Info.plist */,
 				A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */,
 				A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */,
@@ -246,6 +243,7 @@
 				A7B3E8431AE724E900FBEACD /* Resources */,
 				B8AC4AE0EBA484B32AAF032F /* Embed Pods Frameworks */,
 				1882BBC3F7823FEC6FC5BD7F /* Copy Pods Resources */,
+				A70B6C8D1BF4285000DFFD41 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -342,7 +340,6 @@
 				A76CAEA31B3CAD4F00A0F598 /* bottomBarCamera.png in Resources */,
 				A7984E701B1A972D00692E01 /* InfoWindow.xib in Resources */,
 				A7A0EEE01B3478460044AB3B /* infoWindowPolaroid.png in Resources */,
-				A72B64391AEF051F00C84DE5 /* CameraButton.png in Resources */,
 				A7A0EEE61B3479370044AB3B /* infoViewsIcon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -415,6 +412,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		A70B6C8D1BF4285000DFFD41 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${PODS_ROOT}/Fabric/Fabric.framework/run b3f968f6cdf4372d174aad54e4647514c1888e83 4ba1323699a831aab1d8745099d061dc1228dc735dcafba8b6beb8149b38464d\n";
 			showEnvVarsInLog = 0;
 		};
 		B8AC4AE0EBA484B32AAF032F /* Embed Pods Frameworks */ = {

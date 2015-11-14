@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9059" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
     </dependencies>
@@ -14,6 +15,7 @@
             <subviews>
                 <imageView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Message Box BG" translatesAutoresizingMaskIntoConstraints="NO" id="Bgc-5B-WBD">
                     <rect key="frame" x="0.0" y="0.0" width="406" height="60"/>
+                    <animations/>
                     <gestureRecognizers/>
                     <constraints>
                         <constraint firstAttribute="width" constant="14" id="72e-d0-y0g"/>
@@ -30,12 +32,14 @@
                 </imageView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="USERNAME" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UKN-oY-gSN">
                     <rect key="frame" x="148" y="10" width="110.5" height="23.5"/>
+                    <animations/>
                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="20"/>
                     <color key="textColor" red="0.1098039299" green="0.1098039299" blue="0.1098039299" alpha="1" colorSpace="deviceRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="230" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tpz-Rc-RJG">
                     <rect key="frame" x="25" y="12" width="50.5" height="36"/>
+                    <animations/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="QBU-4D-5tE"/>
                         <constraint firstAttribute="height" constant="40" id="w6r-uF-lzh"/>
@@ -52,6 +56,7 @@
                 </label>
                 <imageView userInteractionEnabled="NO" alpha="0.79999999999999982" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Info Arrow" translatesAutoresizingMaskIntoConstraints="NO" id="CI1-mw-IUf">
                     <rect key="frame" x="383" y="5" width="13" height="9"/>
+                    <animations/>
                     <color key="tintColor" red="0.20000001788139343" green="0.20000001788139343" blue="0.20000001788139343" alpha="1" colorSpace="deviceRGB"/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="CI1-mw-IUf" secondAttribute="height" multiplier="11:19" id="TeS-rN-Ooq"/>
@@ -68,6 +73,7 @@
                 </imageView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="350" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nuU-bF-Gol">
                     <rect key="frame" x="297" y="12" width="50.5" height="36"/>
+                    <animations/>
                     <gestureRecognizers/>
                     <constraints>
                         <constraint firstAttribute="height" constant="40" id="d3m-nz-5Oc"/>
@@ -85,6 +91,7 @@
                 </label>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="View Icon Filled" translatesAutoresizingMaskIntoConstraints="NO" id="ORU-DJ-EM7">
                     <rect key="frame" x="358" y="25" width="23" height="14"/>
+                    <animations/>
                     <constraints>
                         <constraint firstAttribute="height" constant="12" id="m1I-BK-4OP"/>
                         <constraint firstAttribute="width" secondItem="ORU-DJ-EM7" secondAttribute="height" multiplier="7:6" id="w85-5g-geV"/>
@@ -100,12 +107,14 @@
                 </imageView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3 Days Ago" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iiq-YZ-j52">
                     <rect key="frame" x="177" y="36" width="51.5" height="12"/>
+                    <animations/>
                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="10"/>
                     <color key="textColor" red="0.1098039299" green="0.1098039299" blue="0.1098039299" alpha="1" colorSpace="deviceRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Like Hex Filled" translatesAutoresizingMaskIntoConstraints="NO" id="s4x-st-aWU">
                     <rect key="frame" x="85" y="22" width="19" height="20"/>
+                    <animations/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="s4x-st-aWU" secondAttribute="height" multiplier="7:6" id="7GL-SU-lXe"/>
                         <constraint firstAttribute="height" constant="12" id="bbn-Ye-TAa"/>
@@ -127,45 +136,55 @@
                         <subviews>
                             <imageView hidden="YES" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="Arrow" translatesAutoresizingMaskIntoConstraints="NO" id="ja1-27-aO3">
                                 <rect key="frame" x="371" y="30" width="20" height="13"/>
+                                <animations/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="USERNAME" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Ou-7L-3bc">
                                 <rect key="frame" x="128" y="23" width="110.5" height="23.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="20"/>
                                 <color key="textColor" red="0.1098039299" green="0.1098039299" blue="0.1098039299" alpha="1" colorSpace="deviceRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="Grey Hex" translatesAutoresizingMaskIntoConstraints="NO" id="Vju-Eh-H0M">
                                 <rect key="frame" x="243" y="24" width="20" height="22"/>
+                                <animations/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="5" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EoQ-q8-WXh">
                                 <rect key="frame" x="249" y="25" width="8.5" height="17.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" red="0.93725496530532837" green="0.95294123888015747" blue="0.95686280727386475" alpha="1" colorSpace="deviceRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wk1-Hb-oAW">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wk1-Hb-oAW">
                                 <rect key="frame" x="0.0" y="55" width="406" height="528"/>
+                                <animations/>
                                 <color key="backgroundColor" red="0.67058825492858887" green="0.71764707565307617" blue="0.71764707565307617" alpha="1" colorSpace="deviceRGB"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="230" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="noP-vI-4xf">
                                 <rect key="frame" x="45" y="602" width="60.5" height="42.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="36"/>
                                 <color key="textColor" red="0.67058825492858887" green="0.71764707565307617" blue="0.71764707565307617" alpha="1" colorSpace="deviceRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="Like Hex Outline" translatesAutoresizingMaskIntoConstraints="NO" id="fyY-sR-XnQ">
                                 <rect key="frame" x="113" y="609" width="27" height="31"/>
+                                <animations/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="350" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kgu-G0-uOM">
                                 <rect key="frame" x="266" y="602" width="60.5" height="42.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="36"/>
                                 <color key="textColor" red="0.67058825492858887" green="0.71764707565307617" blue="0.71764707565307617" alpha="1" colorSpace="deviceRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="View Icon Outline" translatesAutoresizingMaskIntoConstraints="NO" id="UDq-I6-5Y7">
                                 <rect key="frame" x="334.5" y="613.5" width="34" height="23"/>
+                                <animations/>
                             </imageView>
                         </subviews>
+                        <animations/>
                         <constraints>
                             <constraint firstAttribute="centerX" secondItem="Vju-Eh-H0M" secondAttribute="centerX" constant="-10" id="39w-bv-PpT"/>
                             <constraint firstItem="ja1-27-aO3" firstAttribute="leading" secondItem="wk1-Hb-oAW" secondAttribute="trailing" id="4a3-ga-tFJ"/>
@@ -197,9 +216,11 @@
                             </mask>
                         </variation>
                     </view>
+                    <animations/>
                     <blurEffect style="light"/>
                 </visualEffectView>
             </subviews>
+            <animations/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             <constraints>
@@ -281,7 +302,6 @@
             </connections>
             <point key="canvasLocation" x="285" y="247.5"/>
         </view>
-        <swipeGestureRecognizer direction="down" id="i09-mz-27q"/>
     </objects>
     <resources>
         <image name="Arrow" width="20" height="13"/>
