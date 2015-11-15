@@ -49,9 +49,9 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *southWestHexArray;
     NSMutableArray *southEastHexArray;
     NSMutableArray *northEastHexArray;
-    NSMutableArray *hexUnlockedArray;
+    NSMutableArray *userUnlockedHexsArray;
     NSMutableArray *hexInViewArray;
-    NSMutableArray *hexCentersOnMap;
+    NSMutableArray *shadedHexCentersOnMap;
     NSMutableArray *infoWindows;
     NSMutableArray *GMSMarkersArray;
     
@@ -102,9 +102,9 @@ BOOL initialZoomComplete = NO;
     southWestHexArray = [[NSMutableArray alloc]init];
     southEastHexArray = [[NSMutableArray alloc]init];
     northEastHexArray = [[NSMutableArray alloc]init];
-    hexUnlockedArray = [[NSMutableArray alloc]init];
+    userUnlockedHexsArray = [[NSMutableArray alloc]init];
     hexInViewArray = [[NSMutableArray alloc]init];
-    hexCentersOnMap = [[NSMutableArray alloc]init];
+    shadedHexCentersOnMap = [[NSMutableArray alloc]init];
     PFFilePictureArray = [[NSMutableArray alloc]init];
     postedPictureLocations = [[NSMutableArray alloc]init];
     infoWindows = [[NSMutableArray alloc] init];
@@ -336,69 +336,26 @@ BOOL initialZoomComplete = NO;
                 }
             }
             if (currentHexIsNew) {
-                /*--*/
-                userUnlockedHexs = ((int)unlockedHexs.count + 1);
+                /*-40.959770
+                 2015-11-14 18:55:21.480 GeoTrail[3634:1229629] -74.057976-*/
                 PFGeoPoint *newHex = [PFGeoPoint geoPointWithLatitude:currentHexLat longitude:currentHexLong];
+                [unlockedHexs addObject:newHex];
                 [[PFUser currentUser] addObject:newHex forKey:@"UnlockedHexs"];
                 [[PFUser currentUser] saveInBackground];
-            }else{
-                userUnlockedHexs = (int)unlockedHexs.count;
-                //NSLog(@"%i",userUnlockedHexs);
-                //NSLog(@"%lu", unlockedHexs.count);
+                
             }
+            userUnlockedHexsArray = [NSMutableArray arrayWithArray:unlockedHexs];
+            userUnlockedHexs = (int)userUnlockedHexsArray.count;
             [self loadUnlockedHexs];
         }
     }];
 }
 
 -(void)loadUnlockedHexs{
-    CLLocationCoordinate2D coordTemp = [centerCoords[indexOfCenterHex] coordinate];
-    
-    float oneMileLat = 0.01449275362319;
-    float oneMileLong = 0.01445671659053;
-    
-    float width = (10 * oneMileLat);
-    float height = (10 * oneMileLong);
-    float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
-    float topMidHeights = height - botMidHeights;
-    
-    GMSMutablePath *hexH = [[GMSMutablePath path] init];
-    
-    float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-    float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD//
-    CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
-    CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
-    CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
-    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
-    CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
-    CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
-    
-    [hexH addCoordinate:bottomH];
-    [hexH addCoordinate:bottomLeftH];
-    [hexH addCoordinate:topLeftH];
-    [hexH addCoordinate:topH];
-    [hexH addCoordinate:topRightH];
-    [hexH addCoordinate:bottomRightH];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // make some UI changes
-        GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-        polygon2.fillColor = [UIColor clearColor];
-        polygon2.strokeColor = [self colorWithHexString:@"6F6F6F"];
-        polygon2.strokeWidth = 4;
-        polygon2.map = self.mapView_;
-    });
-    
-    CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
-    
-    [hexCentersOnMap addObject:hexCenter];
-    [self getSurroundingHexs];
-}
-
--(void)getSurroundingHexs{
-    CLLocationCoordinate2D coordTemp = [centerCoords[indexOfCenterHex] coordinate];
-    
-    for (int i = 0; i <= 6; i++) {
+    for (int i = 0; i < userUnlockedHexsArray.count; i++) {
+        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
+        CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(geoPoint.latitude, geoPoint.longitude);
+        
         float oneMileLat = 0.01449275362319;
         float oneMileLong = 0.01445671659053;
         
@@ -409,28 +366,8 @@ BOOL initialZoomComplete = NO;
         
         GMSMutablePath *hexH = [[GMSMutablePath path] init];
         
-        float latCoords;
-        float longCoords;
-        if (i == 6) {//THE BOTTOM LEFT HEX
-            latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
-            longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
-        }else if (i == 5) {//THE BOTTOM RIGHT HEX
-            latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
-            longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
-        }else if (i == 4){//THE TOP LEFT HEX
-            latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
-            longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
-        }else if (i == 3){//THE TOP RIGHT HEX
-            latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
-            longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
-        }else if (i == 2){//THE LEFT HEX
-            latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-            longCoords = coordTemp.longitude - (width * 1.5);//INCREASE THE LONG COORD
-        }else if (i == 1){//THE RIGHT HEX
-            latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-            longCoords = coordTemp.longitude + (width / 2);//INCREASE THE LONG COORD
-        }
-        
+        float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+        float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD//
         CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
         CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
         CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
@@ -444,24 +381,90 @@ BOOL initialZoomComplete = NO;
         [hexH addCoordinate:topH];
         [hexH addCoordinate:topRightH];
         [hexH addCoordinate:bottomRightH];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // make some UI changes
+            GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+            polygon2.fillColor = [UIColor clearColor];
+            polygon2.strokeColor = [self colorWithHexString:@"6F6F6F"];
+            polygon2.strokeWidth = 4;
+            polygon2.map = self.mapView_;
+        });
+        [self getSurroundingHexs];
+    }
+}
+
+-(void)getSurroundingHexs{
+    for (int i = 0; i < userUnlockedHexsArray.count; i++) {
+        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
+        CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(geoPoint.latitude, geoPoint.longitude);
         
-        CLLocationCoordinate2D center = [self getCenterOfHex:hexH];
-        
-        if ([self checkIfCenterIsOnMap:center] == false) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-                polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
-                polygon2.strokeWidth = 1;
-                polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
-                polygon2.map = self.mapView_;
-            });
-            CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:center.latitude longitude:center.longitude];
-            [hexCentersOnMap addObject:hexCenter];
+        for (int i = 0; i <= 6; i++) {
+            float oneMileLat = 0.01449275362319;
+            float oneMileLong = 0.01445671659053;
+            
+            float width = (10 * oneMileLat);
+            float height = (10 * oneMileLong);
+            float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+            float topMidHeights = height - botMidHeights;
+            
+            GMSMutablePath *hexH = [[GMSMutablePath path] init];
+            
+            float latCoords;
+            float longCoords;
+            if (i == 6) {//THE BOTTOM LEFT HEX
+                latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
+                longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
+            }else if (i == 5) {//THE BOTTOM RIGHT HEX
+                latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
+                longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
+            }else if (i == 4){//THE TOP LEFT HEX
+                latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
+                longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
+            }else if (i == 3){//THE TOP RIGHT HEX
+                latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
+                longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
+            }else if (i == 2){//THE LEFT HEX
+                latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+                longCoords = coordTemp.longitude - (width * 1.5);//INCREASE THE LONG COORD
+            }else if (i == 1){//THE RIGHT HEX
+                latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+                longCoords = coordTemp.longitude + (width / 2);//INCREASE THE LONG COORD
+            }
+            
+            CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
+            CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
+            CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
+            CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
+            CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
+            CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
+            
+            [hexH addCoordinate:bottomH];
+            [hexH addCoordinate:bottomLeftH];
+            [hexH addCoordinate:topLeftH];
+            [hexH addCoordinate:topH];
+            [hexH addCoordinate:topRightH];
+            [hexH addCoordinate:bottomRightH];
+            
+            CLLocation *center = [self getCenterOfHex:hexH];
+            
+            // NSLog(@"%f", center.latitude);
+            //NSLog(@"%f", center.longitude);
+            if ([self checkIfCenterIsOnMap:center] == false) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
+                    polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
+                    polygon2.strokeWidth = 1;
+                    polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
+                    polygon2.map = self.mapView_;
+                });
+                CLLocation *hexCenter = center;
+                [shadedHexCentersOnMap addObject:hexCenter];
+            }
         }
     }
 }
 
--(CLLocationCoordinate2D)getCenterOfHex:(GMSMutablePath *)hexH{
+-(CLLocation*)getCenterOfHex:(GMSMutablePath *)hexH{
     float maxLat = -200;
     float maxLong = -200;
     float minLat = 999999;
@@ -487,16 +490,23 @@ BOOL initialZoomComplete = NO;
         }
     }
     
-        CLLocationCoordinate2D center = CLLocationCoordinate2DMake((maxLat + minLat) * 0.5, (maxLong + minLong) * 0.5);
+        CLLocationCoordinate2D coordCenter = CLLocationCoordinate2DMake((maxLat + minLat) * 0.5, (maxLong + minLong) * 0.5);
+        CLLocation *center = [[CLLocation alloc] initWithLatitude:coordCenter.latitude longitude:coordCenter.longitude];
     return center;
 }
 
--(BOOL)checkIfCenterIsOnMap:(CLLocationCoordinate2D)center{
+-(BOOL)checkIfCenterIsOnMap:(CLLocation *)center{
     bool isTaken = false;
-    for (int i =0; i < hexCentersOnMap.count; i++) {
-        if (center.latitude == [hexCentersOnMap[i] coordinate].latitude && center.longitude == [hexCentersOnMap[i] coordinate].longitude) {
+    for (int i =0; i < shadedHexCentersOnMap.count; i++) {
+        CLLocation *coord = shadedHexCentersOnMap[i];
+        if (fabs(center.coordinate.latitude - coord.coordinate.latitude) <= 0.0001 && fabs(center.coordinate.longitude - coord.coordinate.longitude) <= 0.0001) {
             isTaken = true;
-            break;
+        }
+    }
+    for (int i =0; i < userUnlockedHexsArray.count; i++) {
+        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
+        if (fabs(center.coordinate.latitude - geoPoint.latitude) <= 0.0001 && fabs(center.coordinate.longitude - geoPoint.longitude) <= 0.0001) {
+            isTaken = true;
         }
     }
     return isTaken;
@@ -1021,10 +1031,10 @@ BOOL initialZoomComplete = NO;
             
             currentRange = -80;
             
-            CLLocationCoordinate2D center = [self getCenterOfHex:hexH];
-            NSNumber *latStr = [NSNumber numberWithDouble:center.latitude];
-            NSNumber *longStr = [NSNumber numberWithDouble:center.longitude];
-            if (center.latitude <= 90 && center.latitude >= -90 && center.longitude >= -180 && center.longitude <=180) {
+            CLLocation *center = [self getCenterOfHex:hexH];
+            NSNumber *latStr = [NSNumber numberWithDouble:center.coordinate.latitude];
+            NSNumber *longStr = [NSNumber numberWithDouble:center.coordinate.longitude];
+            if (center.coordinate.latitude <= 90 && center.coordinate.latitude >= -90 && center.coordinate.longitude >= -180 && center.coordinate.longitude <=180) {
             NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:
                                                 @"GeoPoint", @"__type",
                                                 longStr,@"longitude",
@@ -1033,7 +1043,7 @@ BOOL initialZoomComplete = NO;
             NSDictionary *tempJsonDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
                                                     location,@"h",
                                                     nil];
-                if (center.latitude <= 0 && center.latitude >= -90) {
+                if (center.coordinate.latitude <= 0 && center.coordinate.latitude >= -90) {
                         [centerJSONArray addObject:tempJsonDictionary];
                 }
             
