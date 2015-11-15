@@ -208,8 +208,8 @@ BOOL initialZoomComplete = NO;
             NSLog(@"Error: %@ %@", error, [error userInfo]);
         }
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
-        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews:unlockedHexs];
         [self loadPlotHexs];
+        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews:unlockedHexs];
     }];
     // The InBackground methods are asynchronous, so any code after this will run
     // immediately.  Any code that depends on the query result should be moved
@@ -391,6 +391,38 @@ BOOL initialZoomComplete = NO;
         });
         [self getSurroundingHexs];
     }
+}
+
+-(GMSPolygon *)getHexPolygon:(CLLocation *)hexCenter{
+    CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(hexCenter.coordinate.latitude, hexCenter.coordinate.longitude);
+    
+    float oneMileLat = 0.01449275362319;
+    float oneMileLong = 0.01445671659053;
+    
+    float width = (10 * oneMileLat);
+    float height = (10 * oneMileLong);
+    float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+    float topMidHeights = height - botMidHeights;
+    
+    GMSMutablePath *hexH = [[GMSMutablePath path] init];
+    
+    float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
+    float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD//
+    CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
+    CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
+    CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
+    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
+    CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
+    CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
+    
+    [hexH addCoordinate:bottomH];
+    [hexH addCoordinate:bottomLeftH];
+    [hexH addCoordinate:topLeftH];
+    [hexH addCoordinate:topH];
+    [hexH addCoordinate:topRightH];
+    [hexH addCoordinate:bottomRightH];
+    GMSPolygon *polygon = [GMSPolygon polygonWithPath:hexH];
+    return polygon;
 }
 
 -(void)getSurroundingHexs{
@@ -662,34 +694,63 @@ BOOL initialZoomComplete = NO;
         // make CLLocationCoordinate2D
         CLLocationCoordinate2D coordinate = coordinateValue.coordinate;
         
-        NSNumber *likes = LikesArray[counter];
-        NSNumber *views = ViewsArray[counter];
-        
-        GMSMarker *marker = [[GMSMarker alloc] init];
-        marker.opacity = 0.9;
-        marker.position = coordinate;
-        marker.appearAnimation = kGMSMarkerAnimationPop;
-        marker.icon = [UIImage imageNamed:@"PicCircle"];
-//        // add annotation
-//        marker.title = Username;
-//        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
-        CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
-        infoWindow.usernameLabel.text = Username;
-        infoWindow.usernameImageLabel.text = Username;
-        infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
-        infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
-        infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
-        infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
-        infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",unlockedHexs];
-        infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
-        infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
-        infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
-        infoWindow.coordinate = coordinate;
-        [infoWindows addObject:infoWindow];
-        marker.map = self.mapView_;
-        [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
-        counter++;
+        //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
+        if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
+            NSNumber *likes = LikesArray[counter];
+            NSNumber *views = ViewsArray[counter];
+            
+            GMSMarker *marker = [[GMSMarker alloc] init];
+            marker.opacity = 0.9;
+            marker.position = coordinate;
+            marker.appearAnimation = kGMSMarkerAnimationPop;
+            marker.icon = [UIImage imageNamed:@"PicCircle"];
+            //        // add annotation
+            //        marker.title = Username;
+            //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
+            CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+            infoWindow.usernameLabel.text = Username;
+            infoWindow.usernameImageLabel.text = Username;
+            infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
+            infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
+            infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
+            infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
+            infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",unlockedHexs];
+            infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
+            infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
+            infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
+            infoWindow.coordinate = coordinate;
+            [infoWindows addObject:infoWindow];
+            marker.map = self.mapView_;
+            [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
+            counter++;
+        }
     }
+}
+
+-(bool)isCoordInUnlockedHex:(CLLocation *)coord{
+    bool isInUnlockedHex = NO;
+    for (int i = 0; i < userUnlockedHexsArray.count; i++) {
+        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
+        CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
+        GMSPolygon *hexPoly = [self getHexPolygon:hexCenter];
+        if (GMSGeometryContainsLocation(coord.coordinate, hexPoly.path, YES)) {
+            return YES;
+            break;
+        }
+    }
+    return isInUnlockedHex;
+}
+
+-(bool)isMarkerOnMap:(CLLocation *)coord{
+    bool isOnMap=false;
+    for (int i = 0; i < GMSMarkersArray.count; i++) {
+        GMSMarker *marker = GMSMarkersArray[i];
+        if ((fabs(marker.position.latitude - coord.coordinate.latitude) < 0.00001) && (fabs(marker.position.longitude - coord.coordinate.longitude) < 0.00001)) {
+            return true;
+            break;
+        }
+    }
+    return isOnMap;
 }
 
 - (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
