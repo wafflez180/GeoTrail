@@ -224,28 +224,24 @@ BOOL initialZoomComplete = NO;
     CLLocationDirection distance = 0.0;
     int closestMarkerIndex=0;
     
-    for(int i = 0; i < postedPictureLocations.count; i++){
-        PFGeoPoint *PFCoord = postedPictureLocations[i];
-        CLLocation *coord = [[CLLocation alloc] initWithLatitude:PFCoord.latitude longitude:PFCoord.longitude];
-        if (i == 0) {
-            distance = [coord distanceFromLocation:userLoc];
-        }else{
-            CLLocationDistance newDistance = [coord distanceFromLocation:userLoc];
-            if (newDistance < distance) {//IF THE MARKER IS CLOSE THAN PREVIOUS MARKER THAN MAKE IT THE CLOSEST MARKER
-                distance = newDistance;
-                closestMarkerIndex=i;
+    for(int i = 0; i < GMSMarkersArray.count; i++){
+        GMSMarker *marker = GMSMarkersArray[i];
+        CLLocation *coord = [[CLLocation alloc] initWithLatitude:marker.position.latitude longitude:marker.position.longitude];
+        //MAKE SURE THE MARKER IS IN AN UNLOCKED HEX AND IS ON THE MAP
+        if ([self isCoordInUnlockedHex:coord] && [self isMarkerOnMap:coord]) {
+            CLLocation *coord = [[CLLocation alloc] initWithLatitude:marker.position.latitude longitude:marker.position.longitude];
+            if (i == 0) {
+                distance = [coord distanceFromLocation:userLoc];
+            }else{
+                CLLocationDistance newDistance = [coord distanceFromLocation:userLoc];
+                if (newDistance < distance) {//IF THE MARKER IS CLOSE THAN PREVIOUS MARKER THAN MAKE IT THE CLOSEST MARKER
+                    distance = newDistance;
+                    closestMarkerIndex=i;
+                }
             }
         }
     }
-    PFGeoPoint *picLoc = postedPictureLocations[closestMarkerIndex];
-    CLLocationCoordinate2D closestPicLoc = CLLocationCoordinate2DMake(picLoc.latitude, picLoc.longitude);
-    
-    for(int x = 0; x < postedPictureLocations.count; x++){
-        GMSMarker *marker = GMSMarkersArray[x];
-        if(marker.position.latitude == closestPicLoc.latitude && marker.position.longitude == closestPicLoc.longitude){//GET THE MATCHING PICTURE LOCATION WITH THE MARKER ON THE MAP
-            _mapView_.selectedMarker = GMSMarkersArray[x];
-        }
-    }
+    _mapView_.selectedMarker = GMSMarkersArray[closestMarkerIndex];
 }
 
 - (IBAction)pressedCompass:(id)sender {
