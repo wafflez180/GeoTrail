@@ -352,11 +352,9 @@ BOOL initialZoomComplete = NO;
         PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
         CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(geoPoint.latitude, geoPoint.longitude);
         
-        float oneMileLat = 0.01449275362319;
-        float oneMileLong = 0.01445671659053;
-        
-        float width = (10 * oneMileLat);
-        float height = (10 * oneMileLong);
+        //THESE ARE 5 MILE HEXAGONS
+        float width = 0.072464;
+        float height = 0.072464;
         float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
         float topMidHeights = height - botMidHeights;
         
@@ -392,11 +390,10 @@ BOOL initialZoomComplete = NO;
 -(GMSPolygon *)getHexPolygon:(CLLocation *)hexCenter{
     CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(hexCenter.coordinate.latitude, hexCenter.coordinate.longitude);
     
-    float oneMileLat = 0.01449275362319;
-    float oneMileLong = 0.01445671659053;
+    //THESE ARE 5 MILE HEXAGONS
+    float width = 0.072464;
+    float height = 0.072464;
     
-    float width = (10 * oneMileLat);
-    float height = (10 * oneMileLong);
     float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
     float topMidHeights = height - botMidHeights;
     
@@ -427,11 +424,10 @@ BOOL initialZoomComplete = NO;
         CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(geoPoint.latitude, geoPoint.longitude);
         
         for (int i = 0; i <= 6; i++) {
-            float oneMileLat = 0.01449275362319;
-            float oneMileLong = 0.01445671659053;
+            //THESE ARE 5 MILE HEXAGONS
+            float width = 0.072464;
+            float height = 0.072464;
             
-            float width = (10 * oneMileLat);
-            float height = (10 * oneMileLong);
             float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
             float topMidHeights = height - botMidHeights;
             
@@ -475,9 +471,11 @@ BOOL initialZoomComplete = NO;
             
             CLLocation *center = [self getCenterOfHex:hexH];
             
-            // NSLog(@"%f", center.latitude);
+            //NSLog(@"%f", center.latitude);
             //NSLog(@"%f", center.longitude);
-            if ([self checkIfCenterIsOnMap:center] == false) {
+            if (![self checkIfCenterIsOnMap:center]) {
+                CLLocation *hexCenter = center;
+                [shadedHexCentersOnMap addObject:hexCenter];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
                     polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
@@ -485,8 +483,6 @@ BOOL initialZoomComplete = NO;
                     polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
                     polygon2.map = self.mapView_;
                 });
-                CLLocation *hexCenter = center;
-                [shadedHexCentersOnMap addObject:hexCenter];
             }
         }
     }
@@ -527,13 +523,13 @@ BOOL initialZoomComplete = NO;
     bool isTaken = false;
     for (int i =0; i < shadedHexCentersOnMap.count; i++) {
         CLLocation *coord = shadedHexCentersOnMap[i];
-        if (fabs(center.coordinate.latitude - coord.coordinate.latitude) <= 0.0001 && fabs(center.coordinate.longitude - coord.coordinate.longitude) <= 0.0001) {
+        if (fabs(center.coordinate.latitude - coord.coordinate.latitude) <= 0.01 && fabs(center.coordinate.longitude - coord.coordinate.longitude) <= 0.01) {
             isTaken = true;
         }
     }
     for (int i =0; i < userUnlockedHexsArray.count; i++) {
         PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
-        if (fabs(center.coordinate.latitude - geoPoint.latitude) <= 0.0001 && fabs(center.coordinate.longitude - geoPoint.longitude) <= 0.0001) {
+        if (fabs(center.coordinate.latitude - geoPoint.latitude) <= 0.01 && fabs(center.coordinate.longitude - geoPoint.longitude) <= 0.01) {
             isTaken = true;
         }
     }
