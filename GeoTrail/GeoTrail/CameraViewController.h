@@ -8,6 +8,6 @@
 #import <CoreLocation/CoreLocation.h>
 #import <UIKit/UIKit.h>
 
-@interface CameraViewController : UIViewController
+@interface CameraViewController : UIViewController <CLLocationManagerDelegate>
 -(void)setUserLocation:(CLLocationCoordinate2D)userLocation;
 @end

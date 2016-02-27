@@ -175,11 +175,13 @@ BOOL initialZoomComplete = NO;
 -(void)uploadDataOnMap: (PFUser *)posterUser :(NSString *)Username :(NSNumber *)unlockedHexs{
     PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
     NSLog(@"%@",Username);
-    [query whereKey:@"User" equalTo:posterUser];// "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
+    [query whereKey:@"UserID" equalTo:posterUser.objectId];// "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
     NSMutableArray *tempPostedPictureLocations = [[NSMutableArray alloc] init];
     NSMutableArray *tempPostedPictureLikes = [[NSMutableArray alloc] init];
     NSMutableArray *tempPostedPictureViews = [[NSMutableArray alloc] init];
     NSMutableArray *tempPostedPictureWhoLiked = [[NSMutableArray alloc]init];
+    NSMutableArray *tempPostedPictureWhoViewed = [[NSMutableArray alloc]init];
+    NSMutableArray *tempPostedPictureTimeCreated = [[NSMutableArray alloc]init];
     NSMutableArray *objectIDArray = [[NSMutableArray alloc]init];
     
     NSLog(@"\nUPLOAD DATA ON MAP: %@",Username);
@@ -193,6 +195,13 @@ BOOL initialZoomComplete = NO;
                 NSNumber *likes = [thePostedPicture objectForKey:@"Likes"];
                 NSNumber *views = [thePostedPicture objectForKey:@"Views"];
                 NSString *objectID = [thePostedPicture valueForKey:@"objectId"];
+                NSArray *whoViewed = [thePostedPicture objectForKey:@"UsersWhoViewed"];
+                NSDate *dateCreated = [thePostedPicture valueForKey:@"createdAt"];
+                if ([views intValue] == 0) {
+                    whoViewed = [[NSArray alloc] init];
+                }else{
+                    whoViewed = [thePostedPicture objectForKey:@"UsersWhoViewed"];
+                }
                 NSArray *whoLiked;
                 if ([likes intValue] == 0) {
                     whoLiked = [[NSArray alloc] init];
@@ -207,7 +216,9 @@ BOOL initialZoomComplete = NO;
                 [tempPostedPictureLocations addObject:picCoords];
                 [tempPostedPictureLikes addObject:likes];
                 [tempPostedPictureWhoLiked addObject:whoLiked];
+                [tempPostedPictureWhoViewed addObject:whoViewed];
                 [tempPostedPictureViews addObject:views];
+                [tempPostedPictureTimeCreated addObject:dateCreated];
                 [objectIDArray addObject:objectID];
                 
                 [postedPictureLocations addObject:pictureLocation];
@@ -222,7 +233,7 @@ BOOL initialZoomComplete = NO;
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
         [self loadPlotHexs];
 
-        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureWhoLiked:tempPostedPictureViews:unlockedHexs:objectIDArray];
+        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureWhoLiked:tempPostedPictureViews:tempPostedPictureWhoViewed:tempPostedPictureTimeCreated:unlockedHexs:objectIDArray];
     }];
     // The InBackground methods are asynchronous, so any code after this will run
     // immediately.  Any code that depends on the query result should be moved
@@ -688,7 +699,7 @@ BOOL initialZoomComplete = NO;
 
 # pragma mark - Info Window Methods
 
-- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)WhoLikedArray  :(NSArray*)ViewsArray :(NSNumber *)unlockedHexs :(NSArray *)objectIDArray {
+- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)WhoLikedArray  :(NSArray*)ViewsArray :(NSArray*)WhoViewedArray : (NSArray*)dateCreatedArray :(NSNumber *)unlockedHexs :(NSArray *)objectIDArray {
     
     [self setCameraToUserLoc];
     // add all annotations
@@ -705,7 +716,10 @@ BOOL initialZoomComplete = NO;
             NSNumber *likes = LikesArray[counter];
             NSNumber *views = ViewsArray[counter];
             NSArray *whoLiked = WhoLikedArray[counter];
+            NSArray *whoViewed = WhoViewedArray[counter];
             NSString *objectID = objectIDArray[counter];
+            NSDate *dateCreated = dateCreatedArray[counter];
+            
             GMSMarker *marker = [[GMSMarker alloc] init];
             marker.opacity = 0.9;
             marker.position = coordinate;
@@ -715,6 +729,22 @@ BOOL initialZoomComplete = NO;
             //        marker.title = Username;
             //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
             CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+            
+            NSDate *currentDate = [NSDate date];
+            NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:dateCreated];
+            NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:dateCreated];
+            NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:dateCreated];
+            NSInteger daysBetweenDates = [self daysBetweenDates:dateCreated andDate:currentDate];
+            
+            if(secondsBetweenDates < 60){
+                infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Seconds ago", (int)secondsBetweenDates];
+            }else if(minutesBetweenDates < 60){
+                infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Minutes ago", (int)minutesBetweenDates];
+            }else if(hoursBetweenDates < 24){
+                infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Hours ago", (int)hoursBetweenDates];
+            }else{
+                infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Days ago", (int)daysBetweenDates];
+            }
             infoWindow.usernameLabel.text = Username;
             infoWindow.usernameImageLabel.text = Username;
             infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
@@ -723,6 +753,7 @@ BOOL initialZoomComplete = NO;
             infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
             infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",unlockedHexs];
             infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
+            infoWindow.usersWhoViewed = [NSMutableArray arrayWithArray:whoViewed];
             infoWindow.objectID = objectID;
             infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
             infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
@@ -734,6 +765,49 @@ BOOL initialZoomComplete = NO;
             counter++;
         }
     }
+}
+
+- (NSInteger)secondsBetweenDates:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
+{
+    NSTimeInterval distanceBetweenDates = [fromDateTime timeIntervalSinceDate:toDateTime];
+    
+    return distanceBetweenDates;
+}
+
+- (NSInteger)minutesBetweenDates:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
+{
+    NSTimeInterval distanceBetweenDates = [fromDateTime timeIntervalSinceDate:toDateTime];
+    double secondsInAnMinute = 60;
+    NSInteger minutesBetweenDates = distanceBetweenDates / secondsInAnMinute;
+    
+    return minutesBetweenDates;
+}
+
+- (NSInteger)hoursBetweenDates:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
+{
+    NSTimeInterval distanceBetweenDates = [fromDateTime timeIntervalSinceDate:toDateTime];
+    double secondsInAnHour = 3600;
+    NSInteger hoursBetweenDates = distanceBetweenDates / secondsInAnHour;
+    
+    return hoursBetweenDates;
+}
+
+- (NSInteger)daysBetweenDates:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
+{
+    NSDate *fromDate;
+    NSDate *toDate;
+    
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    
+    [calendar rangeOfUnit:NSCalendarUnitDay startDate:&fromDate
+                 interval:NULL forDate:fromDateTime];
+    [calendar rangeOfUnit:NSCalendarUnitDay startDate:&toDate
+                 interval:NULL forDate:toDateTime];
+    
+    NSDateComponents *difference = [calendar components:NSCalendarUnitDay
+                                               fromDate:fromDate toDate:toDate options:0];
+    
+    return [difference day];
 }
 
 -(bool)isCoordInUnlockedHex:(CLLocation *)coord{
@@ -864,6 +938,41 @@ BOOL initialZoomComplete = NO;
     }];
 }
 
+-(void)viewedPicture{
+    NSLog(@"User Viewed Picture");
+    NSLog(@"%@", currentInfoWindow.objectID);
+    //SEND TO BACKEND SERVER
+    PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
+    [query getObjectInBackgroundWithId:currentInfoWindow.objectID block:^(PFObject *thePicture, NSError *error) {
+        if (!error) {
+            // Found the picture
+            int numViews = [currentInfoWindow.viewsImageLabel.text intValue];
+            PFUser *currentUser = [PFUser currentUser];
+            NSString *username = [currentUser username];
+            NSLog(username);
+            if ([self userViewedPic:username]) {
+                //Do nothing
+            }else{
+                //Add user to views, increment views
+                numViews++;
+                //Add user to viewed array
+                [currentInfoWindow.usersWhoViewed addObject: username];
+            }
+            NSLog(@"Views: %i",numViews);
+            currentInfoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%i",numViews];
+            currentInfoWindow.viewsLabel.text = [NSString stringWithFormat:@"%i",numViews];
+            
+            thePicture[@"Views"] = [NSNumber numberWithInt:numViews];
+            thePicture[@"UsersWhoViewed"] = [currentInfoWindow.usersWhoViewed copy];
+            
+            // Save
+            [thePicture saveInBackground];
+        } else {
+            // Did not find any picture for the objectID
+            NSLog(@"Error: %@", error);
+        }
+    }];}
+
 -(void)likedPicture{
     NSLog(@"User Liked Picture");
     NSLog(@"%@", currentInfoWindow.objectID);
@@ -887,8 +996,10 @@ BOOL initialZoomComplete = NO;
                 //Add user to liked array
                 [currentInfoWindow.usersWhoLiked addObject: username];
             }
-            NSLog(@"%i",numLikes);
+            NSLog(@"Likes: %i",numLikes);
+            
             currentInfoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%i",numLikes];
+            currentInfoWindow.likesLabel.text = [NSString stringWithFormat:@"%i",numLikes];
             
             thePicture[@"Likes"] = [NSNumber numberWithInt:numLikes];
             thePicture[@"UsersWhoLiked"] = [currentInfoWindow.usersWhoLiked copy];
@@ -910,6 +1021,16 @@ BOOL initialZoomComplete = NO;
     }
     return false;
 }
+
+-(BOOL)userViewedPic :(NSString *)username{
+    for(int i = 0; i < currentInfoWindow.usersWhoViewed.count; i++){
+        if([username isEqualToString:currentInfoWindow.usersWhoViewed[i]]){
+            return true;
+        }
+    }
+    return false;
+}
+
 
 -(void)removeUserFromArray:(NSString *)username{
     int index=-1;
@@ -992,6 +1113,7 @@ BOOL initialZoomComplete = NO;
             //NSLog(@"Swiped Up");
             //////////////////////////////////ANIMATIONS/////////////////////////////////
             //currentInfoWindow.alpha = 0.0;
+            [self viewedPicture];
             [UIView beginAnimations:nil context:nil];
             [UIView setAnimationDuration:0.2];
             [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
@@ -1221,7 +1343,7 @@ BOOL initialZoomComplete = NO;
         CameraViewController *vc = [segue destinationViewController];
         
         // Pass any objects to the view controller here, like...
-        CLLocationCoordinate2D coord = self.mapView_.myLocation.coordinate;
+        CLLocationCoordinate2D coord = [self.mapView_ myLocation].coordinate;
         [vc setUserLocation:coord];
     }
 }

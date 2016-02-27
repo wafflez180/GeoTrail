@@ -23,6 +23,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *likesLabel;
 @property (weak, nonatomic) IBOutlet UILabel *timeLabel;
 @property (strong, nonatomic) IBOutlet NSMutableArray *usersWhoLiked;
+@property (strong, nonatomic) IBOutlet NSMutableArray *usersWhoViewed;
 @property (strong, nonatomic) IBOutlet NSString *objectID;
 @property (nonatomic) CLLocationCoordinate2D coordinate;
 @property (weak, nonatomic) IBOutlet UIImageView *image;

@@ -12,6 +12,7 @@
 #import <ImageIO/ImageIO.h>
 #import <QuartzCore/QuartzCore.h>
 #import <CoreMedia/CoreMedia.h>
+#import <CoreLocation/CoreLocation.h>
 #import <CoreVideo/CoreVideo.h>
 #import <CoreMedia/CMSampleBuffer.h>
 #import "ViewController.h"
@@ -33,6 +34,7 @@
     AVCaptureSession *_capturesession;
     UIImage *currentImageTaken;
     bool camViewPosBack; //MAKE NSUSERDEFAULT LATER
+    CLLocationManager *locationManager;
 }
 
 - (void)viewDidLoad {
@@ -67,29 +69,24 @@
     
     _CameraView.image = currentImageTaken;
     
-    CLLocationCoordinate2D userLocationCoords = self.userLocation;
+    locationManager.delegate = self;
+    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+    locationManager = [[CLLocationManager alloc] init];
+    CLLocationCoordinate2D userLocationCoords = locationManager.location.coordinate;
     PFGeoPoint *currentPoint = [PFGeoPoint
                                 geoPointWithLatitude:userLocationCoords.latitude
                                 longitude:userLocationCoords.longitude];
-    
-    PFUser *currentUser = [PFUser currentUser];
     
     NSNumber *number;
     number = [NSNumber numberWithInteger: 0];
     
     // Stitch together a postObject and send this async to Parse
     PFObject *postObject = [PFObject objectWithClassName:@"PostedPictures"];
-    postObject[@"User"] = currentUser;
+    postObject[@"UserID"] = [PFUser currentUser].objectId;
     postObject[@"location"] = currentPoint;
     postObject[@"picture"] = imageFile;
     postObject[@"Likes"] = number;
     postObject[@"Views"] = number;
-    
-    // Use PFACL to restrict future modifications to this object.
-    PFACL *readOnlyACL = [PFACL ACL];
-    [readOnlyACL setPublicReadAccess:YES];
-    [readOnlyACL setPublicWriteAccess:YES];
-    postObject.ACL = readOnlyACL;
     
     [postObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (error) {
@@ -110,7 +107,6 @@
             NSLog(@"Failed to save.");
         }
     }];
-    
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
