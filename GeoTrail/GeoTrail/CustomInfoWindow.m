@@ -8,10 +8,16 @@
 //
 
 #import "CustomInfoWindow.h"
+#import "ViewController.h"
 
 @implementation CustomInfoWindow{
-    BOOL dragging;
-    int startLocY;
+
+}
+
+
+- (IBAction)doubleTappedWindow:(id)sender {
+//    NSLog(@"Double Tapped");
+    [self.mainView likedPicture];
 }
 
 @end

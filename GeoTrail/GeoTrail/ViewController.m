@@ -179,6 +179,9 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *tempPostedPictureLocations = [[NSMutableArray alloc] init];
     NSMutableArray *tempPostedPictureLikes = [[NSMutableArray alloc] init];
     NSMutableArray *tempPostedPictureViews = [[NSMutableArray alloc] init];
+    NSMutableArray *tempPostedPictureWhoLiked = [[NSMutableArray alloc]init];
+    NSMutableArray *objectIDArray = [[NSMutableArray alloc]init];
+    
     NSLog(@"\nUPLOAD DATA ON MAP: %@",Username);
     [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
         if (!error) {
@@ -189,6 +192,13 @@ BOOL initialZoomComplete = NO;
                 PFFile *picture = [thePostedPicture objectForKey:@"picture"];
                 NSNumber *likes = [thePostedPicture objectForKey:@"Likes"];
                 NSNumber *views = [thePostedPicture objectForKey:@"Views"];
+                NSString *objectID = [thePostedPicture valueForKey:@"objectId"];
+                NSArray *whoLiked;
+                if ([likes intValue] == 0) {
+                    whoLiked = [[NSArray alloc] init];
+                }else{
+                    whoLiked = [thePostedPicture objectForKey:@"UsersWhoLiked"];
+                }
                 
                // NSLog(@"\nPicture Coords:\nX: %f\nY: %f", pictureLocation.latitude, pictureLocation.longitude);
                 CLLocation *picCoords = [[CLLocation alloc] initWithLatitude:pictureLocation.latitude longitude:pictureLocation.longitude];
@@ -196,7 +206,9 @@ BOOL initialZoomComplete = NO;
                 //ADD THE LOCATION TO THE PICTURES LOCATIONS ARRAY
                 [tempPostedPictureLocations addObject:picCoords];
                 [tempPostedPictureLikes addObject:likes];
+                [tempPostedPictureWhoLiked addObject:whoLiked];
                 [tempPostedPictureViews addObject:views];
+                [objectIDArray addObject:objectID];
                 
                 [postedPictureLocations addObject:pictureLocation];
                 [PFFilePictureArray addObject:picture];
@@ -209,7 +221,8 @@ BOOL initialZoomComplete = NO;
         }
         //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
         [self loadPlotHexs];
-        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureViews:unlockedHexs];
+
+        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureWhoLiked:tempPostedPictureViews:unlockedHexs:objectIDArray];
     }];
     // The InBackground methods are asynchronous, so any code after this will run
     // immediately.  Any code that depends on the query result should be moved
@@ -527,7 +540,7 @@ BOOL initialZoomComplete = NO;
             isTaken = true;
         }
     }
-    for (int i =0; i < userUnlockedHexsArray.count; i++) {
+    for (int i =0; i < userUnlockedHexsArray.count; i++){
         PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
         if (fabs(center.coordinate.latitude - geoPoint.latitude) <= 0.01 && fabs(center.coordinate.longitude - geoPoint.longitude) <= 0.01) {
             isTaken = true;
@@ -675,12 +688,13 @@ BOOL initialZoomComplete = NO;
 
 # pragma mark - Info Window Methods
 
-- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)ViewsArray :(NSNumber *)unlockedHexs
-{
+- (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)WhoLikedArray  :(NSArray*)ViewsArray :(NSNumber *)unlockedHexs :(NSArray *)objectIDArray {
+    
     [self setCameraToUserLoc];
     // add all annotations
     // NOTE: coordinateValue can be any type from which a CLLocationCoordinate2D can be determined
     int counter = 0;
+
     for (CLLocation *coordinateValue in objectsToPlot)
     {
         // make CLLocationCoordinate2D
@@ -690,7 +704,8 @@ BOOL initialZoomComplete = NO;
         if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
             NSNumber *likes = LikesArray[counter];
             NSNumber *views = ViewsArray[counter];
-            
+            NSArray *whoLiked = WhoLikedArray[counter];
+            NSString *objectID = objectIDArray[counter];
             GMSMarker *marker = [[GMSMarker alloc] init];
             marker.opacity = 0.9;
             marker.position = coordinate;
@@ -707,6 +722,8 @@ BOOL initialZoomComplete = NO;
             infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
             infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
             infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",unlockedHexs];
+            infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
+            infoWindow.objectID = objectID;
             infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
             infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
             infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
@@ -796,6 +813,7 @@ BOOL initialZoomComplete = NO;
     int hiddenY = _mapView_.frame.size.height + 5 + window.frame.size.height;
     int desiredY = _mapView_.frame.size.height - (window.messageBox.frame.size.height + self.tabBarController.tabBar.frame.size.height - 2);
     
+    window.mainView = self;
     [self.view addSubview:window];
     
     [window setFrame:CGRectMake(window.frame.origin.x, hiddenY, _mapView_.bounds.size.width, self.view.bounds.size.height)];
@@ -846,6 +864,62 @@ BOOL initialZoomComplete = NO;
     }];
 }
 
+-(void)likedPicture{
+    NSLog(@"User Liked Picture");
+    NSLog(@"%@", currentInfoWindow.objectID);
+    //SEND TO BACKEND SERVER
+    PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
+    [query getObjectInBackgroundWithId:currentInfoWindow.objectID block:^(PFObject *thePicture, NSError *error) {
+        if (!error) {
+            // Found the picture
+            int numLikes = [currentInfoWindow.likesImageLabel.text intValue];
+            PFUser *currentUser = [PFUser currentUser];
+            NSString *username = [currentUser username];
+            
+            if ([self userLikedPic:username]) {
+                //Unliked the pic
+                numLikes--;
+                //Remove user from liked array
+                [self removeUserFromArray:username];
+            }else{
+                //Like the pic
+                numLikes++;
+                //Add user to liked array
+                [currentInfoWindow.usersWhoLiked addObject: username];
+            }
+            NSLog(@"%i",numLikes);
+            currentInfoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%i",numLikes];
+            
+            thePicture[@"Likes"] = [NSNumber numberWithInt:numLikes];
+            thePicture[@"UsersWhoLiked"] = [currentInfoWindow.usersWhoLiked copy];
+            
+            // Save
+            [thePicture saveInBackground];
+        } else {
+            // Did not find any picture for the objectID
+            NSLog(@"Error: %@", error);
+        }
+    }];
+}
+
+-(BOOL)userLikedPic :(NSString *)username{
+    for(int i = 0; i < currentInfoWindow.usersWhoLiked.count; i++){
+        if([username isEqualToString:currentInfoWindow.usersWhoLiked[i]]){
+            return true;
+        }
+    }
+    return false;
+}
+
+-(void)removeUserFromArray:(NSString *)username{
+    int index=-1;
+    for(int i = 0; i < currentInfoWindow.usersWhoLiked.count; i++){
+        if([username isEqualToString:currentInfoWindow.usersWhoLiked[i]]){
+            index = i;
+        }
+    }
+    [currentInfoWindow.usersWhoLiked removeObjectAtIndex:index];
+}
 
 #pragma mark - horizontal pan gesture methods
 -(BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)gestureRecognizer {

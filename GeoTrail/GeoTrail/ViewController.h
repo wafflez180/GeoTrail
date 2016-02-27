@@ -10,6 +10,7 @@
 
 @interface ViewController : UIViewController <CLLocationManagerDelegate, GMSMapViewDelegate, UIGestureRecognizerDelegate>
 
+-(void)likedPicture;
 
 @end
 

@@ -92,7 +92,7 @@
 		A76CAEA01B3CAC5300A0F598 /* bottomBarPin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bottomBarPin.png; path = GeoTrail/bottomBarPin.png; sourceTree = SOURCE_ROOT; };
 		A76CAEA21B3CAD4F00A0F598 /* bottomBarCamera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bottomBarCamera.png; path = GeoTrail/bottomBarCamera.png; sourceTree = SOURCE_ROOT; };
 		A76CAEA41B3CAE0F00A0F598 /* bottomBarContacts.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bottomBarContacts.png; path = GeoTrail/bottomBarContacts.png; sourceTree = SOURCE_ROOT; };
-		A78CD2501BF3E12200CF4F93 /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = SOURCE_ROOT; };
+		A78CD2501BF3E12200CF4F93 /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A7984E6F1B1A972D00692E01 /* InfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = InfoWindow.xib; path = GeoTrail/InfoWindow.xib; sourceTree = SOURCE_ROOT; };
 		A7A0EECD1B3473F90044AB3B /* infoWindow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoWindow.png; path = GeoTrail/infoWindow.png; sourceTree = SOURCE_ROOT; };
 		A7A0EEDA1B3475860044AB3B /* CustomInfoWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomInfoWindow.h; path = GeoTrail/CustomInfoWindow.h; sourceTree = SOURCE_ROOT; };
@@ -535,6 +535,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				"OTHER_LDFLAGS[arch=*]" = "$(inherited)";
+				PROVISIONING_PROFILE = "7eb81093-b38c-4a74-9898-d792519ccfdf";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -575,6 +576,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "";
 				"OTHER_LDFLAGS[arch=*]" = "$(inherited)";
+				PROVISIONING_PROFILE = "7eb81093-b38c-4a74-9898-d792519ccfdf";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;

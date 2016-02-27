@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
+#import "ViewController.h"
 
 @interface CustomInfoWindow : UIView <UIGestureRecognizerDelegate>
 
@@ -21,7 +22,11 @@
 @property (weak, nonatomic) IBOutlet UILabel *viewsLabel;
 @property (weak, nonatomic) IBOutlet UILabel *likesLabel;
 @property (weak, nonatomic) IBOutlet UILabel *timeLabel;
+@property (strong, nonatomic) IBOutlet NSMutableArray *usersWhoLiked;
+@property (strong, nonatomic) IBOutlet NSString *objectID;
 @property (nonatomic) CLLocationCoordinate2D coordinate;
 @property (weak, nonatomic) IBOutlet UIImageView *image;
+@property (weak, nonatomic) IBOutlet UITapGestureRecognizer *doubleTapRecognizer;
+@property (weak, nonatomic) ViewController *mainView;
 
 @end
