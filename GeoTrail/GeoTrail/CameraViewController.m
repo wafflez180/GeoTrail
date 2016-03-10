@@ -16,8 +16,9 @@
 #import <CoreVideo/CoreVideo.h>
 #import <CoreMedia/CMSampleBuffer.h>
 #import "ViewController.h"
+#import "TabBarController.h"
 
-#import <Parse/Parse.h>
+#import <Firebase/Firebase.h>
 
 @interface CameraViewController ()
 @property (weak, nonatomic) IBOutlet UIImageView *imageOutputView;
@@ -35,11 +36,17 @@
     UIImage *currentImageTaken;
     bool camViewPosBack; //MAKE NSUSERDEFAULT LATER
     CLLocationManager *locationManager;
+    NSString *userUID;
+    Firebase *firebaseRef;
 }
 
 - (void)viewDidLoad {
     [self setUpAVCaptureSession];
     self.navigationController.navigationBarHidden = true;
+    
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    userUID = tabBarController.currentUser.uid;
+    firebaseRef = tabBarController.firebaseRef;
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
@@ -50,8 +57,8 @@
     return YES;
 }
 
--(void)setUserLocation:(CLLocationCoordinate2D)theUserLocation{
-    _userLocation = theUserLocation;
+-(void)setUserUID:(NSString *)uid{
+    userUID = uid;
 }
 
 - (IBAction)retakePicture:(id)sender {
@@ -63,50 +70,33 @@
 - (IBAction)PostPicture:(id)sender {
     
     UIImage *picToPost = currentImageTaken;
-    
-    NSData *imageData = UIImageJPEGRepresentation(picToPost, 0.5f);
-    PFFile *imageFile = [PFFile fileWithData:imageData];
-    
+
     _CameraView.image = currentImageTaken;
     
     locationManager.delegate = self;
     locationManager.desiredAccuracy = kCLLocationAccuracyBest;
     locationManager = [[CLLocationManager alloc] init];
     CLLocationCoordinate2D userLocationCoords = locationManager.location.coordinate;
-    PFGeoPoint *currentPoint = [PFGeoPoint
-                                geoPointWithLatitude:userLocationCoords.latitude
-                                longitude:userLocationCoords.longitude];
     
-    NSNumber *number;
-    number = [NSNumber numberWithInteger: 0];
+    NSData *imageData = UIImageJPEGRepresentation(picToPost, 0.5f);
     
-    // Stitch together a postObject and send this async to Parse
-    PFObject *postObject = [PFObject objectWithClassName:@"PostedPictures"];
-    postObject[@"UserID"] = [PFUser currentUser].objectId;
-    postObject[@"location"] = currentPoint;
-    postObject[@"picture"] = imageFile;
-    postObject[@"Likes"] = number;
-    postObject[@"Views"] = number;
-    
-    [postObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-        if (error) {
-            NSLog(@"Couldn't save!");
-            NSLog(@"%@", error);
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"error"]
-                                                                message:nil
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Ok", nil];
-            [alertView show];
-            return;
-        }
-        if (succeeded) {
-            NSLog(@"%@", postObject);
-            NSLog(@"Successfully saved!");
-        } else {
-            NSLog(@"Failed to save.");
-        }
-    }];
+    // using base64StringFromData method, we are able to convert data to string
+    NSString *imageString = [[NSString alloc] initWithData:imageData encoding:NSUTF8StringEncoding];
+
+    Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
+
+    NSDictionary *post = @{
+                           @"owner": userUID,
+                           @"latitude": [NSNumber numberWithDouble:userLocationCoords.latitude],
+                           @"longitude": [NSNumber numberWithDouble:userLocationCoords.longitude],
+                           @"likes": [NSNumber numberWithInt:0],
+                           @"views":[NSNumber numberWithInt:0],
+                           @"whoLiked": [[NSArray alloc] init],
+                           @"whoViewed": [[NSArray alloc] init],
+                           @"dateCreated": (NSString *)[NSDate date]
+                           };
+    Firebase *usersRef = [tempRef childByAppendingPath: imageString];
+    [usersRef setValue: post];
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;

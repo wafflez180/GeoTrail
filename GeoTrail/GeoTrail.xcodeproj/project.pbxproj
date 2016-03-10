@@ -35,6 +35,7 @@
 		A76CAEA11B3CAC5300A0F598 /* bottomBarPin.png in Resources */ = {isa = PBXBuildFile; fileRef = A76CAEA01B3CAC5300A0F598 /* bottomBarPin.png */; };
 		A76CAEA31B3CAD4F00A0F598 /* bottomBarCamera.png in Resources */ = {isa = PBXBuildFile; fileRef = A76CAEA21B3CAD4F00A0F598 /* bottomBarCamera.png */; };
 		A76CAEA51B3CAE0F00A0F598 /* bottomBarContacts.png in Resources */ = {isa = PBXBuildFile; fileRef = A76CAEA41B3CAE0F00A0F598 /* bottomBarContacts.png */; };
+		A771D1541C89142200E8AAE0 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A771D1531C89142200E8AAE0 /* MapKit.framework */; };
 		A78CD2511BF3E12200CF4F93 /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = A78CD2501BF3E12200CF4F93 /* Podfile */; };
 		A7984E701B1A972D00692E01 /* InfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A7984E6F1B1A972D00692E01 /* InfoWindow.xib */; };
 		A7A0EECE1B3473F90044AB3B /* infoWindow.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EECD1B3473F90044AB3B /* infoWindow.png */; };
@@ -42,6 +43,8 @@
 		A7A0EEE01B3478460044AB3B /* infoWindowPolaroid.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */; };
 		A7A0EEE51B3479370044AB3B /* infoLikesIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */; };
 		A7A0EEE61B3479370044AB3B /* infoViewsIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */; };
+		A7B2A8C11C83C3940093D65C /* Contact.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B2A8C01C83C3940093D65C /* Contact.m */; };
+		A7B2A8C41C83FD7F0093D65C /* TabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B2A8C31C83FD7F0093D65C /* TabBarController.m */; };
 		A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */ = {isa = PBXBuildFile; fileRef = A7CEC6BC1B1132870077D6E4 /* eye.png */; };
 		C9C3125E5BFEB7FE43D69244 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 21A3B1B8F7B6DAB9F34DEE69 /* libPods.a */; };
 /* End PBXBuildFile section */
@@ -92,6 +95,7 @@
 		A76CAEA01B3CAC5300A0F598 /* bottomBarPin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bottomBarPin.png; path = GeoTrail/bottomBarPin.png; sourceTree = SOURCE_ROOT; };
 		A76CAEA21B3CAD4F00A0F598 /* bottomBarCamera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bottomBarCamera.png; path = GeoTrail/bottomBarCamera.png; sourceTree = SOURCE_ROOT; };
 		A76CAEA41B3CAE0F00A0F598 /* bottomBarContacts.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bottomBarContacts.png; path = GeoTrail/bottomBarContacts.png; sourceTree = SOURCE_ROOT; };
+		A771D1531C89142200E8AAE0 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		A78CD2501BF3E12200CF4F93 /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A7984E6F1B1A972D00692E01 /* InfoWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = InfoWindow.xib; path = GeoTrail/InfoWindow.xib; sourceTree = SOURCE_ROOT; };
 		A7A0EECD1B3473F90044AB3B /* infoWindow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoWindow.png; path = GeoTrail/infoWindow.png; sourceTree = SOURCE_ROOT; };
@@ -100,6 +104,10 @@
 		A7A0EEDF1B3478460044AB3B /* infoWindowPolaroid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoWindowPolaroid.png; path = GeoTrail/infoWindowPolaroid.png; sourceTree = SOURCE_ROOT; };
 		A7A0EEE21B3479370044AB3B /* infoLikesIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoLikesIcon.png; path = GeoTrail/infoLikesIcon.png; sourceTree = SOURCE_ROOT; };
 		A7A0EEE31B3479370044AB3B /* infoViewsIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = infoViewsIcon.png; path = GeoTrail/infoViewsIcon.png; sourceTree = SOURCE_ROOT; };
+		A7B2A8BF1C83C3940093D65C /* Contact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Contact.h; path = GeoTrail/Contact.h; sourceTree = SOURCE_ROOT; };
+		A7B2A8C01C83C3940093D65C /* Contact.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Contact.m; path = GeoTrail/Contact.m; sourceTree = SOURCE_ROOT; };
+		A7B2A8C21C83FD7F0093D65C /* TabBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TabBarController.h; path = GeoTrail/TabBarController.h; sourceTree = SOURCE_ROOT; };
+		A7B2A8C31C83FD7F0093D65C /* TabBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TabBarController.m; path = GeoTrail/TabBarController.m; sourceTree = SOURCE_ROOT; };
 		A7B3E8451AE724E900FBEACD /* GeoTrail.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeoTrail.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B3E85E1AE724E900FBEACD /* GeoTrailTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GeoTrailTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7CEC6BC1B1132870077D6E4 /* eye.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = eye.png; path = GeoTrail/eye.png; sourceTree = SOURCE_ROOT; };
@@ -117,6 +125,7 @@
 				A71906901BF3EDB5001995A7 /* SystemConfiguration.framework in Frameworks */,
 				A719068E1BF3EDAF001995A7 /* Security.framework in Frameworks */,
 				A719068C1BF3ED9A001995A7 /* QuartzCore.framework in Frameworks */,
+				A771D1541C89142200E8AAE0 /* MapKit.framework in Frameworks */,
 				A719068A1BF3ED94001995A7 /* CoreLocation.framework in Frameworks */,
 				A71906881BF3ED8A001995A7 /* CoreGraphics.framework in Frameworks */,
 				A71906861BF3ED83001995A7 /* CFNetwork.framework in Frameworks */,
@@ -171,8 +180,12 @@
 			children = (
 				A72B64271AEF051F00C84DE5 /* AppDelegate.h */,
 				A72B64281AEF051F00C84DE5 /* AppDelegate.m */,
+				A7B2A8C21C83FD7F0093D65C /* TabBarController.h */,
+				A7B2A8C31C83FD7F0093D65C /* TabBarController.m */,
 				A72B64361AEF051F00C84DE5 /* ViewController.h */,
 				A72B64371AEF051F00C84DE5 /* ViewController.m */,
+				A7B2A8BF1C83C3940093D65C /* Contact.h */,
+				A7B2A8C01C83C3940093D65C /* Contact.m */,
 				A76CAE991B3C8FE800A0F598 /* CameraViewController.h */,
 				A76CAE9A1B3C8FE800A0F598 /* CameraViewController.m */,
 				A72B642A1AEF051F00C84DE5 /* ContactsTableTableViewController.h */,
@@ -214,6 +227,7 @@
 		A7CFE6601AED4DD00054D33D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A771D1531C89142200E8AAE0 /* MapKit.framework */,
 				A71906971BF3EDD0001995A7 /* Social.framework */,
 				A71906951BF3EDCB001995A7 /* Accounts.framework */,
 				A71906931BF3EDC6001995A7 /* libsqlite3.tbd */,
@@ -466,9 +480,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7A0EEDC1B3475860044AB3B /* CustomInfoWindow.m in Sources */,
+				A7B2A8C41C83FD7F0093D65C /* TabBarController.m in Sources */,
 				A72B64381AEF051F00C84DE5 /* AppDelegate.m in Sources */,
 				A72B643A1AEF051F00C84DE5 /* ContactsTableTableViewController.m in Sources */,
 				A73C9F8F1B1BE9B80023FA8F /* main.m in Sources */,
+				A7B2A8C11C83C3940093D65C /* Contact.m in Sources */,
 				A76CAE9B1B3C8FE800A0F598 /* CameraViewController.m in Sources */,
 				A72B64441AEF051F00C84DE5 /* ViewController.m in Sources */,
 			);
@@ -599,6 +615,7 @@
 					"$(PROJECT_DIR)/GoogleMaps.framework/Versions/A/Headers/GoogleMaps.bundle",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/GeoTrail/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -608,7 +625,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ArthurAraujo.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ArthurDeAraujo.GeoTrail;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 			};
@@ -630,6 +647,7 @@
 					"$(PROJECT_DIR)/GoogleMaps.framework/Versions/A/Headers/GoogleMaps.bundle",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/GeoTrail/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -639,7 +657,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ArthurAraujo.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ArthurDeAraujo.GeoTrail;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 			};

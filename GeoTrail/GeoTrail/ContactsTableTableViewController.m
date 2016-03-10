@@ -7,15 +7,20 @@
 //
 
 #import "ContactsTableTableViewController.h"
-#import <Parse/Parse.h>
+#import <Firebase/Firebase.h>
+#import "TabBarController.h"
+#import "Contact.h"
 
 @interface ContactsTableTableViewController ()
 
 @end
 
 @implementation ContactsTableTableViewController{
-    NSArray *contactsArray;
     IBOutlet UITableView *tableView;
+    NSString *userUID;
+    NSMutableArray *contactsArray;
+    NSMutableArray *contactIDsArray;
+    Firebase *firebaseRef;
 }
 
 - (void)viewDidLoad {
@@ -26,32 +31,14 @@
     
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    userUID = tabBarController.currentUser.uid;
+    firebaseRef = tabBarController.firebaseRef;
+    contactsArray = [[NSMutableArray alloc] initWithArray:tabBarController.contactsArray];
+    contactIDsArray = [[NSMutableArray alloc] initWithArray:tabBarController.contactIDsArray];
     
     //LOAD ALL THE CONTACTS
-    [self loadContacts];
-}
-
--(void)loadContacts{
-    PFQuery *query = [PFQuery queryWithClassName:@"_User"];
-    [query whereKey:@"username" equalTo:[[PFUser currentUser] username]]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
-    [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
-        if (error) {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
-                                                                message:nil
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"OK", nil];
-            [alertView show];
-        }else{
-            for (NSInteger i = 0; i < PFObjects.count; i++) {
-                PFObject *thePostedPicture = PFObjects[i];
-                NSArray *contacts = [thePostedPicture objectForKey:@"Contacts"];
-                
-                contactsArray = contacts;
-            }
-        }
-        [self.tableView reloadData];
-    }];
+    [self.tableView reloadData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -60,6 +47,7 @@
 }
 
 - (IBAction)AddNewContacts:(id)sender {
+    
     UIAlertController *enterContactAlert = [UIAlertController alertControllerWithTitle:@"Add Contact" message:@"Please enter a username" preferredStyle:UIAlertControllerStyleAlert];
     
     [enterContactAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
@@ -69,56 +57,70 @@
         NSArray *textFields = enterContactAlert.textFields;
         UITextField *userNameTextField = textFields[0];
         NSString *username = userNameTextField.text;
-        NSString *PFUserUsername = [[PFUser currentUser] username];
+        // Get a reference to our users
+        Firebase* tempRef1 = [firebaseRef childByAppendingPath:@"users"];
         
-        PFQuery *query = [PFQuery queryWithClassName:@"_User"];
-        [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
-            if (error) {
+        // Attach a block to read the data at our users reference
+        [tempRef1 observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+            //GET ALL THE USERS AND THEN QUERY FROM THERE
+            Firebase* tempRef2 = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", snapshot.key]];
+
+            [tempRef2 queryEqualToValue:username childKey:@"displayName"];
+            // Attach a block to read the data at our users reference
+            [tempRef2 observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+                NSLog(@"\nADDED USER: %@", snapshot.value[@"displayName"]);
+                // Success!
+                //GO TO THE USER AND UPDATE THEIR CONTACTS
+                Firebase *userRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", userUID]];
+                [contactIDsArray addObject:snapshot.key];
+                NSDictionary *contacts = @{
+                                           @"contacts": [NSArray arrayWithArray:contactIDsArray],
+                                           };
+                //Send update to firebase
+                [userRef updateChildValues: contacts];
+                //Reload table
+                [self.tableView reloadData];
+            } withCancelBlock:^(NSError *error) {
+                //ERROR
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
                                                                     message:@"Could not find user"
                                                                    delegate:self
                                                           cancelButtonTitle:nil
                                                           otherButtonTitles:@"OK", nil];
                 [alertView show];
-                return;
-            }else{
-                bool foundName;
-                foundName = false;
-                for (int i = 0; i < PFObjects.count; i++) {
-                    NSString *searchedUsername = [PFObjects[i] objectForKey:@"username"];
-                    if ([searchedUsername isEqualToString:username] && ![searchedUsername isEqualToString:PFUserUsername]){
-                        foundName = true;
-                        NSLog(@"\nFOUND USER: %@", username);
-                    }
-                }
-                if (foundName) {
-                    NSLog(@"\nADDED USER: %@", username);
-                    // Success!
-                    NSArray *contacts;
-                    if (contactsArray == nil) {//IF IT IS THE FIRST TIME ADDING A CONTACT
-                        contacts = [NSArray arrayWithObjects:username, nil];
-                    }else{
-                        NSMutableArray *temp = [NSMutableArray arrayWithArray:contactsArray];
-                        [temp addObject:username];
-                        contacts = [NSArray arrayWithArray:temp];
-                    }
-                    
-                    [[PFUser currentUser] setObject:contacts forKey:@"Contacts"];
-                    [[PFUser currentUser] saveInBackground];
-                }else{
-                    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
-                                                                        message:@"Could not find user"
-                                                                       delegate:self
-                                                              cancelButtonTitle:nil
-                                                              otherButtonTitles:@"OK", nil];
-                    [alertView show];
-                }
-            }
-            [self loadContacts];
+                NSLog(@"%@", error.description);
+                NSLog(@"%@", error.description);
+            }];
+        } withCancelBlock:^(NSError *error) {
+            
         }];
     }]];
     
     [self presentViewController:enterContactAlert animated:true completion:nil];
+}
+
+-(void)loadContactListData{
+    contactsArray = [[NSMutableArray alloc] init];
+    //Go through each contact and get their data
+    for(int i = 0; i < contactIDsArray.count; i++){
+        // Attach a block to read the data at our users
+        
+        //Get the contact that matches with the contactID
+        Firebase *ref = [[Firebase alloc] initWithUrl:[NSString stringWithFormat:@"https://incandescent-inferno-4410.firebaseio.com/users/%@",contactIDsArray[i]]];
+        [ref observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+            //TO DO: ADD EVERY VALUE OF CONTACT
+            Contact *currentContact = [[Contact alloc] initWithName:snapshot.value[@"displayName"] uid:snapshot.key  unlockedHexsLatitude:[snapshot.value[@"unlockedHexsLatitude"] doubleValue]unlockedHexsLongitude: [snapshot.value[@"unlockedHexsLongitude"] doubleValue]];
+            [contactsArray addObject:currentContact];
+            //After the last contact is loaded, load their data onto the map
+            if (i == (int)contactsArray.count) {
+                TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+                tabBarController.contactsArray = contactsArray;
+                [self.tableView reloadData];
+            }
+        } withCancelBlock:^(NSError *error) {
+            NSLog(@"%@", error.description);
+        }];
+    }
 }
 #pragma mark - Table view data source
 
@@ -143,7 +145,8 @@
     }
     
     // Configure the cell.
-    NSString *cellText = [contactsArray objectAtIndex:indexPath.row];
+    Contact *currentContact = (Contact *)[contactsArray objectAtIndex:indexPath.row];
+    NSString *cellText = currentContact.userName;
     
     cell.textLabel.text = cellText;
     

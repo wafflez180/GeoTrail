@@ -7,10 +7,11 @@
 //
 
 #import "AppDelegate.h"
-#import <Parse/Parse.h>
+#import <Firebase/Firebase.h>
 #import <GoogleMaps/GoogleMaps.h>
 #import <Fabric/Fabric.h>
 #import <Crashlytics/Crashlytics.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
 @interface AppDelegate ()
 
@@ -20,23 +21,29 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [GMSServices provideAPIKey:@"AIzaSyCOK6ZJYfHYzs_qCHhmP224YzhZEl9hS7E"];
+    [GMSServices provideAPIKey:@"AIzaSyA_c36PraF9xBypAigBgs5hoa4UBJ9RMDY"];
     
-    // [Optional] Power your app with Local Datastore. For more info, go to
-    // https://parse.com/docs/ios_guide#localdatastore/iOS
-    [Parse enableLocalDatastore];
-    
-    // Initialize Parse.
-    [Parse setApplicationId:@"hmyMhcaohbwRDMT0W4fMrbl1S3bPPSnuxzgOQ4fz"
-                  clientKey:@"kDjG4YpSkteO7KnHHHYiEQx6oO7OvMJdUEtPUuSp"];
-    
-    // [Optional] Track statistics around application opens.
-    [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    [[FBSDKApplicationDelegate sharedInstance] application:application
+                             didFinishLaunchingWithOptions:launchOptions];
     
     [Fabric with:@[[Crashlytics class]]];
     
     return YES;
 }
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    [FBSDKAppEvents activateApp];
+}
+
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+  sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation {
+    return [[FBSDKApplicationDelegate sharedInstance] application:application
+                                                          openURL:url
+                                                sourceApplication:sourceApplication
+                                                       annotation:annotation];
+}
+
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -50,10 +57,6 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {

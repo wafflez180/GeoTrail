@@ -12,8 +12,12 @@
 #import "CameraViewController.h"
 #import <MapKit/MapKit.h>
 
-#import <Parse/Parse.h>
+#import <Firebase/Firebase.h>
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
 #import <GoogleMaps/GoogleMaps.h>
+#import "Contact.h"
+#import "TabBarController.h"
 
 #import "ViewController.h"
 
@@ -27,6 +31,10 @@ BOOL initialZoomComplete = NO;
 
 @end
 
+const double ONE_MILE_IN_METERS = 1609.344;
+#define EARTH_EQUATORIAL_RADIUS (6378137.0)
+#define WGS84_CONSTANT (0.99664719)
+#define degreesToRadians(x) (M_PI * (x) / 180.0)
 
 @implementation ViewController{
     CLLocationManager *locationManager;
@@ -34,22 +42,20 @@ BOOL initialZoomComplete = NO;
     int currentRange;
     float milesSpanRegion;
     bool hideStatusBar;
-    PFObject *postedPictures;
-    PFUser *user;
+    //PFObject *postedPictures;
     GMSMarker *prevMarker;
     int prevInfoWindowMarkerIndex;
-    NSMutableArray *contactNamesArray;
+    NSMutableArray *contactsArray;
     NSMutableArray *contactIDsArray;
     NSMutableArray *contactUnlockedHexsArray;
     CLLocationCoordinate2D currentUserLoc;
-    NSMutableArray *PFFilePictureArray;
     NSMutableArray *postedPictureLocations;
     NSMutableArray *hexArray;
     NSMutableArray *northWestHexArray;
     NSMutableArray *southWestHexArray;
     NSMutableArray *southEastHexArray;
     NSMutableArray *northEastHexArray;
-    NSMutableArray *userUnlockedHexsArray;
+    //NSMutableArray *userUnlockedHexsArray;
     NSMutableArray *hexInViewArray;
     NSMutableArray *shadedHexCentersOnMap;
     NSMutableArray *infoWindows;
@@ -68,176 +74,338 @@ BOOL initialZoomComplete = NO;
     NSMutableArray *centerCoords;
     
     int indexOfCenterHex;
-    int userUnlockedHexs;
+    int userUnlockedHexsCount;
+    int counter;
+    CLLocation *closestHexCenter;
+    //Hex Info
+    CLLocationCoordinate2D bottomLeft;
+    CLLocationCoordinate2D topLeft;
+    CLLocationCoordinate2D bottomRight;
+    CLLocationCoordinate2D topRight;
+    
+    
+    //ALL FIREBASE USER INFO
+    Firebase *firebaseRef;
+    FAuthData *currentUser;
+    NSMutableArray *unlockedHexsLatitude;
+    NSMutableArray *unlockedHexsLongitude;
+    
+    //Facebook
+    FBSDKLoginManager *facebookLoginManager;
 }
 - (IBAction)TappedRefresh:(id)sender {
-    PFUser *userID = [PFUser currentUser];
-    if (userID != nil) {
-        [self loadPlotHexs];
-        [self uploadDataOnMap:userID :@"You": [NSNumber numberWithInt:userUnlockedHexs]];//SET UP ALL CURRENT USER'S PICTURES
-        [self loadUserContacts];
-    }
+    [self loadDataOnScreen];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    [self initArrays];
+        [self setMapViewCustomizations];
+
+    _picView.alpha = 0;
     
-    // Create a GMSCameraPosition that tells the map to display the
-    // coordinate user location at zoom level 6.
+//    [loginButton addTarget:self
+//                                 action:@selector(logIntoFacebook)
+//                       forControlEvents:UIControlEventTouchUpInside];
     
-    self.mapView_.delegate = self;
-    [self.mapView_ setMyLocationEnabled:TRUE];
-    self.mapView_.mapType = kGMSTypeNormal;
-    self.mapView_.settings.rotateGestures = false;
-    [self.mapView_ setBuildingsEnabled:FALSE];
-    [self.mapView_ setBackgroundColor:[UIColor purpleColor]];
-    [self.mapView_ setIndoorEnabled:FALSE];
-    [self.mapView_ setMinZoom:5 maxZoom:25];
-    
+    //[self addHexagons];
+    [self logIntoFacebook];
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [self setCameraToUserLoc];
+    [self loadDataOnScreen];
+}
+
+-(void)initArrays{
     contactUnlockedHexsArray = [[NSMutableArray alloc] init];
+    unlockedHexsLatitude = [[NSMutableArray alloc]init];
+    unlockedHexsLongitude = [[NSMutableArray alloc]init];
+    contactsArray = [[NSMutableArray alloc] init];
     contactIDsArray = [[NSMutableArray alloc] init];
     hexArray = [[NSMutableArray alloc]init];
     northWestHexArray = [[NSMutableArray alloc]init];
     southWestHexArray = [[NSMutableArray alloc]init];
     southEastHexArray = [[NSMutableArray alloc]init];
     northEastHexArray = [[NSMutableArray alloc]init];
-    userUnlockedHexsArray = [[NSMutableArray alloc]init];
     hexInViewArray = [[NSMutableArray alloc]init];
     shadedHexCentersOnMap = [[NSMutableArray alloc]init];
-    PFFilePictureArray = [[NSMutableArray alloc]init];
     postedPictureLocations = [[NSMutableArray alloc]init];
     infoWindows = [[NSMutableArray alloc] init];
     GMSMarkersArray = [[NSMutableArray alloc]init];
-    
-    _picView.alpha = 0;
-
-    [self setCameraToUserLoc];
-    
-    //ASKS USER TO LOGIN/ SIGN UP
-    if (!PFUser.currentUser) {
-        UIAlertController *loginAlert = [UIAlertController alertControllerWithTitle:@"Sign Up / Login" message:@"Please sign up or login" preferredStyle:UIAlertControllerStyleAlert];
-        
-        [loginAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
-            textField.placeholder = @"Your username";
-        }];
-        [loginAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
-            textField.placeholder = @"Your password";
-            textField.secureTextEntry = true;
-        }];
-    
-        [loginAlert addAction:[UIAlertAction actionWithTitle:@"Login" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action){
-            NSArray *textFields = loginAlert.textFields;
-            UITextField *userName = textFields[0];
-            UITextField *password = textFields[1];
-            
-            user = [PFUser user];
-            user.username = userName.text;
-            user.password = password.text;
-            [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                if (error) {
-                    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"error"]
-                                                                        message:nil
-                                                                       delegate:self
-                                                              cancelButtonTitle:nil
-                                                              otherButtonTitles:@"OK", nil];
-                    [alertView show];
-                    return;
-                }
-                
-                // Success!
-                PFUser *userID = [PFUser currentUser];
-                if (userID != nil) {
-                    [self uploadDataOnMap:userID :@"You":[NSNumber numberWithInt:userUnlockedHexs]];//SET UP ALL CURRENT USER'S PICTURES
-                    [self loadUserContacts];
-                }
-            }];
-        }]];
-        [self presentViewController:loginAlert animated:true completion:nil];
-    }
-    
-    PFUser *userID = [PFUser currentUser];
-    if (userID != nil) {
-        [self uploadDataOnMap:userID :@"You":[NSNumber numberWithInt:userUnlockedHexs]];//SET UP ALL CURRENT USER'S PICTURES
-        [self loadUserContacts];
-    }
-    //[self addHexagons];
 }
 
-- (void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position{
+-(void)setMapViewCustomizations{
+    GMSCameraPosition *camera = [GMSCameraPosition
+                                 cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
+                                 longitude:self.mapView_.myLocation.coordinate.longitude
+                                 zoom:11];
+    //self.mapView_ = [GMSMapView mapWithFrame:self.view.bounds camera:camera];
+    self.mapView_.delegate = self;
+    self.mapView_.myLocationEnabled = YES;
+    self.mapView_.mapType = kGMSTypeNormal;
+    self.mapView_.settings.rotateGestures = false;
+    self.mapView_.buildingsEnabled = true;
+    [self.mapView_ setBackgroundColor:[UIColor purpleColor]];
+    self.mapView_.indoorEnabled = false;
+    [self.mapView_ setMinZoom:5 maxZoom:25];
+}
 
+-(void)logIntoFacebook{
+    firebaseRef = [[Firebase alloc] initWithUrl:@"https://incandescent-inferno-4410.firebaseio.com/"];
+    
+    if(facebookLoginManager == nil){
+        facebookLoginManager = [[FBSDKLoginManager alloc] init];
+    }
+    
+    [facebookLoginManager logInWithReadPermissions:@[@"email",@"public_profile",@"user_friends"]
+                                    handler:^(FBSDKLoginManagerLoginResult *facebookResult, NSError *facebookError) {
+                                        if (facebookError) {
+                                            NSLog(@"Facebook login failed. Error: %@", facebookError);
+                                        } else if (facebookResult.isCancelled) {
+                                            NSLog(@"Facebook login got cancelled.");
+                                        } else {
+                                            NSString *accessToken = [[FBSDKAccessToken currentAccessToken] tokenString];
+                                            [firebaseRef authWithOAuthProvider:@"facebook" token:accessToken
+                                                   withCompletionBlock:^(NSError *error, FAuthData *authData) {
+                                                       if (error) {
+                                                           NSLog(@"Login failed. %@", error);
+                                                       } else {
+                                                           NSLog(@"Logged in! %@", authData);
+                                                           currentUser = authData;
+                                                           TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+                                                           tabBarController.currentUser = currentUser;
+                                                           tabBarController.firebaseRef = firebaseRef;
+                                                           [self checkUserData];
+                                                           [self loadDataOnScreen];
+                                                       }
+                                                   }];
+                                        }
+                                    }];
+}
+
+-(void)setUpNewUser{
+    NSLog(@"Creating new user...");
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
+    
+    NSString *date = [dateFormatter stringFromDate:[NSDate date]];
+    
+    NSDictionary *newUser = @{
+                              @"fullName": currentUser.providerData[@"displayName"],
+                              @"userName": @"Temp",
+                              @"uid":currentUser.uid,
+                              @"email":currentUser.providerData[@"email"],
+                              @"unlockedHexsLatitude": [NSArray arrayWithObject:@"Temp"],
+                              @"unlockedHexsLongitude": [NSArray arrayWithObject:@"Temp"],
+                              @"contacts":[NSArray arrayWithObject:@"Temp"],
+                              @"dateAccountCreated": date
+                              };
+
+    NSDictionary *users = @{
+                            currentUser.uid: newUser
+                            };
+    
+    Firebase *tempRef = [firebaseRef childByAppendingPath:@"users"];
+    [tempRef setValue: users];
+    NSLog(@"Created user: %@",newUser);
+}
+
+-(void)checkUserData{
+    // Get a reference to our postedpictures
+    Firebase* tempRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", currentUser.uid]];
+    
+    [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+        if(snapshot.value != [NSNull null]){
+            NSLog(@"%@", snapshot.value);
+            unlockedHexsLatitude = (NSMutableArray *)[snapshot.value[@"unlockedHexsLatitude"] array];
+            unlockedHexsLongitude = (NSMutableArray *)[snapshot.value[@"unlockedHexsLongitude"] array];
+        }else{
+            [self setUpNewUser];
+        }
+    } withCancelBlock:^(NSError *error) {
+        NSLog(@"checkUserData: %@", error.description);
+    }];
+}
+
+-(void)loadDataOnScreen{
+    [self loadHexsOnMap];
+    //Load user's data onto map
+    [self uploadUserDataOnMap];
+    //SET UP ALL CURRENT USER'S PICTURES
+    [self loadContactList];
 }
 
 - (void)mapView:(GMSMapView *)mapView didLongPressAtCoordinate:(CLLocationCoordinate2D)coordinate{
     
 }
 
--(void)uploadDataOnMap: (PFUser *)posterUser :(NSString *)Username :(NSNumber *)unlockedHexs{
-    PFQuery *query = [PFQuery queryWithClassName:@"PostedPictures"];
-    NSLog(@"%@",Username);
-    [query whereKey:@"UserID" equalTo:posterUser.objectId];// "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
-    NSMutableArray *tempPostedPictureLocations = [[NSMutableArray alloc] init];
-    NSMutableArray *tempPostedPictureLikes = [[NSMutableArray alloc] init];
-    NSMutableArray *tempPostedPictureViews = [[NSMutableArray alloc] init];
-    NSMutableArray *tempPostedPictureWhoLiked = [[NSMutableArray alloc]init];
-    NSMutableArray *tempPostedPictureWhoViewed = [[NSMutableArray alloc]init];
-    NSMutableArray *tempPostedPictureTimeCreated = [[NSMutableArray alloc]init];
-    NSMutableArray *objectIDArray = [[NSMutableArray alloc]init];
-    
-    NSLog(@"\nUPLOAD DATA ON MAP: %@",Username);
-    [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
-        if (!error) {
-            for (NSInteger i = 0; i <PFObjects.count; i++) {
-                PFObject *thePostedPicture = PFObjects[i];
+-(void)uploadUserDataOnMap{
+    Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
+    [tempRef queryEqualToValue:currentUser.uid childKey:@"owner"];
+    [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+        // make CLLocationCoordinate2D
+        if(snapshot.value != [NSNull null]){
+            NSLog(@"%@",snapshot.value);
+            NSNumber *latitude = snapshot.value[@"latitude"];
+            NSNumber *longitude = snapshot.value[@"longitude"];
+            CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
+            CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+            
+            //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
+            if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
+                NSNumber *likes = snapshot.value[@"likes"];
+                NSNumber *views = snapshot.value[@"views"];
+                NSArray *whoLiked = snapshot.value[@"whoLiked"];
+                NSArray *whoViewed = snapshot.value[@"whoViewed"];
+                NSString *objectID = snapshot.key;
+                NSDate *dateCreated = (NSDate *)snapshot.value[@"dateCreated"] ;
                 
-                PFGeoPoint *pictureLocation = [thePostedPicture objectForKey:@"location"];
-                PFFile *picture = [thePostedPicture objectForKey:@"picture"];
-                NSNumber *likes = [thePostedPicture objectForKey:@"Likes"];
-                NSNumber *views = [thePostedPicture objectForKey:@"Views"];
-                NSString *objectID = [thePostedPicture valueForKey:@"objectId"];
-                NSArray *whoViewed = [thePostedPicture objectForKey:@"UsersWhoViewed"];
-                NSDate *dateCreated = [thePostedPicture valueForKey:@"createdAt"];
-                if ([views intValue] == 0) {
-                    whoViewed = [[NSArray alloc] init];
+                GMSMarker *marker = [[GMSMarker alloc] init];
+                marker.opacity = 0.9;
+                marker.position = coordinate;
+                marker.appearAnimation = kGMSMarkerAnimationPop;
+                marker.icon = [UIImage imageNamed:@"PicCircle"];
+                //        // add annotation
+                //        marker.title = Username;
+                //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
+                CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+                
+                NSDate *currentDate = [NSDate date];
+                NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:dateCreated];
+                NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:dateCreated];
+                NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:dateCreated];
+                NSInteger daysBetweenDates = [self daysBetweenDates:dateCreated andDate:currentDate];
+                
+                if(secondsBetweenDates < 60){
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Seconds ago", (int)secondsBetweenDates];
+                }else if(minutesBetweenDates < 60){
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Minutes ago", (int)minutesBetweenDates];
+                }else if(hoursBetweenDates < 24){
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Hours ago", (int)hoursBetweenDates];
                 }else{
-                    whoViewed = [thePostedPicture objectForKey:@"UsersWhoViewed"];
-                }
-                NSArray *whoLiked;
-                if ([likes intValue] == 0) {
-                    whoLiked = [[NSArray alloc] init];
-                }else{
-                    whoLiked = [thePostedPicture objectForKey:@"UsersWhoLiked"];
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Days ago", (int)daysBetweenDates];
                 }
                 
-               // NSLog(@"\nPicture Coords:\nX: %f\nY: %f", pictureLocation.latitude, pictureLocation.longitude);
-                CLLocation *picCoords = [[CLLocation alloc] initWithLatitude:pictureLocation.latitude longitude:pictureLocation.longitude];
+                //Converts string to the image
+                NSString* picString = snapshot.value[@"image"];
                 
-                //ADD THE LOCATION TO THE PICTURES LOCATIONS ARRAY
-                [tempPostedPictureLocations addObject:picCoords];
-                [tempPostedPictureLikes addObject:likes];
-                [tempPostedPictureWhoLiked addObject:whoLiked];
-                [tempPostedPictureWhoViewed addObject:whoViewed];
-                [tempPostedPictureViews addObject:views];
-                [tempPostedPictureTimeCreated addObject:dateCreated];
-                [objectIDArray addObject:objectID];
-                
-                [postedPictureLocations addObject:pictureLocation];
-                [PFFilePictureArray addObject:picture];
-                
-               // NSLog(@"\nPic Coordinates: \n%f\n%f", pictureLocation.latitude, pictureLocation.longitude);
+                NSData* data=[picString dataUsingEncoding:NSUTF8StringEncoding];
+                UIImage *image = [[UIImage alloc]initWithData:data];
+                [infoWindow.image setImage:image];
+                infoWindow.usernameLabel.text = snapshot.value[@"displayName"];
+                infoWindow.usernameImageLabel.text = snapshot.value[@"displayName"];
+                infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
+                infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
+                infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
+                infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
+                infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",snapshot.value[@"unlockedHexs"]];
+                infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
+                infoWindow.usersWhoViewed = [NSMutableArray arrayWithArray:whoViewed];
+                infoWindow.objectID = objectID;
+                infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
+                infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
+                infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
+                infoWindow.coordinate = coordinate;
+                [infoWindows addObject:infoWindow];
+                marker.map = self.mapView_;
+                [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
             }
         }else{
-            // Log details of the failure
-            NSLog(@"Error: %@ %@", error, [error userInfo]);
+            NSLog(@"checkUserData: snapshot.value == null");
         }
-        //CODE EXECUTES AFTER THE ABOVE CODE IS CALLED
-        [self loadPlotHexs];
-
-        [self plot:tempPostedPictureLocations:Username:tempPostedPictureLikes:tempPostedPictureWhoLiked:tempPostedPictureViews:tempPostedPictureWhoViewed:tempPostedPictureTimeCreated:unlockedHexs:objectIDArray];
+    } withCancelBlock:^(NSError *error) {
+        NSLog(@"uploadUserDataOnMap: %@", error.description);
     }];
-    // The InBackground methods are asynchronous, so any code after this will run
-    // immediately.  Any code that depends on the query result should be moved
-    // inside the completion block above.
+}
+
+-(void)uploadContactDataOnMap{
+    // Get a reference to our postedpictures
+    Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
+    
+    //Share contacts to tabBarController to be accessed by other classes
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    tabBarController.contactsArray = contactsArray;
+    tabBarController.contactIDsArray = contactIDsArray;
+    
+    //Go through each contact and get their posted pictures
+    for(int i = 0; i < contactIDsArray.count; i++){
+        // Attach a block to read the data at our postedpictures reference
+        
+        //Get the posted pictures from the owner that matches with the contact ID
+        //BACKEND: PostedPicture.owner == contactID then grab that pic
+        [tempRef queryEqualToValue:contactIDsArray[i] childKey:@"owner"];
+        [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+            NSLog(@"%@", snapshot.value);
+            [self setCameraToUserLoc];
+            
+            // make CLLocationCoordinate2D
+            NSNumber *latitude = snapshot.value[@"latitude"];
+            NSNumber *longitude = snapshot.value[@"longitude"];
+            CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
+            CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+            
+            //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
+            if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
+                NSNumber *likes = snapshot.value[@"likes"];
+                NSNumber *views = snapshot.value[@"views"];
+                NSArray *whoLiked = snapshot.value[@"whoLiked"];
+                NSArray *whoViewed = snapshot.value[@"whoViewed"];
+                NSString *objectID = snapshot.key;
+                NSDate *dateCreated = (NSDate *)snapshot.value[@"dateCreated"] ;
+                
+                GMSMarker *marker = [[GMSMarker alloc] init];
+                marker.opacity = 0.9;
+                marker.position = coordinate;
+                marker.appearAnimation = kGMSMarkerAnimationPop;
+                marker.icon = [UIImage imageNamed:@"PicCircle"];
+                //        // add annotation
+                //        marker.title = Username;
+                //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
+                CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+                
+                NSDate *currentDate = [NSDate date];
+                NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:dateCreated];
+                NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:dateCreated];
+                NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:dateCreated];
+                NSInteger daysBetweenDates = [self daysBetweenDates:dateCreated andDate:currentDate];
+                
+                if(secondsBetweenDates < 60){
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Seconds ago", (int)secondsBetweenDates];
+                }else if(minutesBetweenDates < 60){
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Minutes ago", (int)minutesBetweenDates];
+                }else if(hoursBetweenDates < 24){
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Hours ago", (int)hoursBetweenDates];
+                }else{
+                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Days ago", (int)daysBetweenDates];
+                }
+                infoWindow.usernameLabel.text = snapshot.value[@"displayName"];
+                infoWindow.usernameImageLabel.text = snapshot.value[@"displayName"];
+                infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
+                infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
+                infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
+                infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
+                infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",snapshot.value[@"unlockedHexs"]];
+                infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
+                infoWindow.usersWhoViewed = [NSMutableArray arrayWithArray:whoViewed];
+                infoWindow.objectID = objectID;
+                infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
+                infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
+                infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
+                infoWindow.coordinate = coordinate;
+                [infoWindows addObject:infoWindow];
+                marker.map = self.mapView_;
+                [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
+            }
+            
+        } withCancelBlock:^(NSError *error) {
+            NSLog(@"uploadContactDataOnMap: %@", error.description);
+        }];
+    }
+    [self loadHexsOnMap];
 }
 
 #pragma mark MAPVIEW BUTTONS
@@ -274,118 +442,190 @@ BOOL initialZoomComplete = NO;
 
 #pragma mark Hexagon Methods
 
--(void)loadPlotHexs{
-    int coordLatRangeIndex=0;
-    double userLong = self.mapView_.myLocation.coordinate.longitude;
-    double userLat = self.mapView_.myLocation.coordinate.latitude;
-    
-    PFQuery *query;
-    if (userLat >= 0) {
-        query = [PFQuery queryWithClassName:@"hexPosCoords"];
+-(void)loadHexsOnMap{
+    //ADD THE POLYGON USING THE INDEX
+    CLLocation *userLoc = self.mapView_.myLocation;
+    if(userLoc != nil){
+        if ([self isInNewHex]) {
+            [self addNewHex];
+        }
+        userUnlockedHexsCount = (int)unlockedHexsLatitude.count;
+        [self drawUnlockedHexs];
     }else{
-        query = [PFQuery queryWithClassName:@"hexNegCoords"];
+        NSLog(@"self.mapView.Location is nil");
+    }
+}
+-(void)addNewHex{
+    [unlockedHexsLatitude addObject:[NSNumber numberWithDouble: closestHexCenter.coordinate.latitude]];
+    [unlockedHexsLongitude addObject:[NSNumber numberWithDouble: closestHexCenter.coordinate.longitude]];
+    Firebase* tempRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", currentUser.uid]];
+    NSDictionary *post = @{
+                           @"unlockedHexsLatitude": [NSArray arrayWithArray:unlockedHexsLatitude],
+                           @"unlockedHexsLongitude": [NSArray arrayWithArray:unlockedHexsLongitude]
+                           };
+    [tempRef updateChildValues: post];
+}
+
+-(BOOL)isInNewHex{
+    closestHexCenter = [self closestHexCenter];
+    GMSMarker *marker = [GMSMarker markerWithPosition:closestHexCenter.coordinate];
+    marker.opacity = 1;
+    marker.icon = [UIImage imageNamed:@"PicCircle"];
+    marker.map = self.mapView_;
+    
+    BOOL isInNewHex = true;
+    //Go through the unlockedHexs, if they are less than 100 meters of a known unlockedHex it is not a new Hex
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        CLLocation *unlockedHexLoc = [[CLLocation alloc]initWithLatitude:[unlockedHexsLatitude[i] doubleValue] longitude:[unlockedHexsLongitude[i] doubleValue]];
+        if ([unlockedHexLoc distanceFromLocation:closestHexCenter]<100) {
+            isInNewHex = false;
+        }
+    }
+    return isInNewHex;
+}
+
+-(CLLocation*)closestHexCenter{
+    CLLocation *userLoc = self.mapView_.myLocation;
+    
+    double currentLat = -90;
+    double currentLong = self.mapView_.myLocation.coordinate.longitude;
+    BOOL findingClosestLat=true;
+    
+    for(int i = 0; i <= 1; i++){
+        //Reset values
+        double prevDistance = 9999999999999.9;
+        BOOL distanceIsShrinking = true;
+        //Increase lat & long seperately by 5 miles from 0 until it is closest to userLoc
+        while (distanceIsShrinking) {
+            if (findingClosestLat) {//If finding closest latitude
+                currentLat = [self IncrLatByOneMileLatitude:currentLat];
+            }else{//If finding closest longitude
+                currentLong = [self IncrLongByOneMileLatitude:currentLat Longitude:currentLong];
+            }
+            CLLocation *currentLoc = [[CLLocation alloc]initWithLatitude:currentLat longitude:currentLong];
+            double distanceInMiles = [currentLoc distanceFromLocation:userLoc]/ONE_MILE_IN_METERS;
+            if (prevDistance < distanceInMiles) {
+                distanceIsShrinking = false;
+                if (findingClosestLat) {
+                    currentLat = [self DecrLatByOneMileLatitude:currentLat];
+                    currentLong = -180;
+                }else{
+                    currentLong = [self DecrLongByOneMileLatitude:currentLat Longitude:currentLong];
+                }
+                findingClosestLat = false;
+            }else{
+                prevDistance = distanceInMiles;
+            }
+        }
     }
     
-    PFGeoPoint *tempGeo = [PFGeoPoint geoPointWithLatitude:userLat longitude:userLong];
-    
-    [query whereKey:@"h" nearGeoPoint:tempGeo withinMiles:10];
-    
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (error) {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
-                                                                message:nil
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"OK", nil];
-            [alertView show];
-        }else{
-            // NSLog(@"OBJECT COUNT: %lu", (unsigned long)objects.count);
-            
-            centerCoords = [[NSMutableArray alloc]init];
-            
-            CLLocationDistance shortestDistance = 999999;
-
-            for (int i = 0; i < objects.count; i++) {//ERROR HERE IT NEEDS TO RETRIVE THE CORRECT ROW & OBJECT
-                PFObject *centerPointHexArray = objects[i];
-                PFGeoPoint *centerGeoPoints = [centerPointHexArray objectForKey:@"h"];
-                
-                indexOfCenterHex=0;
-                
-                CLLocation *coordinate = [[CLLocation alloc] initWithLatitude:centerGeoPoints.latitude longitude:centerGeoPoints.longitude];
-                [centerCoords addObject:coordinate];
-                
-                CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(centerGeoPoints.latitude, centerGeoPoints.longitude);
-                //NSLog(@"\nLAT: %f\n LONG: %f\n", coordTemp.latitude, coordTemp.longitude);
-
-                CLLocation *hexCenterLoc = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
-                CLLocationDistance distance = [hexCenterLoc getDistanceFrom: self.mapView_.myLocation];
-                if (shortestDistance  > distance) {
-                    shortestDistance = distance;
-                    indexOfCenterHex = i;
-                }
-            }
-        }
-        //ADD THE POLYGON USING THE INDEX
-        [self checkUnlockedHexs];
-    }];
+    return [[CLLocation alloc] initWithLatitude:currentLat longitude:currentLong];
 }
 
--(void)checkUnlockedHexs{
-    PFQuery *query = [PFUser query];
-    [query whereKey:@"username" equalTo:[[PFUser currentUser] username]];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if(error){
-            
-        }else{
-            PFObject *theUser;
-            for (int x = 0; x < objects.count; x++) {
-                if (objects[x] == [PFUser currentUser]) {
-                    theUser = objects[x];
-                }
-            }
-            NSMutableArray *unlockedHexs = [[NSMutableArray alloc]initWithArray:[theUser objectForKey:@"UnlockedHexs"]];
-            double currentHexLat = [centerCoords[indexOfCenterHex] coordinate].latitude;
-            double currentHexLong = [centerCoords[indexOfCenterHex] coordinate].longitude;
-            //GO THROUGH ARRAY AND CHECK IF CURRENT HEX ISN'T IN THE ARRAY
-            bool currentHexIsNew = true;
-            for (int i = 0; i < unlockedHexs.count; i++) {
-                PFGeoPoint *unlockedHex = unlockedHexs[i];
-                //IF THE CURRENT HEXAGON THE USER IS IN IS IN THE ARRAY THEN DON'T ADD IT
-                if (fabs(currentHexLat - unlockedHex.latitude) <= 0.00001 && fabs(currentHexLong - unlockedHex.longitude) <= 0.00001) {
-                    currentHexIsNew = false;
-                }
-            }
-            if (currentHexIsNew) {
-                /*-40.959770
-                 2015-11-14 18:55:21.480 GeoTrail[3634:1229629] -74.057976-*/
-                PFGeoPoint *newHex = [PFGeoPoint geoPointWithLatitude:currentHexLat longitude:currentHexLong];
-                [unlockedHexs addObject:newHex];
-                [[PFUser currentUser] addObject:newHex forKey:@"UnlockedHexs"];
-                [[PFUser currentUser] saveInBackground];
-                
-            }
-            userUnlockedHexsArray = [NSMutableArray arrayWithArray:unlockedHexs];
-            userUnlockedHexs = (int)userUnlockedHexsArray.count;
-            [self loadUnlockedHexs];
-        }
-    }];
+-(double)IncrLatByOneMileLatitude:(double)latitude{
+    //1 mile in latitude 0.01455445222
+    double oneMileInLatDegrees = 0.01455445222;
+    //Demonstrate closest hex center
+    return latitude+=(oneMileInLatDegrees*1);
 }
 
--(void)loadUnlockedHexs{
-    for (int i = 0; i < userUnlockedHexsArray.count; i++) {
-        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
-        CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(geoPoint.latitude, geoPoint.longitude);
+-(double)DecrLatByOneMileLatitude:(double)latitude{
+    //1 mile in latitude 0.01455445222
+    double oneMileInLatDegrees = 0.01455445222;
+    //Demonstrate closest hex center
+    GMSMarker *marker = [[GMSMarker alloc] init];
+    marker.opacity = 0.2;
+    marker.position = CLLocationCoordinate2DMake(latitude-(oneMileInLatDegrees*1), self.mapView_.myLocation.coordinate.longitude);
+    marker.icon = [UIImage imageNamed:@"PicCircle"];
+    marker.map = self.mapView_;
+    return latitude-=(oneMileInLatDegrees*1);
+}
+
+-(double)IncrLongByOneMileLatitude:(double)latitude Longitude:(double)longitude{
+    //1 mile in longitude ONE_MILE_IN_METERS/(111,320*cos(longitude))
+    //http://stackoverflow.com/questions/6633850/calculate-new-coordinate-x-meters-and-y-degree-away-from-one-coordinate
+    double OneMileInMeters = ONE_MILE_IN_METERS*0.9;
+    
+    double distanceRadians = (OneMileInMeters/1000) / 6371.0;
+    //6,371 = Earth's radius in km
+    double bearingRadians = [self radiansFromDegrees:90];
+    double fromLatRadians = [self radiansFromDegrees:latitude];
+    double fromLonRadians = [self radiansFromDegrees:longitude];
+    
+    double toLatRadians = asin( sin(fromLatRadians) * cos(distanceRadians)
+                               + cos(fromLatRadians) * sin(distanceRadians) * cos(bearingRadians) );
+    
+    double toLonRadians = fromLonRadians + atan2(sin(bearingRadians)
+                                                 * sin(distanceRadians) * cos(fromLatRadians), cos(distanceRadians)
+                                                 - sin(fromLatRadians) * sin(toLatRadians));
+    
+    // adjust toLonRadians to be in the range -180 to +180...
+    toLonRadians = fmod((toLonRadians + 3*M_PI), (2*M_PI)) - M_PI;
+    
+    CLLocationCoordinate2D result;
+    result.latitude = [self degreesFromRadians:toLatRadians];
+    result.longitude = [self degreesFromRadians:toLonRadians];
+    
+    //Demonstrate closest hex center
+    return result.longitude;
+}
+
+- (double)radiansFromDegrees:(double)degrees{
+    return degrees * (M_PI/180.0);
+}
+
+- (double)degreesFromRadians:(double)radians{
+    return radians * (180.0/M_PI);
+}
+
+-(double)DecrLongByOneMileLatitude:(double)latitude Longitude:(double)longitude{
+    //1 mile in longitude ONE_MILE_IN_METERS/(111,320*cos(longitude))
+    //http://stackoverflow.com/questions/6633850/calculate-new-coordinate-x-meters-and-y-degree-away-from-one-coordinate
+    double OneMileInMeters = ONE_MILE_IN_METERS*0.9;
+    
+    double distanceRadians = (OneMileInMeters/1000) / 6371.0;
+    //6,371 = Earth's radius in km
+    double bearingRadians = [self radiansFromDegrees:-90];
+    double fromLatRadians = [self radiansFromDegrees:latitude];
+    double fromLonRadians = [self radiansFromDegrees:longitude];
+    
+    double toLatRadians = asin( sin(fromLatRadians) * cos(distanceRadians)
+                               + cos(fromLatRadians) * sin(distanceRadians) * cos(bearingRadians) );
+    
+    double toLonRadians = fromLonRadians + atan2(sin(bearingRadians)
+                                                 * sin(distanceRadians) * cos(fromLatRadians), cos(distanceRadians)
+                                                 - sin(fromLatRadians) * sin(toLatRadians));
+    
+    // adjust toLonRadians to be in the range -180 to +180...
+    toLonRadians = fmod((toLonRadians + 3*M_PI), (2*M_PI)) - M_PI;
+    
+    CLLocationCoordinate2D result;
+    result.latitude = [self degreesFromRadians:toLatRadians];
+    result.longitude = [self degreesFromRadians:toLonRadians];
+
+    //Demonstrate closest hex center
+    GMSMarker *marker = [[GMSMarker alloc] init];
+    marker.opacity = 0.5;
+    marker.position = CLLocationCoordinate2DMake(result.latitude,result.longitude);
+    marker.icon = [UIImage imageNamed:@"PicCircle"];
+    marker.map = self.mapView_;
+    return result.longitude;
+}
+
+-(void)drawUnlockedHexs{
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        CLLocationCoordinate2D currentHexCenter = CLLocationCoordinate2DMake([unlockedHexsLatitude[i] doubleValue], [unlockedHexsLongitude[i] doubleValue]);
         
         //THESE ARE 5 MILE HEXAGONS
-        float width = 0.072464;
-        float height = 0.072464;
+        float width = fabs(currentHexCenter.longitude - [self IncrLongByOneMileLatitude:currentHexCenter.latitude Longitude:currentHexCenter.longitude]);
+        float height = fabs(currentHexCenter.latitude - [self IncrLatByOneMileLatitude:currentHexCenter.latitude]);
         float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
         float topMidHeights = height - botMidHeights;
         
         GMSMutablePath *hexH = [[GMSMutablePath path] init];
         
-        float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-        float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD//
+        float latCoords = currentHexCenter.latitude - (height / 2);//INCREASE THE LAT COORD
+        float longCoords = currentHexCenter.longitude - (width / 2);//INCREASE THE LONG COORD//
         CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
         CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
         CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
@@ -402,12 +642,13 @@ BOOL initialZoomComplete = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             // make some UI changes
             GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-            polygon2.fillColor = [UIColor clearColor];
-            polygon2.strokeColor = [self colorWithHexString:@"6F6F6F"];
-            polygon2.strokeWidth = 4;
+            polygon2.fillColor = [[self colorWithHexString:@"BABABA"] colorWithAlphaComponent:0.8];
+            polygon2.strokeColor = [self colorWithHexString:@"7E8C8D"];
+            polygon2.strokeWidth = 6;
+            polygon2.zIndex = 10;
             polygon2.map = self.mapView_;
         });
-        [self getSurroundingHexs];
+        [self drawBackground];
     }
 }
 
@@ -442,74 +683,93 @@ BOOL initialZoomComplete = NO;
     return polygon;
 }
 
--(void)getSurroundingHexs{
-    for (int i = 0; i < userUnlockedHexsArray.count; i++) {
-        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
-        CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(geoPoint.latitude, geoPoint.longitude);
+- (void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position{
+    //Check if the user goes over bounds
+    //if ((mapView.projection.visibleRegion.farLeft.latitude > topLeft.latitude)||(mapView.projection.visibleRegion.farLeft.longitude > topLeft.longitude)||(mapView.projection.visibleRegion.farRight.latitude > topRight.latitude)||(mapView.projection.visibleRegion.farRight.longitude > topRight.longitude)||(mapView.projection.visibleRegion.nearLeft.latitude > bottomLeft.latitude)||(mapView.projection.visibleRegion.nearLeft.longitude > bottomLeft.longitude)||(mapView.projection.visibleRegion.nearRight.latitude > bottomRight.latitude)||(mapView.projection.visibleRegion.nearRight.longitude > bottomRight.longitude)) {
         
-        for (int i = 0; i <= 6; i++) {
-            //THESE ARE 5 MILE HEXAGONS
-            float width = 0.072464;
-            float height = 0.072464;
-            
-            float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
-            float topMidHeights = height - botMidHeights;
-            
-            GMSMutablePath *hexH = [[GMSMutablePath path] init];
-            
-            float latCoords;
-            float longCoords;
-            if (i == 6) {//THE BOTTOM LEFT HEX
-                latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
-                longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
-            }else if (i == 5) {//THE BOTTOM RIGHT HEX
-                latCoords = coordTemp.latitude - (height * 1.25);//INCREASE THE LAT COORD
-                longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
-            }else if (i == 4){//THE TOP LEFT HEX
-                latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
-                longCoords = coordTemp.longitude - (width);//INCREASE THE LONG COORD
-            }else if (i == 3){//THE TOP RIGHT HEX
-                latCoords = coordTemp.latitude + (height / 4);//INCREASE THE LAT COORD
-                longCoords = coordTemp.longitude;//INCREASE THE LONG COORD
-            }else if (i == 2){//THE LEFT HEX
-                latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-                longCoords = coordTemp.longitude - (width * 1.5);//INCREASE THE LONG COORD
-            }else if (i == 1){//THE RIGHT HEX
-                latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-                longCoords = coordTemp.longitude + (width / 2);//INCREASE THE LONG COORD
-            }
-            
-            CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
-            CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
-            CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
-            CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
-            CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
-            CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
-            
-            [hexH addCoordinate:bottomH];
-            [hexH addCoordinate:bottomLeftH];
-            [hexH addCoordinate:topLeftH];
-            [hexH addCoordinate:topH];
-            [hexH addCoordinate:topRightH];
-            [hexH addCoordinate:bottomRightH];
-            
-            CLLocation *center = [self getCenterOfHex:hexH];
-            
-            //NSLog(@"%f", center.latitude);
-            //NSLog(@"%f", center.longitude);
-            if (![self checkIfCenterIsOnMap:center]) {
-                CLLocation *hexCenter = center;
-                [shadedHexCentersOnMap addObject:hexCenter];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-                    polygon2.fillColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.2];
-                    polygon2.strokeWidth = 1;
-                    polygon2.strokeColor = [[self colorWithHexString:@"929292"] colorWithAlphaComponent:0.3];
-                    polygon2.map = self.mapView_;
-                });
-            }
+    //}
+}
+
+-(void)setMapViewBounds{
+    double lowestLat=999999999;
+    double highestLat=-999999999;
+    double lowestLong=999999999;
+    double highestLong=-999999999;
+    //Find the borders of the unlocked Hexs
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        if (lowestLat > [unlockedHexsLatitude[i] doubleValue]) {
+            lowestLat = [unlockedHexsLatitude[i] doubleValue];
+        }
+        if (highestLat < [unlockedHexsLatitude[i] doubleValue]) {
+            highestLat = [unlockedHexsLatitude[i] doubleValue];
+        }
+        if (lowestLong > [unlockedHexsLongitude[i] doubleValue]) {
+            lowestLong = [unlockedHexsLongitude[i] doubleValue];
+        }
+        if (highestLong < [unlockedHexsLongitude[i] doubleValue]) {
+            highestLong = [unlockedHexsLongitude[i] doubleValue];
         }
     }
+    double lowestLatWithPadding=[self DecrLatByOneMileLatitude:lowestLat];
+    double higestLatWithPadding=[self IncrLatByOneMileLatitude:highestLat];
+    double lowestLongWithPadding=[self DecrLongByOneMileLatitude:[self DecrLatByOneMileLatitude:lowestLat] Longitude:lowestLong];
+    double highestLongWithPadding=[self IncrLongByOneMileLatitude:[self IncrLatByOneMileLatitude:highestLat] Longitude:highestLong];
+    
+    //Make each coordinate a corner of the hex(s)
+    bottomLeft = CLLocationCoordinate2DMake(lowestLatWithPadding, lowestLongWithPadding);
+    topLeft = CLLocationCoordinate2DMake(higestLatWithPadding, lowestLongWithPadding);
+    topRight = CLLocationCoordinate2DMake(higestLatWithPadding, highestLongWithPadding);
+    bottomRight = CLLocationCoordinate2DMake(lowestLatWithPadding, highestLongWithPadding);
+
+    NSLog(@"Lowest Lat: %f", lowestLat);
+    NSLog(@"Lowest Long: %f", lowestLong);
+    
+    GMSMutablePath *backgroundPath = [[GMSMutablePath path] init];
+    [backgroundPath addCoordinate:bottomLeft];
+    [backgroundPath addCoordinate:topLeft];
+    [backgroundPath addCoordinate:topRight];
+    [backgroundPath addCoordinate:bottomRight];
+    GMSPolygon *background = [GMSPolygon polygonWithPath:backgroundPath];
+    background.fillColor = [[self colorWithHexString:@"454545"] colorWithAlphaComponent:0.8];
+    background.zIndex = 0;
+    background.map = self.mapView_;
+}
+
+-(void)drawBackground{
+    [self setMapViewBounds];
+    double lowestLat=999999999;
+    double highestLat=0;
+    double lowestLong=999999999;
+    double highestLong=0;
+    //Find the borders of the unlocked Hexs
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        if (lowestLat > [unlockedHexsLatitude[i] doubleValue]) {
+            lowestLat = [unlockedHexsLatitude[i] doubleValue];
+        }
+        if (highestLat < [unlockedHexsLatitude[i] doubleValue]) {
+            highestLat = [unlockedHexsLatitude[i] doubleValue];
+        }
+        if (lowestLong > [unlockedHexsLongitude[i] doubleValue]) {
+            lowestLong = [unlockedHexsLongitude[i] doubleValue];
+        }
+        if (highestLong < [unlockedHexsLongitude[i] doubleValue]) {
+            highestLong = [unlockedHexsLongitude[i] doubleValue];
+        }
+    }
+    double latTenMilePadding;
+    double longTenMilesPadding;
+    CLLocationCoordinate2D bottomLeft = CLLocationCoordinate2DMake(lowestLat,  lowestLong);
+    CLLocationCoordinate2D topLeft = CLLocationCoordinate2DMake(highestLat,  lowestLong);
+    CLLocationCoordinate2D topRight = CLLocationCoordinate2DMake(highestLat,  highestLong);
+    CLLocationCoordinate2D bottomRight = CLLocationCoordinate2DMake(lowestLat,  highestLong);
+    GMSMutablePath *backgroundPath = [[GMSMutablePath path] init];
+    [backgroundPath addCoordinate:bottomLeft];
+    [backgroundPath addCoordinate:topLeft];
+    [backgroundPath addCoordinate:topRight];
+    [backgroundPath addCoordinate:bottomRight];
+    GMSPolygon *background = [GMSPolygon polygonWithPath:backgroundPath];
+    background.fillColor = [[self colorWithHexString:@"454545"] colorWithAlphaComponent:0.8];
+    background.map = self.mapView_;
 }
 
 -(CLLocation*)getCenterOfHex:(GMSMutablePath *)hexH{
@@ -551,9 +811,9 @@ BOOL initialZoomComplete = NO;
             isTaken = true;
         }
     }
-    for (int i =0; i < userUnlockedHexsArray.count; i++){
-        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
-        if (fabs(center.coordinate.latitude - geoPoint.latitude) <= 0.01 && fabs(center.coordinate.longitude - geoPoint.longitude) <= 0.01) {
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([unlockedHexsLatitude[i] doubleValue], [unlockedHexsLongitude[i] doubleValue]);
+        if (fabs(center.coordinate.latitude - coordTemp.latitude) <= 0.01 && fabs(center.coordinate.longitude - coordTemp.longitude) <= 0.01) {
             isTaken = true;
         }
     }
@@ -645,60 +905,47 @@ BOOL initialZoomComplete = NO;
 
 #pragma mark Loading Contacts Methods
 
--(void)loadUserContacts{
-    PFQuery *query = [PFUser query];
-    [query whereKey:@"username" equalTo:[[PFUser currentUser] username]]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
-    [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
-        if (error) {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
-                                                                message:nil
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"OK", nil];
-            [alertView show];
+-(void)loadContactList{
+    // Get a reference to our users
+    Firebase* tempRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", currentUser.uid]];
+    
+    // Attach a block to read the data at our users reference
+    [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+        if(snapshot.value != [NSNull null]){
+            contactIDsArray = [NSMutableArray arrayWithArray:snapshot.value[@"contacts"]];
+            [self loadContactListData];
         }else{
-            for (NSInteger i = 0; i < PFObjects.count; i++) {
-                PFObject *thePostedPicture = PFObjects[i];
-                NSArray *contacts = [thePostedPicture objectForKey:@"Contacts"];
-                //NSLog(@"Added Contact");
-                contactNamesArray = [NSMutableArray arrayWithArray:contacts];
-            }
+            NSLog(@"checkUserData: snapshot.value == null");
         }
-        [self loadUserContactIDs];
+    } withCancelBlock:^(NSError *error) {
+        NSLog(@"loadContactList: %@", error.description);
     }];
 }
 
--(void)loadUserContactIDs{
-    PFQuery *query = [PFUser query];
-    NSArray *array = [NSArray arrayWithArray:contactNamesArray];
-    [query whereKey:@"username" containedIn:array]; // "user" must be pointer in the PostedPictures (table) get all the pictures that was posted by the user
-    [query findObjectsInBackgroundWithBlock:^(NSArray *PFObjects, NSError *error) {
-        if (error) {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error userInfo][@"Error"]
-                                                                message:nil
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"OK", nil];
-            [alertView show];
-        }else{
-            //ADDS A CONTACT ID FROM THE CONTACT LIST TO AN ARRAY
-            for (NSInteger i = 0; i < PFObjects.count; i++) {
-                [contactIDsArray addObject:PFObjects[i]];
-                //GET THE USER'S UNLOCKED HEXS NUMBER
-                PFObject *object = PFObjects[i];
-                NSArray *unlockedHexs = [object objectForKey:@"UnlockedHexs"];
-                NSNumber *numHexs = [NSNumber numberWithLong:unlockedHexs.count];
-                [contactUnlockedHexsArray addObject:numHexs];
-                NSLog(@"%@",numHexs);
-                //NSLog(@"%@", [PFObjects[i] objectForKey:@"username"]);
-                [self uploadDataOnMap: contactIDsArray[i]: contactNamesArray[i]: contactUnlockedHexsArray[i]];//SET UP ALL CURRENT USER'S PICTURES
-            }
+-(void)loadContactListData{
+    //Go through each contact and get their data
+    for(int i = 0; i < contactIDsArray.count; i++){
+        // Attach a block to read the data at our users
+        if (![contactIDsArray[i]  isEqual: @"Temp"]) {
+            //Get the contact that matches with the contactID
+            Firebase* tempRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", contactIDsArray[i]]];
+            [tempRef observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+                //TO DO: ADD EVERY VALUE OF CONTACT
+                Contact *currentContact = [[Contact alloc] initWithName:snapshot.value[@"displayName"] uid:snapshot.key  unlockedHexsLatitude:[snapshot.value[@"unlockedHexsLatitude"] doubleValue]unlockedHexsLongitude: [snapshot.value[@"unlockedHexsLongitude"] doubleValue]];
+                [contactsArray addObject:currentContact];
+                //After the last contact is loaded, load their data onto the map
+                if (i == (int)contactsArray.count) {
+                    [self uploadContactDataOnMap];
+                }
+            } withCancelBlock:^(NSError *error) {
+                NSLog(@"loadContactListData: %@", error.description);
+            }];
         }
-    }];
+    }
 }
 
 # pragma mark - Info Window Methods
-
+/*
 - (void)plot:(NSArray *)objectsToPlot :(NSString *)Username :(NSArray*)LikesArray :(NSArray*)WhoLikedArray  :(NSArray*)ViewsArray :(NSArray*)WhoViewedArray : (NSArray*)dateCreatedArray :(NSNumber *)unlockedHexs :(NSArray *)objectIDArray {
     
     [self setCameraToUserLoc];
@@ -724,7 +971,11 @@ BOOL initialZoomComplete = NO;
             marker.opacity = 0.9;
             marker.position = coordinate;
             marker.appearAnimation = kGMSMarkerAnimationPop;
-            marker.icon = [UIImage imageNamed:@"PicCircle"];
+            if([PFUser currentUser].username == Username){
+                marker.icon = [UIImage imageNamed:@"PicCircle"];
+            }else{
+                marker.icon = [UIImage imageNamed:@"PicCircle"];
+            }
             //        // add annotation
             //        marker.title = Username;
             //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
@@ -765,7 +1016,7 @@ BOOL initialZoomComplete = NO;
             counter++;
         }
     }
-}
+}*/
 
 - (NSInteger)secondsBetweenDates:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
 {
@@ -812,9 +1063,9 @@ BOOL initialZoomComplete = NO;
 
 -(bool)isCoordInUnlockedHex:(CLLocation *)coord{
     bool isInUnlockedHex = NO;
-    for (int i = 0; i < userUnlockedHexsArray.count; i++) {
-        PFGeoPoint *geoPoint = userUnlockedHexsArray[i];
-        CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:geoPoint.latitude longitude:geoPoint.longitude];
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([unlockedHexsLatitude[i] doubleValue], [unlockedHexsLongitude[i] doubleValue]);
+        CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
         GMSPolygon *hexPoly = [self getHexPolygon:hexCenter];
         if (GMSGeometryContainsLocation(coord.coordinate, hexPoly.path, YES)) {
             return YES;
@@ -911,34 +1162,8 @@ BOOL initialZoomComplete = NO;
 
     [UIView commitAnimations];
 }
-
-- (void)LoadPicture{
-    CLLocationCoordinate2D selectedMarkerLoc = _mapView_.selectedMarker.position;
-    
-    PFFile *picture;
-    bool foundPic = false;
-    int index=0;
-    for (int i = 0; i < postedPictureLocations.count; i++) {
-        if (foundPic == false) {
-            PFGeoPoint *tempGeo = postedPictureLocations[i];
-            CLLocationCoordinate2D tempLoc = CLLocationCoordinate2DMake(tempGeo.latitude, tempGeo.longitude);
-            if (tempLoc.latitude == selectedMarkerLoc.latitude && tempLoc.longitude == selectedMarkerLoc.longitude) {
-                index = i;
-                foundPic = true;//ADD THE LIKES AND THE VIEWS IN HERE
-            }
-        }
-    }
-    picture = PFFilePictureArray[index];
-    [picture getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
-        if (!error) {
-            UIImage *image = [UIImage imageWithData:data];
-            currentInfoWindow.image.image = nil;
-            currentInfoWindow.image.image = image;
-        }
-    }];
-}
-
 -(void)viewedPicture{
+    /*
     NSLog(@"User Viewed Picture");
     NSLog(@"%@", currentInfoWindow.objectID);
     //SEND TO BACKEND SERVER
@@ -971,7 +1196,9 @@ BOOL initialZoomComplete = NO;
             // Did not find any picture for the objectID
             NSLog(@"Error: %@", error);
         }
-    }];}
+    }];*/
+}
+/*
 
 -(void)likedPicture{
     NSLog(@"User Liked Picture");
@@ -1030,7 +1257,7 @@ BOOL initialZoomComplete = NO;
     }
     return false;
 }
-
+*/
 
 -(void)removeUserFromArray:(NSString *)username{
     int index=-1;
@@ -1061,7 +1288,6 @@ BOOL initialZoomComplete = NO;
         _originalNavBarY = self.navigationController.navigationBar.frame.origin.y;
         if (!draggedPicUp) {
             //LOAD IN ALL OF THE DATA
-            [self LoadPicture];
         }
     }
     
@@ -1158,15 +1384,15 @@ BOOL initialZoomComplete = NO;
     GMSCameraPosition *camera = [GMSCameraPosition
                                  cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
                                  longitude:self.mapView_.myLocation.coordinate.longitude
-                                 zoom:11];
-    self.mapView_.camera = camera;
+                                 zoom:15];
+    [self.mapView_ setCamera:camera];
 }
 
 -(void)setCameraToUserLocAnimated{
     GMSCameraPosition *camera = [GMSCameraPosition
                                  cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
                                  longitude:self.mapView_.myLocation.coordinate.longitude
-                                 zoom:11];
+                                 zoom:15];
     [self.mapView_ animateToCameraPosition:camera];
 }
 
@@ -1331,22 +1557,7 @@ BOOL initialZoomComplete = NO;
     
     
 }
-////////////////////////////////////////////////////
-#pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    if ([[segue identifier] isEqualToString:@"SegueToCamera"])
-    {
-        // Get reference to the destination view controller
-        CameraViewController *vc = [segue destinationViewController];
-        
-        // Pass any objects to the view controller here, like...
-        CLLocationCoordinate2D coord = [self.mapView_ myLocation].coordinate;
-        [vc setUserLocation:coord];
-    }
-}
 
 
 @end

@@ -9,5 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface CameraViewController : UIViewController <CLLocationManagerDelegate>
--(void)setUserLocation:(CLLocationCoordinate2D)userLocation;
+
 @end

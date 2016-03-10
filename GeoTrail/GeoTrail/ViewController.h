@@ -6,9 +6,10 @@
 //  Copyright (c) 2015 Arthur Araujo. All rights reserved.
 //
 #import <CoreLocation/CoreLocation.h>
-#import <GoogleMaps/GoogleMaps.h>
+#import <MapKit/MapKit.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
 
-@interface ViewController : UIViewController <CLLocationManagerDelegate, GMSMapViewDelegate, UIGestureRecognizerDelegate>
+@interface ViewController : UIViewController <CLLocationManagerDelegate, MKMapViewDelegate, UIGestureRecognizerDelegate, FBSDKLoginButtonDelegate>
 
 -(void)likedPicture;
 
