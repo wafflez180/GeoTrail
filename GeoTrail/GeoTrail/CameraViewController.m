@@ -34,10 +34,12 @@
     AVCaptureVideoPreviewLayer *_previewLayer;
     AVCaptureSession *_capturesession;
     UIImage *currentImageTaken;
+    NSData *currentImageData;
     bool camViewPosBack; //MAKE NSUSERDEFAULT LATER
-    CLLocationManager *locationManager;
     NSString *userUID;
     Firebase *firebaseRef;
+    NSNumber *currentHexLat;
+    NSNumber *currentHexLong;
 }
 
 - (void)viewDidLoad {
@@ -47,6 +49,8 @@
     TabBarController *tabBarController = (TabBarController *)self.tabBarController;
     userUID = tabBarController.currentUser.uid;
     firebaseRef = tabBarController.firebaseRef;
+    currentHexLat = tabBarController.currentHexLat;
+    currentHexLong = tabBarController.currentHexLong;
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
@@ -68,35 +72,35 @@
 }
 
 - (IBAction)PostPicture:(id)sender {
-    
-    UIImage *picToPost = currentImageTaken;
-
     _CameraView.image = currentImageTaken;
     
-    locationManager.delegate = self;
-    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-    locationManager = [[CLLocationManager alloc] init];
-    CLLocationCoordinate2D userLocationCoords = locationManager.location.coordinate;
-    
-    NSData *imageData = UIImageJPEGRepresentation(picToPost, 0.5f);
-    
     // using base64StringFromData method, we are able to convert data to string
-    NSString *imageString = [[NSString alloc] initWithData:imageData encoding:NSUTF8StringEncoding];
-
-    Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
-
+    //NSString *imageString = [[NSString alloc] initWithData:currentImageData encoding:NSUTF8StringEncoding];
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"MM/dd/yyyy HH:mm"];
+    NSString *date = [dateFormatter stringFromDate:[NSDate date]];
+    
     NSDictionary *post = @{
                            @"owner": userUID,
-                           @"latitude": [NSNumber numberWithDouble:userLocationCoords.latitude],
-                           @"longitude": [NSNumber numberWithDouble:userLocationCoords.longitude],
+                           @"imageData": currentImageData.base64Encoding,
+                           @"latitude": currentHexLat,
+                           @"longitude": currentHexLong,
                            @"likes": [NSNumber numberWithInt:0],
                            @"views":[NSNumber numberWithInt:0],
-                           @"whoLiked": [[NSArray alloc] init],
-                           @"whoViewed": [[NSArray alloc] init],
-                           @"dateCreated": (NSString *)[NSDate date]
+                           @"whoLiked": [NSArray arrayWithObject:@"Temp"],
+                           @"whoViewed": [NSArray arrayWithObject:@"Temp"],
+                           @"dateCreated": date
                            };
-    Firebase *usersRef = [tempRef childByAppendingPath: imageString];
-    [usersRef setValue: post];
+    //NSLog(@"%@",currentImageData);
+    //NSLog(@"%@",post);
+    //NSLog(@"%@",firebaseRef);
+
+    Firebase *picsRef = [firebaseRef childByAppendingPath: @"postedpictures"];
+    picsRef = [picsRef childByAutoId];
+    NSLog(@"Posted To: \n%@",picsRef);
+
+    [picsRef setValue: post];
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
@@ -245,6 +249,7 @@
                                                                  NSLog(@"no attachments");
                                                              }
                                                              NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageSampleBuffer];
+                                                             currentImageData = imageData;
                                                              UIImage *image = [[UIImage alloc] initWithData:imageData];
                                                              currentImageTaken = image;
                                                              image = nil;

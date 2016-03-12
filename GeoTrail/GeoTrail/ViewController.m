@@ -115,18 +115,10 @@ const double ONE_MILE_IN_METERS = 1609.344;
     [self logIntoFacebook];
 }
 
--(void)viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
-    //[self setCameraToUserLoc];
-    [self loadDataOnScreen];
-}
-
 -(void)initArrays{
     userLoc = [[CLLocation alloc] init];
     mkPolygonsOnMap = [[NSMutableArray alloc] init];
     contactUnlockedHexsArray = [[NSMutableArray alloc] init];
-    unlockedHexsLatitude = [[NSMutableArray alloc]init];
-    unlockedHexsLongitude = [[NSMutableArray alloc]init];
     contactsArray = [[NSMutableArray alloc] init];
     contactIDsArray = [[NSMutableArray alloc] init];
     hexArray = [[NSMutableArray alloc]init];
@@ -207,8 +199,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
     NSLog(@"Creating new user...");
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
-    
+    [dateFormatter setDateFormat:@"MM/dd/yyyy HH:mm"];
     NSString *date = [dateFormatter stringFromDate:[NSDate date]];
     
     NSDictionary *newUser = @{
@@ -237,9 +228,15 @@ const double ONE_MILE_IN_METERS = 1609.344;
     
     [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
         if(snapshot.value != [NSNull null]){
-            NSLog(@"%@", snapshot.value);
-            unlockedHexsLatitude = (NSMutableArray *)[snapshot.value[@"unlockedHexsLatitude"] array];
-            unlockedHexsLongitude = (NSMutableArray *)[snapshot.value[@"unlockedHexsLongitude"] array];
+            //NSLog(@"%@", snapshot.value);
+            NSArray *hexLatArray = snapshot.value[@"unlockedHexsLatitude"];
+            NSArray *hexLongArray = snapshot.value[@"unlockedHexsLongitude"];
+            unlockedHexsLatitude = [[NSMutableArray alloc] initWithArray:hexLatArray];
+            unlockedHexsLongitude = [[NSMutableArray alloc] initWithArray:hexLongArray];
+            if ([unlockedHexsLongitude[0]  isEqual: @"Temp"]) {
+                unlockedHexsLongitude = [[NSMutableArray alloc] init];
+                unlockedHexsLatitude = [[NSMutableArray alloc] init];
+            }
         }else{
             [self setUpNewUser];
         }
@@ -249,7 +246,6 @@ const double ONE_MILE_IN_METERS = 1609.344;
 }
 
 -(void)loadDataOnScreen{
-    [self loadHexsOnMap];
     //Load user's data onto map
     [self uploadUserDataOnMap];
     //SET UP ALL CURRENT USER'S PICTURES
@@ -328,7 +324,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 //[GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
            // }
         }else{
-            NSLog(@"checkUserData: snapshot.value == null");
+            NSLog(@"uploadUserDataOnMap: snapshot.value == null");
         }
     } withCancelBlock:^(NSError *error) {
         NSLog(@"uploadUserDataOnMap: %@", error.description);
@@ -480,6 +476,11 @@ const double ONE_MILE_IN_METERS = 1609.344;
 
 -(BOOL)isInNewHex{
     closestHexCenter = [self closestHexCenter];
+    
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    tabBarController.currentHexLat = [NSNumber numberWithDouble:closestHexCenter.coordinate.latitude];
+    tabBarController.currentHexLong = [NSNumber numberWithDouble:closestHexCenter.coordinate.longitude];
+
     /*GMSMarker *marker = [GMSMarker markerWithPosition:closestHexCenter.coordinate];
     marker.opacity = 1;
     marker.icon = [UIImage imageNamed:@"PicCircle"];
@@ -925,7 +926,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
             contactIDsArray = [NSMutableArray arrayWithArray:snapshot.value[@"contacts"]];
             [self loadContactListData];
         }else{
-            NSLog(@"checkUserData: snapshot.value == null");
+            NSLog(@"loadContactList: snapshot.value == null");
         }
     } withCancelBlock:^(NSError *error) {
         NSLog(@"loadContactList: %@", error.description);
@@ -950,6 +951,8 @@ const double ONE_MILE_IN_METERS = 1609.344;
             } withCancelBlock:^(NSError *error) {
                 NSLog(@"loadContactListData: %@", error.description);
             }];
+        }else{
+            [self loadHexsOnMap];
         }
     }
 }

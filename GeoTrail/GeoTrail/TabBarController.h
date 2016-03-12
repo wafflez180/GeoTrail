@@ -15,5 +15,7 @@
 @property (strong,nonatomic) NSMutableArray *contactsArray;
 @property (strong,nonatomic) NSMutableArray *contactIDsArray;
 @property (strong,nonatomic) Firebase *firebaseRef;
+@property (strong,nonatomic) NSNumber *currentHexLat;
+@property (strong,nonatomic) NSNumber *currentHexLong;
 
 @end
