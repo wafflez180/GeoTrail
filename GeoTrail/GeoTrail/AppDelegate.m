@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import <Firebase/Firebase.h>
-#import <GoogleMaps/GoogleMaps.h>
 #import <Fabric/Fabric.h>
 #import <Crashlytics/Crashlytics.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
@@ -21,7 +20,6 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [GMSServices provideAPIKey:@"AIzaSyA_c36PraF9xBypAigBgs5hoa4UBJ9RMDY"];
     
     [[FBSDKApplicationDelegate sharedInstance] application:application
                              didFinishLaunchingWithOptions:launchOptions];

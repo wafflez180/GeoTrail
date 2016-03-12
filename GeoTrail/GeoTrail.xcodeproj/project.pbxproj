@@ -19,6 +19,8 @@
 		A71906941BF3EDC6001995A7 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A71906931BF3EDC6001995A7 /* libsqlite3.tbd */; };
 		A71906961BF3EDCB001995A7 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71906951BF3EDCB001995A7 /* Accounts.framework */; };
 		A71906981BF3EDD0001995A7 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71906971BF3EDD0001995A7 /* Social.framework */; };
+		A723ACD71C9130D600D74803 /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A723ACD61C9130D600D74803 /* libsqlite3.0.tbd */; };
+		A723ACD91C9130ED00D74803 /* libxml2.2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A723ACD81C9130ED00D74803 /* libxml2.2.tbd */; };
 		A72B64381AEF051F00C84DE5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B64281AEF051F00C84DE5 /* AppDelegate.m */; };
 		A72B643A1AEF051F00C84DE5 /* ContactsTableTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A72B642B1AEF051F00C84DE5 /* ContactsTableTableViewController.m */; };
 		A72B643B1AEF051F00C84DE5 /* frontCamera.png in Resources */ = {isa = PBXBuildFile; fileRef = A72B642C1AEF051F00C84DE5 /* frontCamera.png */; };
@@ -74,6 +76,8 @@
 		A71906931BF3EDC6001995A7 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		A71906951BF3EDCB001995A7 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		A71906971BF3EDD0001995A7 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		A723ACD61C9130D600D74803 /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
+		A723ACD81C9130ED00D74803 /* libxml2.2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.2.tbd; path = usr/lib/libxml2.2.tbd; sourceTree = SDKROOT; };
 		A72B64271AEF051F00C84DE5 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = GeoTrail/AppDelegate.h; sourceTree = SOURCE_ROOT; };
 		A72B64281AEF051F00C84DE5 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = GeoTrail/AppDelegate.m; sourceTree = SOURCE_ROOT; };
 		A72B642A1AEF051F00C84DE5 /* ContactsTableTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContactsTableTableViewController.h; path = GeoTrail/ContactsTableTableViewController.h; sourceTree = SOURCE_ROOT; };
@@ -118,6 +122,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A723ACD91C9130ED00D74803 /* libxml2.2.tbd in Frameworks */,
+				A723ACD71C9130D600D74803 /* libsqlite3.0.tbd in Frameworks */,
 				A71906981BF3EDD0001995A7 /* Social.framework in Frameworks */,
 				A71906961BF3EDCB001995A7 /* Accounts.framework in Frameworks */,
 				A71906941BF3EDC6001995A7 /* libsqlite3.tbd in Frameworks */,
@@ -227,6 +233,8 @@
 		A7CFE6601AED4DD00054D33D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A723ACD81C9130ED00D74803 /* libxml2.2.tbd */,
+				A723ACD61C9130D600D74803 /* libsqlite3.0.tbd */,
 				A771D1531C89142200E8AAE0 /* MapKit.framework */,
 				A71906971BF3EDD0001995A7 /* Social.framework */,
 				A71906951BF3EDCB001995A7 /* Accounts.framework */,
@@ -550,7 +558,6 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				"OTHER_LDFLAGS[arch=*]" = "$(inherited)";
 				PROVISIONING_PROFILE = "7eb81093-b38c-4a74-9898-d792519ccfdf";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -591,7 +598,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "";
-				"OTHER_LDFLAGS[arch=*]" = "$(inherited)";
 				PROVISIONING_PROFILE = "7eb81093-b38c-4a74-9898-d792519ccfdf";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

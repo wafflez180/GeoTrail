@@ -15,7 +15,6 @@
 #import <Firebase/Firebase.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <FBSDKLoginKit/FBSDKLoginKit.h>
-#import <GoogleMaps/GoogleMaps.h>
 #import "Contact.h"
 #import "TabBarController.h"
 
@@ -25,7 +24,7 @@ BOOL initialZoomComplete = NO;
 
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIImageView *picView;
-@property (weak, nonatomic) IBOutlet GMSMapView *mapView_;
+@property (weak, nonatomic) IBOutlet MKMapView *mapView_;
 @property (weak, nonatomic) IBOutlet UIButton *nextPicButton;
 @property (weak, nonatomic) IBOutlet UIButton *goToUserLocButton;
 
@@ -40,10 +39,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
     CLLocationManager *locationManager;
     
     int currentRange;
-    float milesSpanRegion;
     bool hideStatusBar;
     //PFObject *postedPictures;
-    GMSMarker *prevMarker;
+    MKAnnotationView *prevMarker;
     int prevInfoWindowMarkerIndex;
     NSMutableArray *contactsArray;
     NSMutableArray *contactIDsArray;
@@ -83,6 +81,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
     CLLocationCoordinate2D bottomRight;
     CLLocationCoordinate2D topRight;
     
+    //MapView
+    CLLocation *userLoc;
+    NSMutableArray *mkPolygonsOnMap;
     
     //ALL FIREBASE USER INFO
     Firebase *firebaseRef;
@@ -94,6 +95,8 @@ const double ONE_MILE_IN_METERS = 1609.344;
     FBSDKLoginManager *facebookLoginManager;
 }
 - (IBAction)TappedRefresh:(id)sender {
+    NSArray *overlays = [self.mapView_ overlays];
+    [self.mapView_ removeOverlays:overlays];
     [self loadDataOnScreen];
 }
 
@@ -101,10 +104,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     [self initArrays];
-        [self setMapViewCustomizations];
-
+    [self setLocationManager];
+    [self setMapViewCustomizations];
     _picView.alpha = 0;
-    
 //    [loginButton addTarget:self
 //                                 action:@selector(logIntoFacebook)
 //                       forControlEvents:UIControlEventTouchUpInside];
@@ -115,11 +117,13 @@ const double ONE_MILE_IN_METERS = 1609.344;
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-    [self setCameraToUserLoc];
+    //[self setCameraToUserLoc];
     [self loadDataOnScreen];
 }
 
 -(void)initArrays{
+    userLoc = [[CLLocation alloc] init];
+    mkPolygonsOnMap = [[NSMutableArray alloc] init];
     contactUnlockedHexsArray = [[NSMutableArray alloc] init];
     unlockedHexsLatitude = [[NSMutableArray alloc]init];
     unlockedHexsLongitude = [[NSMutableArray alloc]init];
@@ -138,19 +142,32 @@ const double ONE_MILE_IN_METERS = 1609.344;
 }
 
 -(void)setMapViewCustomizations{
-    GMSCameraPosition *camera = [GMSCameraPosition
-                                 cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
-                                 longitude:self.mapView_.myLocation.coordinate.longitude
-                                 zoom:11];
-    //self.mapView_ = [GMSMapView mapWithFrame:self.view.bounds camera:camera];
     self.mapView_.delegate = self;
-    self.mapView_.myLocationEnabled = YES;
-    self.mapView_.mapType = kGMSTypeNormal;
-    self.mapView_.settings.rotateGestures = false;
-    self.mapView_.buildingsEnabled = true;
+    self.mapView_.mapType = MKMapTypeStandard;
+    self.mapView_.showsUserLocation = true;
+    self.mapView_.rotateEnabled = NO;
+    self.mapView_.scrollEnabled = YES;//ZOOMABLE IS YES ONLY FOR DEBUGGING
+    self.mapView_.zoomEnabled = YES;//ZOOMABLE IS YES ONLY FOR DEBUGGING
     [self.mapView_ setBackgroundColor:[UIColor purpleColor]];
-    self.mapView_.indoorEnabled = false;
-    [self.mapView_ setMinZoom:5 maxZoom:25];
+}
+
+-(void)setLocationManager{
+    locationManager = [[CLLocationManager alloc]init];
+    locationManager.delegate = self;
+    [locationManager setDesiredAccuracy:kCLLocationAccuracyNearestTenMeters];
+    [locationManager setDistanceFilter:kCLDistanceFilterNone];
+    [locationManager startUpdatingLocation];
+}
+
+- (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation      {
+    userLoc = [[CLLocation alloc] initWithLatitude:userLocation.coordinate.latitude longitude:userLocation.coordinate.longitude];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
+    CLLocation* loc = [locations lastObject]; // locations is guaranteed to have at least one object
+    float latitude = loc.coordinate.latitude;
+    float longitude = loc.coordinate.longitude;
+    userLoc = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
 }
 
 -(void)logIntoFacebook{
@@ -239,10 +256,6 @@ const double ONE_MILE_IN_METERS = 1609.344;
     [self loadContactList];
 }
 
-- (void)mapView:(GMSMapView *)mapView didLongPressAtCoordinate:(CLLocationCoordinate2D)coordinate{
-    
-}
-
 -(void)uploadUserDataOnMap{
     Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
     [tempRef queryEqualToValue:currentUser.uid childKey:@"owner"];
@@ -256,7 +269,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
             CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
             
             //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
-            if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
+            //if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
                 NSNumber *likes = snapshot.value[@"likes"];
                 NSNumber *views = snapshot.value[@"views"];
                 NSArray *whoLiked = snapshot.value[@"whoLiked"];
@@ -264,11 +277,11 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 NSString *objectID = snapshot.key;
                 NSDate *dateCreated = (NSDate *)snapshot.value[@"dateCreated"] ;
                 
-                GMSMarker *marker = [[GMSMarker alloc] init];
+                /*GMSMarker *marker = [[GMSMarker alloc] init];
                 marker.opacity = 0.9;
                 marker.position = coordinate;
                 marker.appearAnimation = kGMSMarkerAnimationPop;
-                marker.icon = [UIImage imageNamed:@"PicCircle"];
+                marker.icon = [UIImage imageNamed:@"PicCircle"];*/
                 //        // add annotation
                 //        marker.title = Username;
                 //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
@@ -311,9 +324,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
                 infoWindow.coordinate = coordinate;
                 [infoWindows addObject:infoWindow];
-                marker.map = self.mapView_;
-                [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
-            }
+                //marker.map = self.mapView_;
+                //[GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
+           // }
         }else{
             NSLog(@"checkUserData: snapshot.value == null");
         }
@@ -340,7 +353,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
         [tempRef queryEqualToValue:contactIDsArray[i] childKey:@"owner"];
         [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
             NSLog(@"%@", snapshot.value);
-            [self setCameraToUserLoc];
+            //[self setCameraToUserLoc];
             
             // make CLLocationCoordinate2D
             NSNumber *latitude = snapshot.value[@"latitude"];
@@ -349,7 +362,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
             CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
             
             //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
-            if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
+            //if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
                 NSNumber *likes = snapshot.value[@"likes"];
                 NSNumber *views = snapshot.value[@"views"];
                 NSArray *whoLiked = snapshot.value[@"whoLiked"];
@@ -357,11 +370,11 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 NSString *objectID = snapshot.key;
                 NSDate *dateCreated = (NSDate *)snapshot.value[@"dateCreated"] ;
                 
-                GMSMarker *marker = [[GMSMarker alloc] init];
+                /*GMSMarker *marker = [[GMSMarker alloc] init];
                 marker.opacity = 0.9;
                 marker.position = coordinate;
                 marker.appearAnimation = kGMSMarkerAnimationPop;
-                marker.icon = [UIImage imageNamed:@"PicCircle"];
+                marker.icon = [UIImage imageNamed:@"PicCircle"];*/
                 //        // add annotation
                 //        marker.title = Username;
                 //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
@@ -397,9 +410,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
                 infoWindow.coordinate = coordinate;
                 [infoWindows addObject:infoWindow];
-                marker.map = self.mapView_;
-                [GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
-            }
+                //marker.map = self.mapView_;
+                //[GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
+            //}
             
         } withCancelBlock:^(NSError *error) {
             NSLog(@"uploadContactDataOnMap: %@", error.description);
@@ -411,7 +424,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
 #pragma mark MAPVIEW BUTTONS
 
 - (IBAction)pressedPin:(id)sender {
-    [_mapView_ setSelectedMarker:prevMarker];
+    /*[_mapView_ setSelectedMarker:prevMarker];
     CLLocation *userLoc = [[CLLocation alloc] initWithLatitude:self.mapView_.myLocation.coordinate.latitude longitude:self.mapView_.myLocation.coordinate.longitude];
     CLLocationDirection distance = 0.0;
     int closestMarkerIndex=0;
@@ -433,19 +446,18 @@ const double ONE_MILE_IN_METERS = 1609.344;
             }
         }
     }
-    _mapView_.selectedMarker = GMSMarkersArray[closestMarkerIndex];
+    _mapView_.selectedMarker = GMSMarkersArray[closestMarkerIndex];*/
 }
 
 - (IBAction)pressedCompass:(id)sender {
-    [self setCameraToUserLocAnimated];
+    //[self setCameraToUserLocAnimated];
 }
 
 #pragma mark Hexagon Methods
 
 -(void)loadHexsOnMap{
     //ADD THE POLYGON USING THE INDEX
-    CLLocation *userLoc = self.mapView_.myLocation;
-    if(userLoc != nil){
+    if(userLoc.coordinate.latitude != 0.00000){
         if ([self isInNewHex]) {
             [self addNewHex];
         }
@@ -468,10 +480,10 @@ const double ONE_MILE_IN_METERS = 1609.344;
 
 -(BOOL)isInNewHex{
     closestHexCenter = [self closestHexCenter];
-    GMSMarker *marker = [GMSMarker markerWithPosition:closestHexCenter.coordinate];
+    /*GMSMarker *marker = [GMSMarker markerWithPosition:closestHexCenter.coordinate];
     marker.opacity = 1;
     marker.icon = [UIImage imageNamed:@"PicCircle"];
-    marker.map = self.mapView_;
+    marker.map = self.mapView_;*/
     
     BOOL isInNewHex = true;
     //Go through the unlockedHexs, if they are less than 100 meters of a known unlockedHex it is not a new Hex
@@ -485,11 +497,11 @@ const double ONE_MILE_IN_METERS = 1609.344;
 }
 
 -(CLLocation*)closestHexCenter{
-    CLLocation *userLoc = self.mapView_.myLocation;
-    
     double currentLat = -90;
-    double currentLong = self.mapView_.myLocation.coordinate.longitude;
+    double currentLong = userLoc.coordinate.longitude;
     BOOL findingClosestLat=true;
+    
+    int latRowCounter=0;
     
     for(int i = 0; i <= 1; i++){
         //Reset values
@@ -499,6 +511,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
         while (distanceIsShrinking) {
             if (findingClosestLat) {//If finding closest latitude
                 currentLat = [self IncrLatByOneMileLatitude:currentLat];
+                latRowCounter++;
             }else{//If finding closest longitude
                 currentLong = [self IncrLongByOneMileLatitude:currentLat Longitude:currentLong];
             }
@@ -509,6 +522,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 if (findingClosestLat) {
                     currentLat = [self DecrLatByOneMileLatitude:currentLat];
                     currentLong = -180;
+                    if(latRowCounter % 2){//If num is odd then make hex staggered
+                        currentLong = [self IncrLongByHalfOneMileLatitude:currentLat Longitude:currentLong];
+                    }
                 }else{
                     currentLong = [self DecrLongByOneMileLatitude:currentLat Longitude:currentLong];
                 }
@@ -533,11 +549,11 @@ const double ONE_MILE_IN_METERS = 1609.344;
     //1 mile in latitude 0.01455445222
     double oneMileInLatDegrees = 0.01455445222;
     //Demonstrate closest hex center
-    GMSMarker *marker = [[GMSMarker alloc] init];
+    /*GMSMarker *marker = [[GMSMarker alloc] init];
     marker.opacity = 0.2;
     marker.position = CLLocationCoordinate2DMake(latitude-(oneMileInLatDegrees*1), self.mapView_.myLocation.coordinate.longitude);
     marker.icon = [UIImage imageNamed:@"PicCircle"];
-    marker.map = self.mapView_;
+    marker.map = self.mapView_;*/
     return latitude-=(oneMileInLatDegrees*1);
 }
 
@@ -545,6 +561,35 @@ const double ONE_MILE_IN_METERS = 1609.344;
     //1 mile in longitude ONE_MILE_IN_METERS/(111,320*cos(longitude))
     //http://stackoverflow.com/questions/6633850/calculate-new-coordinate-x-meters-and-y-degree-away-from-one-coordinate
     double OneMileInMeters = ONE_MILE_IN_METERS*0.9;
+    
+    double distanceRadians = (OneMileInMeters/1000) / 6371.0;
+    //6,371 = Earth's radius in km
+    double bearingRadians = [self radiansFromDegrees:90];
+    double fromLatRadians = [self radiansFromDegrees:latitude];
+    double fromLonRadians = [self radiansFromDegrees:longitude];
+    
+    double toLatRadians = asin( sin(fromLatRadians) * cos(distanceRadians)
+                               + cos(fromLatRadians) * sin(distanceRadians) * cos(bearingRadians) );
+    
+    double toLonRadians = fromLonRadians + atan2(sin(bearingRadians)
+                                                 * sin(distanceRadians) * cos(fromLatRadians), cos(distanceRadians)
+                                                 - sin(fromLatRadians) * sin(toLatRadians));
+    
+    // adjust toLonRadians to be in the range -180 to +180...
+    toLonRadians = fmod((toLonRadians + 3*M_PI), (2*M_PI)) - M_PI;
+    
+    CLLocationCoordinate2D result;
+    result.latitude = [self degreesFromRadians:toLatRadians];
+    result.longitude = [self degreesFromRadians:toLonRadians];
+    
+    //Demonstrate closest hex center
+    return result.longitude;
+}
+
+-(double)IncrLongByHalfOneMileLatitude:(double)latitude Longitude:(double)longitude{
+    //1 mile in longitude ONE_MILE_IN_METERS/(111,320*cos(longitude))
+    //http://stackoverflow.com/questions/6633850/calculate-new-coordinate-x-meters-and-y-degree-away-from-one-coordinate
+    double OneMileInMeters = ONE_MILE_IN_METERS*0.45;
     
     double distanceRadians = (OneMileInMeters/1000) / 6371.0;
     //6,371 = Earth's radius in km
@@ -604,15 +649,66 @@ const double ONE_MILE_IN_METERS = 1609.344;
     result.longitude = [self degreesFromRadians:toLonRadians];
 
     //Demonstrate closest hex center
-    GMSMarker *marker = [[GMSMarker alloc] init];
+    /*GMSMarker *marker = [[GMSMarker alloc] init];
     marker.opacity = 0.5;
     marker.position = CLLocationCoordinate2DMake(result.latitude,result.longitude);
     marker.icon = [UIImage imageNamed:@"PicCircle"];
-    marker.map = self.mapView_;
+    marker.map = self.mapView_;*/
     return result.longitude;
 }
 
 -(void)drawUnlockedHexs{
+    mkPolygonsOnMap = [NSMutableArray array];
+    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
+        CLLocationCoordinate2D currentHexCenter = CLLocationCoordinate2DMake([unlockedHexsLatitude[i] doubleValue], [unlockedHexsLongitude[i] doubleValue]);
+        
+        //THESE ARE 1 MILE HEXAGONS
+        float width = fabs(currentHexCenter.longitude - [self IncrLongByOneMileLatitude:currentHexCenter.latitude Longitude:currentHexCenter.longitude]);
+        float height = fabs(currentHexCenter.latitude - [self IncrLatByOneMileLatitude:currentHexCenter.latitude]);
+        float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
+        float topMidHeights = height - botMidHeights;
+        
+        float latCoords = currentHexCenter.latitude - (height / 2);//INCREASE THE LAT COORD
+        float longCoords = currentHexCenter.longitude - (width / 2);//INCREASE THE LONG COORD//
+        CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
+        CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
+        CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
+        CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
+        CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
+        CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
+
+        CLLocationCoordinate2D hexCorners[6]={
+            bottomH,bottomLeftH,topLeftH,topH,topRightH,bottomRightH
+        };
+        
+        // make some UI changes
+        MKPolygon *polygon = [MKPolygon polygonWithCoordinates:hexCorners count:6];
+        MKPolygonView *polygonView = [[MKPolygonView alloc] initWithPolygon:polygon];
+        polygonView.strokeColor = [self colorWithHexString:@"7E8C8D"];
+        polygonView.lineWidth = 6;
+        [self.mapView_ addOverlay:polygon];
+        [mkPolygonsOnMap addObject:polygon];
+    }
+    [self drawBackground];
+}
+
+- (MKOverlayView *)mapView:(MKMapView *)mapView viewForOverlay:(id <MKOverlay>)overlay
+{
+    MKPolygonView *polygonView = [[MKPolygonView alloc] initWithPolygon:overlay];
+    if(polygonView.polygon.pointCount == 6){//If poly is a hexagon
+        polygonView.strokeColor = [self colorWithHexString:@"7E8C8D"];
+        polygonView.lineWidth = 10;
+        return polygonView;
+    }else if(polygonView.polygon.pointCount < 6){
+        polygonView.fillColor = [[self colorWithHexString:@"454545"] colorWithAlphaComponent:0.8f];
+        polygonView.strokeColor = [self colorWithHexString:@"7E8C8D"];
+        polygonView.lineWidth = 10;
+        return polygonView;
+    }
+    return nil;
+}
+
+/*-(MKPolygon *)getHexPolygon:(CLLocation *)hexCenter{
     for (int i = 0; i < unlockedHexsLatitude.count; i++) {
         CLLocationCoordinate2D currentHexCenter = CLLocationCoordinate2DMake([unlockedHexsLatitude[i] doubleValue], [unlockedHexsLongitude[i] doubleValue]);
         
@@ -622,7 +718,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
         float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
         float topMidHeights = height - botMidHeights;
         
-        GMSMutablePath *hexH = [[GMSMutablePath path] init];
+        MKPolyline *hexH = [[MKPolyline alloc] init];
         
         float latCoords = currentHexCenter.latitude - (height / 2);//INCREASE THE LAT COORD
         float longCoords = currentHexCenter.longitude - (width / 2);//INCREASE THE LONG COORD//
@@ -633,61 +729,16 @@ const double ONE_MILE_IN_METERS = 1609.344;
         CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
         CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
         
-        [hexH addCoordinate:bottomH];
-        [hexH addCoordinate:bottomLeftH];
-        [hexH addCoordinate:topLeftH];
-        [hexH addCoordinate:topH];
-        [hexH addCoordinate:topRightH];
-        [hexH addCoordinate:bottomRightH];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // make some UI changes
-            GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-            polygon2.fillColor = [[self colorWithHexString:@"BABABA"] colorWithAlphaComponent:0.8];
-            polygon2.strokeColor = [self colorWithHexString:@"7E8C8D"];
-            polygon2.strokeWidth = 6;
-            polygon2.zIndex = 10;
-            polygon2.map = self.mapView_;
-        });
-        [self drawBackground];
-    }
-}
+        CLLocationCoordinate2D hexCorners[6]={
+            bottomH,bottomLeftH,topLeftH,topH,topRightH,bottomRightH
+        };
+        // make some UI changes
+        MKPolygon *polygonPath = [MKPolygon polygonWithCoordinates:hexCorners count:6];
+    return polygonPath;
+}*/
 
--(GMSPolygon *)getHexPolygon:(CLLocation *)hexCenter{
-    CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake(hexCenter.coordinate.latitude, hexCenter.coordinate.longitude);
-    
-    //THESE ARE 5 MILE HEXAGONS
-    float width = 0.072464;
-    float height = 0.072464;
-    
-    float botMidHeights = height / 4;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
-    float topMidHeights = height - botMidHeights;
-    
-    GMSMutablePath *hexH = [[GMSMutablePath path] init];
-    
-    float latCoords = coordTemp.latitude - (height / 2);//INCREASE THE LAT COORD
-    float longCoords = coordTemp.longitude - (width / 2);//INCREASE THE LONG COORD//
-    CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
-    CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
-    CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
-    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
-    CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
-    CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
-    
-    [hexH addCoordinate:bottomH];
-    [hexH addCoordinate:bottomLeftH];
-    [hexH addCoordinate:topLeftH];
-    [hexH addCoordinate:topH];
-    [hexH addCoordinate:topRightH];
-    [hexH addCoordinate:bottomRightH];
-    GMSPolygon *polygon = [GMSPolygon polygonWithPath:hexH];
-    return polygon;
-}
-
-- (void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position{
-    //Check if the user goes over bounds
-    //if ((mapView.projection.visibleRegion.farLeft.latitude > topLeft.latitude)||(mapView.projection.visibleRegion.farLeft.longitude > topLeft.longitude)||(mapView.projection.visibleRegion.farRight.latitude > topRight.latitude)||(mapView.projection.visibleRegion.farRight.longitude > topRight.longitude)||(mapView.projection.visibleRegion.nearLeft.latitude > bottomLeft.latitude)||(mapView.projection.visibleRegion.nearLeft.longitude > bottomLeft.longitude)||(mapView.projection.visibleRegion.nearRight.latitude > bottomRight.latitude)||(mapView.projection.visibleRegion.nearRight.longitude > bottomRight.longitude)) {
-        
-    //}
+- (void)mapView:(MKMapView *)mapView regionDidChangeAnimated:(BOOL)animated {
+    // enforce maximum zoom level
 }
 
 -(void)setMapViewBounds{
@@ -720,87 +771,46 @@ const double ONE_MILE_IN_METERS = 1609.344;
     topLeft = CLLocationCoordinate2DMake(higestLatWithPadding, lowestLongWithPadding);
     topRight = CLLocationCoordinate2DMake(higestLatWithPadding, highestLongWithPadding);
     bottomRight = CLLocationCoordinate2DMake(lowestLatWithPadding, highestLongWithPadding);
-
-    NSLog(@"Lowest Lat: %f", lowestLat);
-    NSLog(@"Lowest Long: %f", lowestLong);
     
-    GMSMutablePath *backgroundPath = [[GMSMutablePath path] init];
-    [backgroundPath addCoordinate:bottomLeft];
-    [backgroundPath addCoordinate:topLeft];
-    [backgroundPath addCoordinate:topRight];
-    [backgroundPath addCoordinate:bottomRight];
-    GMSPolygon *background = [GMSPolygon polygonWithPath:backgroundPath];
-    background.fillColor = [[self colorWithHexString:@"454545"] colorWithAlphaComponent:0.8];
-    background.zIndex = 0;
-    background.map = self.mapView_;
+    CLLocationCoordinate2D center = CLLocationCoordinate2DMake((topRight.latitude+bottomLeft.latitude)/2, (topRight.longitude+bottomLeft.longitude)/2);
+    
+    //NSLog(@"Lowest Lat: %f", lowestLat);
+    //NSLog(@"Lowest Long: %f", lowestLong);
+    
+    CLLocation *bottomLeftLoc = [[CLLocation alloc] initWithLatitude:bottomLeft.latitude longitude:bottomLeft.longitude];
+    CLLocation *bottomRightLoc = [[CLLocation alloc] initWithLatitude:bottomRight.latitude longitude:bottomRight.longitude];
+    CLLocation *topLeftLoc = [[CLLocation alloc] initWithLatitude:topLeft.latitude longitude:topLeft.longitude];
+    
+    CLLocationDistance latitudeDistance = [bottomLeftLoc distanceFromLocation:bottomRightLoc];
+    CLLocationDistance longitudeDistance = [bottomLeftLoc distanceFromLocation:topLeftLoc];
+    MKCoordinateRegion adjustedRegion = [self.mapView_ regionThatFits:MKCoordinateRegionMakeWithDistance(center, latitudeDistance, longitudeDistance)];
+    //NSLog(@"Region Center: \n\tLat %f\n\tLong %f\nRegion Span:\n\tLat %f\n\tLong %f", adjustedRegion.center.latitude,adjustedRegion.center.longitude,adjustedRegion.span.latitudeDelta,adjustedRegion.span.longitudeDelta);
+    [self.mapView_ setRegion:adjustedRegion animated:NO];
 }
 
 -(void)drawBackground{
     [self setMapViewBounds];
-    double lowestLat=999999999;
-    double highestLat=0;
-    double lowestLong=999999999;
-    double highestLong=0;
-    //Find the borders of the unlocked Hexs
-    for (int i = 0; i < unlockedHexsLatitude.count; i++) {
-        if (lowestLat > [unlockedHexsLatitude[i] doubleValue]) {
-            lowestLat = [unlockedHexsLatitude[i] doubleValue];
-        }
-        if (highestLat < [unlockedHexsLatitude[i] doubleValue]) {
-            highestLat = [unlockedHexsLatitude[i] doubleValue];
-        }
-        if (lowestLong > [unlockedHexsLongitude[i] doubleValue]) {
-            lowestLong = [unlockedHexsLongitude[i] doubleValue];
-        }
-        if (highestLong < [unlockedHexsLongitude[i] doubleValue]) {
-            highestLong = [unlockedHexsLongitude[i] doubleValue];
-        }
-    }
-    double latTenMilePadding;
-    double longTenMilesPadding;
-    CLLocationCoordinate2D bottomLeft = CLLocationCoordinate2DMake(lowestLat,  lowestLong);
-    CLLocationCoordinate2D topLeft = CLLocationCoordinate2DMake(highestLat,  lowestLong);
-    CLLocationCoordinate2D topRight = CLLocationCoordinate2DMake(highestLat,  highestLong);
-    CLLocationCoordinate2D bottomRight = CLLocationCoordinate2DMake(lowestLat,  highestLong);
-    GMSMutablePath *backgroundPath = [[GMSMutablePath path] init];
-    [backgroundPath addCoordinate:bottomLeft];
-    [backgroundPath addCoordinate:topLeft];
-    [backgroundPath addCoordinate:topRight];
-    [backgroundPath addCoordinate:bottomRight];
-    GMSPolygon *background = [GMSPolygon polygonWithPath:backgroundPath];
-    background.fillColor = [[self colorWithHexString:@"454545"] colorWithAlphaComponent:0.8];
-    background.map = self.mapView_;
-}
-
--(CLLocation*)getCenterOfHex:(GMSMutablePath *)hexH{
-    float maxLat = -200;
-    float maxLong = -200;
-    float minLat = 999999;
-    float minLong = 999999;
     
-    for (int i=0 ; i< hexH.count; i++) {
-        CLLocationCoordinate2D location = [hexH coordinateAtIndex:i];
-        
-        if (location.latitude < minLat) {
-            minLat = location.latitude;
-        }
-        
-        if (location.longitude < minLong) {
-            minLong = location.longitude;
-        }
-        
-        if (location.latitude > maxLat) {
-            maxLat = location.latitude;
-        }
-        
-        if (location.longitude > maxLong) {
-            maxLong = location.longitude;
-        }
-    }
+    //Cover world with shade
+    CLLocationCoordinate2D bottomLeftWithPadding;
+    CLLocationCoordinate2D topLeftWithPadding;
+    CLLocationCoordinate2D midTopWithPadding;
+    CLLocationCoordinate2D topRightWithPadding;
+    CLLocationCoordinate2D bottomRightWithPadding;
     
-        CLLocationCoordinate2D coordCenter = CLLocationCoordinate2DMake((maxLat + minLat) * 0.5, (maxLong + minLong) * 0.5);
-        CLLocation *center = [[CLLocation alloc] initWithLatitude:coordCenter.latitude longitude:coordCenter.longitude];
-    return center;
+    bottomLeftWithPadding = CLLocationCoordinate2DMake(-90, -180);
+    topLeftWithPadding = CLLocationCoordinate2DMake(90, -180);
+    midTopWithPadding = CLLocationCoordinate2DMake(90, 0);
+    topRightWithPadding = CLLocationCoordinate2DMake(90, 180);
+    bottomRightWithPadding = CLLocationCoordinate2DMake(-90, 180);
+    
+    CLLocationCoordinate2D borderLimitCorners[5]={
+        bottomRightWithPadding,topRightWithPadding,midTopWithPadding,topLeftWithPadding,bottomLeftWithPadding
+    };
+    
+    // make some UI changes
+    MKPolygon *polygonPath = [MKPolygon polygonWithCoordinates:borderLimitCorners count:5 interiorPolygons:mkPolygonsOnMap];
+    [self.mapView_ addOverlay:polygonPath];
 }
 
 -(BOOL)checkIfCenterIsOnMap:(CLLocation *)center{
@@ -822,7 +832,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
 
 //GET TO WORK TO ADD THE PICTURE LOCATIONS!!!
 
--(void)getHexsInView{
+-(void)getHexsInView{/*
     //ADD A WAITING FEATURE FOR EVERYTHIN TO LOAD!!!
     
     // Create the polygon, and assign it to the map.
@@ -898,8 +908,8 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 [hexInViewArray addObject:hexPolygon];
             }
         }
-    }
-    NSLog(@"USER HAS %i UNLOCKED HEXS IN VIEW", unlockedHexsInViewCounter);
+    }*/
+    //NSLog(@"USER HAS %i UNLOCKED HEXS IN VIEW", unlockedHexsInViewCounter);
 }
 
 
@@ -1060,22 +1070,22 @@ const double ONE_MILE_IN_METERS = 1609.344;
     
     return [difference day];
 }
-
+/*
 -(bool)isCoordInUnlockedHex:(CLLocation *)coord{
     bool isInUnlockedHex = NO;
     for (int i = 0; i < unlockedHexsLatitude.count; i++) {
         CLLocationCoordinate2D coordTemp = CLLocationCoordinate2DMake([unlockedHexsLatitude[i] doubleValue], [unlockedHexsLongitude[i] doubleValue]);
         CLLocation *hexCenter = [[CLLocation alloc] initWithLatitude:coordTemp.latitude longitude:coordTemp.longitude];
-        GMSPolygon *hexPoly = [self getHexPolygon:hexCenter];
+        MKPolygon *hexPoly = [self getHexPolygon:hexCenter];
         if (GMSGeometryContainsLocation(coord.coordinate, hexPoly.path, YES)) {
             return YES;
             break;
         }
     }
     return isInUnlockedHex;
-}
+}*/
 
--(bool)isMarkerOnMap:(CLLocation *)coord{
+/*-(bool)isMarkerOnMap:(CLLocation *)coord{
     bool isOnMap=false;
     for (int i = 0; i < GMSMarkersArray.count; i++) {
         GMSMarker *marker = GMSMarkersArray[i];
@@ -1086,8 +1096,8 @@ const double ONE_MILE_IN_METERS = 1609.344;
     }
     return isOnMap;
 }
-
-- (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
+*/
+/*- (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
     //RESET THE PREVIOUSLY SELECTED MARKER
     prevMarker.icon = [UIImage imageNamed:@"PicCircle"];
     prevMarker.zIndex = 1;
@@ -1113,7 +1123,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
     
     [self DrawInInfoWindow:index];
     return nil;
-}
+}*/
 
 -(void)DrawInInfoWindow:(int)index{
     //PUT THE XIB INTO A UIVIEW AND CONFIGURE WITH TO DEVICE
@@ -1325,9 +1335,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
             currentInfoWindow.frame = rect;
             
             //RESET MARKER
-            [_mapView_ setSelectedMarker:nil];
+            /*[_mapView_ setSelectedMarker:nil];
             prevMarker.icon = [UIImage imageNamed:@"PicCircle"];
-            prevMarker.zIndex = 1;
+            prevMarker.zIndex = 1;*/
         }
     }
     
@@ -1379,7 +1389,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
 }
 
 # pragma mark - Helper Methods
-
+/*
 -(void)setCameraToUserLoc{
     GMSCameraPosition *camera = [GMSCameraPosition
                                  cameraWithLatitude:self.mapView_.myLocation.coordinate.latitude
@@ -1395,7 +1405,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
                                  zoom:15];
     [self.mapView_ animateToCameraPosition:camera];
 }
-
+*/
 -(UIColor*)colorWithHexString:(NSString*)hex
 {
     NSString *cString = [[hex stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
@@ -1438,100 +1448,6 @@ const double ONE_MILE_IN_METERS = 1609.344;
 }
 
 #pragma mark UPLOAD HEXAGONS TO THE SERVER
--(void)addHexagons{
-    float oneMileLat = 0.01449275362319;
-    float oneMileLong = 0.01445671659053;
-    
-    float width = (5 * oneMileLat);
-    float height = (5 * oneMileLong);
-    float botMidHeights = height / 4.0;//CHANGING THE NUMBER (4) CHANGES THE LENGTH OF RIGHT AND LEFT SIDES
-    float topMidHeights = height - botMidHeights;
-    
-    int hexCounter;
-    hexCounter = 0;
-    
-    NSMutableArray *centerJSONArray = [[NSMutableArray alloc] init];
-    
-    CLLocationCoordinate2D topH = CLLocationCoordinate2DMake(-90, -180); //INITIALIZES VARIABLE
-    
-    int latSave=0;//-90 to -89 CAN GO TO 89 only
-    
-    for (int x = -90; topH.latitude <= 90; x++) {//PERFORM AS UNTILL IT HITS THE LAST LATITUDE (-90 --> 90)
-        
-        float OddHexWidth;
-        if (x%2 == 0) {//IF IT IS ODD ADD MORE WIDTH (in order for hex to be touching borders)
-            OddHexWidth = 0;
-        }else{
-            OddHexWidth = width/2;
-        }
-        CLLocationCoordinate2D topRightH = CLLocationCoordinate2DMake(0, 0); //INITIALIZES VARIABLE
-        
-        for (int i =-180 ; topRightH.longitude <= 180; i++) {//PERFORM AS UNTILL IT HITS THE LAST LONGTITUDE (-180 --> 180)
-            
-            GMSMutablePath *hexH = [[GMSMutablePath path] init];
-            
-            float latCoords = -90+(topMidHeights*x);//INCREASE THE LAT COORD (the distance between hex's)
-            float longCoords = -180+(OddHexWidth+(width*i));//INCREASE THE LONG COORD
-            
-            CLLocationCoordinate2D bottomH = CLLocationCoordinate2DMake(    height-height+  latCoords,  longCoords+     (width / 2));
-            CLLocationCoordinate2D bottomLeftH = CLLocationCoordinate2DMake(botMidHeights+  latCoords,  longCoords+     0);
-            CLLocationCoordinate2D topLeftH = CLLocationCoordinate2DMake(   topMidHeights+  latCoords,  longCoords+     0);
-            topH = CLLocationCoordinate2DMake(       height+         latCoords,  longCoords+     (width / 2));
-            topRightH = CLLocationCoordinate2DMake(  topMidHeights+  latCoords,  longCoords+     width);
-            CLLocationCoordinate2D bottomRightH = CLLocationCoordinate2DMake(botMidHeights+ latCoords,  longCoords+     width);
-            
-            [hexH addCoordinate:bottomH];
-            [hexH addCoordinate:bottomLeftH];
-            [hexH addCoordinate:topLeftH];
-            [hexH addCoordinate:topH];
-            [hexH addCoordinate:topRightH];
-            [hexH addCoordinate:bottomRightH];
-            
-            GMSPolygon *polygon2 = [GMSPolygon polygonWithPath:hexH];
-            polygon2.title = [NSString stringWithFormat:@"%i", i];
-            
-            [hexArray addObject:polygon2];
-            
-            if (topH.latitude > 0 && topH.longitude < 0) {// IF IT IS IN THE NORTHEAST HEMI
-                [northEastHexArray addObject:polygon2];
-            }else if (topH.latitude > 0 && topH.longitude >= 0) {// IF IT IS IN THE NORTHWEST HEMI
-                [northWestHexArray addObject:polygon2];
-            }else if (topH.latitude <= 0 && topH.longitude < 0) {// IF IT IS IN THE SOUTHEAST HEMI
-                [southEastHexArray addObject:polygon2];
-            }else if (topH.latitude > 0 && topH.longitude >= 0) {// IF IT IS IN THE SOUTHWEST HEMI
-                [southWestHexArray addObject:polygon2];
-            }
-            
-            //Center point
-            
-            currentRange = -80;
-            
-            CLLocation *center = [self getCenterOfHex:hexH];
-            NSNumber *latStr = [NSNumber numberWithDouble:center.coordinate.latitude];
-            NSNumber *longStr = [NSNumber numberWithDouble:center.coordinate.longitude];
-            if (center.coordinate.latitude <= 90 && center.coordinate.latitude >= -90 && center.coordinate.longitude >= -180 && center.coordinate.longitude <=180) {
-            NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                @"GeoPoint", @"__type",
-                                                longStr,@"longitude",
-                                                latStr,@"latitude",
-                                                nil];
-            NSDictionary *tempJsonDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                    location,@"h",
-                                                    nil];
-                if (center.coordinate.latitude <= 0 && center.coordinate.latitude >= -90) {
-                        [centerJSONArray addObject:tempJsonDictionary];
-                }
-            
-            hexCounter++;
-            }
-        }
-    }// ONLY UNCOMMENT TO UPLOAD ALL THE HEXS TO THE SERVER
-    //[self getHexsInView];
-    
-    NSLog(@"THERE ARE %i HEXAGONS ON THIS MAP",hexCounter);
-    
-    [self writeToTextFile:centerJSONArray];
-}
 
 //Method writes a string to a text file
 -(void) writeToTextFile:(NSMutableArray *)centerJSONArray{
