@@ -90,15 +90,14 @@
                            @"views":[NSNumber numberWithInt:0],
                            @"whoLiked": [NSArray arrayWithObject:@"Temp"],
                            @"whoViewed": [NSArray arrayWithObject:@"Temp"],
+                           @"whoLikedIDs": [NSArray arrayWithObject:@"Temp"],
+                           @"whoViewedIDs": [NSArray arrayWithObject:@"Temp"],
                            @"dateCreated": date
                            };
-    //NSLog(@"%@",currentImageData);
-    //NSLog(@"%@",post);
-    //NSLog(@"%@",firebaseRef);
 
     Firebase *picsRef = [firebaseRef childByAppendingPath: @"postedpictures"];
     picsRef = [picsRef childByAutoId];
-    NSLog(@"Posted To: \n%@",picsRef);
+    //NSLog(@"Posted To: \n%@",picsRef);
 
     [picsRef setValue: post];
     
@@ -244,7 +243,8 @@
                                                          completionHandler:^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
                                                              CFDictionaryRef exifAttachments = CMGetAttachment(imageSampleBuffer, kCGImagePropertyExifDictionary, NULL);
                                                              if (exifAttachments) {
-                                                                 NSLog(@"attachements: %@", exifAttachments);
+                                                                 //NSLog(@"attachements: %@", exifAttachments);
+                                                                 NSLog(@"Took picture successfully!");
                                                              } else {
                                                                  NSLog(@"no attachments");
                                                              }

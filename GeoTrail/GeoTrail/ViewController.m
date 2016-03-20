@@ -17,6 +17,7 @@
 #import <FBSDKLoginKit/FBSDKLoginKit.h>
 #import "Contact.h"
 #import "TabBarController.h"
+#import "HexButtonXIB.h"
 
 #import "ViewController.h"
 
@@ -84,6 +85,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
     //MapView
     CLLocation *userLoc;
     NSMutableArray *mkPolygonsOnMap;
+    NSMutableArray *hexButtonArray;
     
     //ALL FIREBASE USER INFO
     Firebase *firebaseRef;
@@ -258,77 +260,93 @@ const double ONE_MILE_IN_METERS = 1609.344;
     [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
         // make CLLocationCoordinate2D
         if(snapshot.value != [NSNull null]){
-            NSLog(@"%@",snapshot.value);
-            NSNumber *latitude = snapshot.value[@"latitude"];
-            NSNumber *longitude = snapshot.value[@"longitude"];
-            CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
-            CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
-            
-            //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
-            //if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
-                NSNumber *likes = snapshot.value[@"likes"];
-                NSNumber *views = snapshot.value[@"views"];
-                NSArray *whoLiked = snapshot.value[@"whoLiked"];
-                NSArray *whoViewed = snapshot.value[@"whoViewed"];
-                NSString *objectID = snapshot.key;
-                NSDate *dateCreated = (NSDate *)snapshot.value[@"dateCreated"] ;
+            for (int i = 0; i < snapshot.childrenCount; i++) {
+                FDataSnapshot *snapshotChild = [[snapshot.children allObjects] objectAtIndex:i];
                 
-                /*GMSMarker *marker = [[GMSMarker alloc] init];
-                marker.opacity = 0.9;
-                marker.position = coordinate;
-                marker.appearAnimation = kGMSMarkerAnimationPop;
-                marker.icon = [UIImage imageNamed:@"PicCircle"];*/
-                //        // add annotation
-                //        marker.title = Username;
-                //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
-                CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+                NSLog(@"%@",snapshotChild.value);
+                NSNumber *latitude = snapshotChild.value[@"latitude"];
+                NSNumber *longitude = snapshotChild.value[@"longitude"];
+                CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
+                CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
                 
-                NSDate *currentDate = [NSDate date];
-                NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:dateCreated];
-                NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:dateCreated];
-                NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:dateCreated];
-                NSInteger daysBetweenDates = [self daysBetweenDates:dateCreated andDate:currentDate];
+                NSNumber *likes = snapshotChild.value[@"likes"];
+                NSNumber *views = snapshotChild.value[@"views"];
+                NSArray *whoLiked = snapshotChild.value[@"whoLiked"];
+                NSArray *whoViewed = snapshotChild.value[@"whoViewed"];
+                NSString *objectID = snapshotChild.key;
+                NSString *dateCreated = snapshotChild.value[@"dateCreated"];
                 
-                if(secondsBetweenDates < 60){
-                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Seconds ago", (int)secondsBetweenDates];
-                }else if(minutesBetweenDates < 60){
-                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Minutes ago", (int)minutesBetweenDates];
-                }else if(hoursBetweenDates < 24){
-                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Hours ago", (int)hoursBetweenDates];
+                NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                [dateFormatter setDateFormat:@"MM/dd/yyyy HH:mm"];
+                NSDate *datePicCreated = [dateFormatter dateFromString:dateCreated];
+                
+                //NSLog(@"Coordinate \nX: %f\nY:%f",coordinate.latitude,coordinate.longitude);
+                //NSLog(@"Coordinate \nLat: %@\nLong:%@",latitude,longitude);
+                //NSLog(@"Likes %@", likes);
+                
+                if([self isPicExpired: datePicCreated]){
+                    [self deletePic: snapshotChild.key];
                 }else{
-                    infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Days ago", (int)daysBetweenDates];
+                    CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
+                    
+                    NSDate *currentDate = [NSDate date];
+                    NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:datePicCreated];
+                    NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:datePicCreated];
+                    NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:datePicCreated];
+                    NSInteger daysBetweenDates = [self daysBetweenDates:datePicCreated andDate:currentDate];
+                    
+                    if(secondsBetweenDates < 60){
+                        infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Seconds ago", (int)secondsBetweenDates];
+                    }else if(minutesBetweenDates < 60){
+                        infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Minutes ago", (int)minutesBetweenDates];
+                    }else if(hoursBetweenDates < 24){
+                        infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Hours ago", (int)hoursBetweenDates];
+                    }else{
+                        infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Days ago", (int)daysBetweenDates];
+                    }
+                    
+                    //Converts string to the image
+                    NSString* picString = snapshotChild.value[@"image"];
+                    
+                    NSData* data=[picString dataUsingEncoding:NSUTF8StringEncoding];
+                    UIImage *image = [[UIImage alloc]initWithData:data];
+                    [infoWindow.image setImage:image];
+                    infoWindow.usernameLabel.text = currentUser.providerData[@"displayName"];
+                    infoWindow.usernameImageLabel.text = currentUser.providerData[@"displayName"];
+                    infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
+                    infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
+                    infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
+                    infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
+                    infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",snapshotChild.value[@"unlockedHexs"]];
+                    infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
+                    infoWindow.usersWhoViewed = [NSMutableArray arrayWithArray:whoViewed];
+                    infoWindow.objectID = objectID;
+                    infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
+                    infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
+                    infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
+                    infoWindow.coordinate = coordinate;
+                    [infoWindows addObject:infoWindow];
+                    //marker.map = self.mapView_;
+                    //[GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
+                    // }
                 }
-                
-                //Converts string to the image
-                NSString* picString = snapshot.value[@"image"];
-                
-                NSData* data=[picString dataUsingEncoding:NSUTF8StringEncoding];
-                UIImage *image = [[UIImage alloc]initWithData:data];
-                [infoWindow.image setImage:image];
-                infoWindow.usernameLabel.text = snapshot.value[@"displayName"];
-                infoWindow.usernameImageLabel.text = snapshot.value[@"displayName"];
-                infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
-                infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
-                infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
-                infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
-                infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",snapshot.value[@"unlockedHexs"]];
-                infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
-                infoWindow.usersWhoViewed = [NSMutableArray arrayWithArray:whoViewed];
-                infoWindow.objectID = objectID;
-                infoWindow.likesLabel.adjustsFontSizeToFitWidth = YES;
-                infoWindow.viewsLabel.adjustsFontSizeToFitWidth = YES;
-                infoWindow.usernameLabel.adjustsFontSizeToFitWidth = YES;
-                infoWindow.coordinate = coordinate;
-                [infoWindows addObject:infoWindow];
-                //marker.map = self.mapView_;
-                //[GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
-           // }
+                [self drawHexPicCounters];
+            }
         }else{
             NSLog(@"uploadUserDataOnMap: snapshot.value == null");
         }
     } withCancelBlock:^(NSError *error) {
         NSLog(@"uploadUserDataOnMap: %@", error.description);
     }];
+}
+
+-(BOOL)isPicExpired: (NSDate *)dateCreated{
+    return ([self daysBetweenDates:dateCreated andDate:[NSDate date]] >= 2);
+}
+
+-(void)deletePic:(NSString *)key{
+    Firebase *picToDeleteRef = [firebaseRef childByAppendingPath: [NSString stringWithFormat:@"postedpictures/%@", key]];
+    [picToDeleteRef removeValue];
 }
 
 -(void)uploadContactDataOnMap{
@@ -350,37 +368,42 @@ const double ONE_MILE_IN_METERS = 1609.344;
         [tempRef observeEventType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
             NSLog(@"%@", snapshot.value);
             //[self setCameraToUserLoc];
-            
-            // make CLLocationCoordinate2D
-            NSNumber *latitude = snapshot.value[@"latitude"];
-            NSNumber *longitude = snapshot.value[@"longitude"];
-            CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
-            CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
-            
-            //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
-            //if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
-                NSNumber *likes = snapshot.value[@"likes"];
-                NSNumber *views = snapshot.value[@"views"];
-                NSArray *whoLiked = snapshot.value[@"whoLiked"];
-                NSArray *whoViewed = snapshot.value[@"whoViewed"];
-                NSString *objectID = snapshot.key;
-                NSDate *dateCreated = (NSDate *)snapshot.value[@"dateCreated"] ;
+            for (int i = 0; i < snapshot.childrenCount; i++) {
+                FDataSnapshot *snapshotChild = [[snapshot.children allObjects] objectAtIndex:i];
+                // make CLLocationCoordinate2D
+                NSNumber *latitude = snapshotChild.value[@"latitude"];
+                NSNumber *longitude = snapshotChild.value[@"longitude"];
+                CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
+                CLLocation *coordinateValue = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+                
+                //MAKE SURE THE MARKER ISN't ON THE MAP ALREADY AND MAKE SURE IT IS IN AN UNLOCKED HEX
+                //if ([self isCoordInUnlockedHex:coordinateValue] && ![self isMarkerOnMap:coordinateValue]) {
+                NSNumber *likes = snapshotChild.value[@"likes"];
+                NSNumber *views = snapshotChild.value[@"views"];
+                NSArray *whoLiked = snapshotChild.value[@"whoLiked"];
+                NSArray *whoViewed = snapshotChild.value[@"whoViewed"];
+                NSString *objectID = snapshotChild.key;
+                NSDate *dateCreated = (NSDate *)snapshotChild.value[@"dateCreated"];
+                
+                NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                [dateFormatter setDateFormat:@"MM/dd/yyyy HH:mm"];
+                NSDate *datePicCreated = [dateFormatter dateFromString:dateCreated];
                 
                 /*GMSMarker *marker = [[GMSMarker alloc] init];
-                marker.opacity = 0.9;
-                marker.position = coordinate;
-                marker.appearAnimation = kGMSMarkerAnimationPop;
-                marker.icon = [UIImage imageNamed:@"PicCircle"];*/
+                 marker.opacity = 0.9;
+                 marker.position = coordinate;
+                 marker.appearAnimation = kGMSMarkerAnimationPop;
+                 marker.icon = [UIImage imageNamed:@"PicCircle"];*/
                 //        // add annotation
                 //        marker.title = Username;
                 //        marker.snippet = @"In-Range\nLikes: 125\nViews: 320";
                 CustomInfoWindow *infoWindow =  [[[NSBundle mainBundle] loadNibNamed:@"InfoWindow" owner:self options:nil] objectAtIndex:0];
                 
                 NSDate *currentDate = [NSDate date];
-                NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:dateCreated];
-                NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:dateCreated];
-                NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:dateCreated];
-                NSInteger daysBetweenDates = [self daysBetweenDates:dateCreated andDate:currentDate];
+                NSInteger secondsBetweenDates = [self secondsBetweenDates:currentDate andDate:datePicCreated];
+                NSInteger minutesBetweenDates = [self minutesBetweenDates:currentDate andDate:datePicCreated];
+                NSInteger hoursBetweenDates = [self hoursBetweenDates:currentDate andDate:datePicCreated];
+                NSInteger daysBetweenDates = [self daysBetweenDates:datePicCreated andDate:currentDate];
                 
                 if(secondsBetweenDates < 60){
                     infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Seconds ago", (int)secondsBetweenDates];
@@ -391,13 +414,13 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 }else{
                     infoWindow.timeLabel.text = [NSString stringWithFormat:@"%i Days ago", (int)daysBetweenDates];
                 }
-                infoWindow.usernameLabel.text = snapshot.value[@"displayName"];
-                infoWindow.usernameImageLabel.text = snapshot.value[@"displayName"];
+                infoWindow.usernameLabel.text = snapshotChild.value[@"displayName"];
+                infoWindow.usernameImageLabel.text = snapshotChild.value[@"displayName"];
                 infoWindow.likesLabel.text = [NSString stringWithFormat:@"%@", likes];
                 infoWindow.likesImageLabel.text = [NSString stringWithFormat:@"%@", likes];
                 infoWindow.viewsLabel.text = [NSString stringWithFormat:@"%@", views];
                 infoWindow.viewsImageLabel.text = [NSString stringWithFormat:@"%@", views];
-                infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",snapshot.value[@"unlockedHexs"]];
+                infoWindow.hexCountLabel.text = [NSString stringWithFormat:@"%@",snapshotChild.value[@"unlockedHexs"]];
                 infoWindow.usersWhoLiked = [NSMutableArray arrayWithArray:whoLiked];
                 infoWindow.usersWhoViewed = [NSMutableArray arrayWithArray:whoViewed];
                 infoWindow.objectID = objectID;
@@ -408,8 +431,9 @@ const double ONE_MILE_IN_METERS = 1609.344;
                 [infoWindows addObject:infoWindow];
                 //marker.map = self.mapView_;
                 //[GMSMarkersArray addObject:marker];//MAKE SURE IT GETS RESET WHEN NEW MARKERS APPEAR IN THE SAME SPOT
-            //}
-            
+                //}
+            }
+            [self drawHexPicCounters];
         } withCancelBlock:^(NSError *error) {
             NSLog(@"uploadContactDataOnMap: %@", error.description);
         }];
@@ -656,6 +680,36 @@ const double ONE_MILE_IN_METERS = 1609.344;
     marker.icon = [UIImage imageNamed:@"PicCircle"];
     marker.map = self.mapView_;*/
     return result.longitude;
+}
+
+-(void)drawHexPicCounters{
+    hexButtonArray = [[NSMutableArray alloc] init];
+    BOOL isOnMap;
+    for (int i = 0; i < infoWindows.count; i++) {
+        isOnMap = false;
+        CustomInfoWindow *infoWindow = infoWindows[i];
+        for (int z = 0; z < hexButtonArray.count; z++) {
+            HexButtonXIB *hexButton = hexButtonArray[z];
+            if (fabs(infoWindow.coordinate.latitude - hexButton.coordinate.latitude) < 0.001 && fabs(infoWindow.coordinate.longitude - hexButton.coordinate.longitude) < 0.001) {
+                isOnMap = true;
+                hexButton.picCounter++;
+                hexButton.picCounterLabel.text = [NSString stringWithFormat:@"%i",hexButton.picCounter];
+            }
+        }
+        if (!isOnMap) {
+            HexButtonXIB *newHexButton = [[[NSBundle mainBundle] loadNibNamed:@"HexButton" owner:self options:nil] firstObject];
+            newHexButton.picCounter = 1;
+            newHexButton.picCounterLabel.text = [NSString stringWithFormat:@"%i",newHexButton.picCounter];
+            newHexButton.coordinate = infoWindow.coordinate;
+            [hexButtonArray addObject:newHexButton];
+            CGPoint pointOnView = [self.mapView_ convertCoordinate:infoWindow.coordinate toPointToView:self.mapView_];
+            NSLog(@"Point On View:\nX: %f\nY: %f",pointOnView.x,pointOnView.y);
+            NSLog(@"Coord:\nLat: %f\nLong: %f",infoWindow.coordinate.longitude,infoWindow.coordinate.longitude);
+            NSLog(@"Center View Point: %f",self.mapView_.center.x);
+            [newHexButton setCenter:pointOnView];
+            [self.mapView_ addSubview:newHexButton];
+        }
+    }
 }
 
 -(void)drawUnlockedHexs{

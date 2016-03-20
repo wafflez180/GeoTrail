@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <mutableArray key="SF-UI-Text-Regular.otf">
+            <string>SFUIText-Regular</string>
+        </mutableArray>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1jU-Yu-oIc" customClass="HexButtonXIB">
+            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <imageView contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Hex_Button" highlightedImage="Hex_Button" translatesAutoresizingMaskIntoConstraints="NO" id="Xge-qV-Dcd">
+                    <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                    <color key="backgroundColor" red="0.0" green="1" blue="0.50196081400000003" alpha="0.0" colorSpace="calibratedRGB"/>
+                    <color key="tintColor" red="0.086274509803921567" green="0.62745098039215685" blue="0.52549019607843139" alpha="1" colorSpace="calibratedRGB"/>
+                    <gestureRecognizers/>
+                    <connections>
+                        <outletCollection property="gestureRecognizers" destination="FzI-Av-egl" appends="YES" id="EqB-1h-6Fp"/>
+                    </connections>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uci-gG-Q17">
+                    <rect key="frame" x="45" y="40" width="10" height="20.5"/>
+                    <fontDescription key="fontDescription" name="SFUIText-Regular" family="SF UI Text" pointSize="17"/>
+                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.29230555891990662" blue="0.18545806407928467" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+            <color key="tintColor" red="0.0" green="0.29230555891990662" blue="0.18545806407928467" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="Xge-qV-Dcd" secondAttribute="trailing" id="30c-H8-JBn"/>
+                <constraint firstItem="uci-gG-Q17" firstAttribute="centerY" secondItem="1jU-Yu-oIc" secondAttribute="centerY" id="Ap6-MC-Udh"/>
+                <constraint firstItem="Xge-qV-Dcd" firstAttribute="leading" secondItem="1jU-Yu-oIc" secondAttribute="leading" id="G70-pr-6XC"/>
+                <constraint firstItem="uci-gG-Q17" firstAttribute="centerX" secondItem="1jU-Yu-oIc" secondAttribute="centerX" id="cJU-bq-5Xc"/>
+                <constraint firstItem="Xge-qV-Dcd" firstAttribute="top" secondItem="1jU-Yu-oIc" secondAttribute="top" id="lUN-YG-jGc"/>
+                <constraint firstAttribute="bottom" secondItem="Xge-qV-Dcd" secondAttribute="bottom" id="uXn-ed-4fg"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="picCounterLabel" destination="uci-gG-Q17" id="hrw-zy-IZO"/>
+            </connections>
+            <point key="canvasLocation" x="228.5" y="481.5"/>
+        </view>
+        <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="0.5" id="FzI-Av-egl">
+            <connections>
+                <action selector="longPressedHex:" destination="1jU-Yu-oIc" id="FUu-s1-bQg"/>
+            </connections>
+        </pongPressGestureRecognizer>
+    </objects>
+    <resources>
+        <image name="Hex_Button" width="25" height="25"/>
+    </resources>
+</document>

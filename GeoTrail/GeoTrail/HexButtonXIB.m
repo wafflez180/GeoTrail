@@ -7,16 +7,15 @@
 //  Copyright (c) 2015 Arthur Araujo. All rights reserved.
 //
 
-#import "CustomInfoWindow.h"
+#import "HexButtonXIB.h"
 #import "ViewController.h"
 
-@implementation CustomInfoWindow{
+@implementation HexButtonXIB{
 
 }
 
-- (IBAction)doubleTappedWindow:(id)sender {
-//    NSLog(@"Double Tapped");
-    [self.mainView likedPicture];
+- (IBAction)longPressedHex:(id)sender {
+    NSLog(@"Long Pressed Hex");
 }
 
 @end

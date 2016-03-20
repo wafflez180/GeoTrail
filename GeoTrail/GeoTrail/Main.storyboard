@@ -20,16 +20,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="MKMapView">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="MKMapView">
+                                <rect key="frame" x="4" y="0.0" width="592" height="600"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" updatesFrequently="YES"/>
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
-                                <rect key="frame" x="546" y="396" width="46" height="45"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
+                                <rect key="frame" x="542" y="396" width="46" height="45"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Vjy-Bm-JDV" secondAttribute="height" multiplier="23:22" id="PFW-9r-Qzy"/>
                                     <constraint firstAttribute="height" constant="50" id="Rgi-lG-g4R"/>
@@ -53,8 +53,8 @@
                                     <action selector="pressedCompass:" destination="BYZ-38-t0r" eventType="touchUpInside" id="o9j-ik-NDk"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
-                                <rect key="frame" x="553" y="320" width="32" height="46"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
+                                <rect key="frame" x="549" y="320" width="32" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="16:23" id="BVW-0R-PsD"/>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="25:34" id="DCE-xb-Zg6"/>
