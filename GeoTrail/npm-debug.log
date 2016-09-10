@@ -1,0 +1,143 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '-g',
+1 verbose cli   'firebase-import' ]
+2 info using npm@1.4.23
+3 info using node@v0.10.31
+4 verbose cache add [ 'firebase-import', null ]
+5 verbose cache add name=undefined spec="firebase-import" args=["firebase-import",null]
+6 verbose parsed url { protocol: null,
+6 verbose parsed url   slashes: null,
+6 verbose parsed url   auth: null,
+6 verbose parsed url   host: null,
+6 verbose parsed url   port: null,
+6 verbose parsed url   hostname: null,
+6 verbose parsed url   hash: null,
+6 verbose parsed url   search: null,
+6 verbose parsed url   query: null,
+6 verbose parsed url   pathname: 'firebase-import',
+6 verbose parsed url   path: 'firebase-import',
+6 verbose parsed url   href: 'firebase-import' }
+7 silly lockFile 7b25fa9f-firebase-import firebase-import
+8 verbose lock firebase-import /Users/arthuraraujo/.npm/7b25fa9f-firebase-import.lock
+9 silly lockFile 7b25fa9f-firebase-import firebase-import
+10 silly lockFile 7b25fa9f-firebase-import firebase-import
+11 verbose addNamed [ 'firebase-import', '' ]
+12 verbose addNamed [ null, '*' ]
+13 silly lockFile 402e7dbe-firebase-import firebase-import@
+14 verbose lock firebase-import@ /Users/arthuraraujo/.npm/402e7dbe-firebase-import.lock
+15 silly addNameRange { name: 'firebase-import', range: '*', hasData: false }
+16 verbose request where is /firebase-import
+17 verbose request registry https://registry.npmjs.org/
+18 verbose request id 826b6c03485d1ba2
+19 verbose url raw /firebase-import
+20 verbose url resolving [ 'https://registry.npmjs.org/', './firebase-import' ]
+21 verbose url resolved https://registry.npmjs.org/firebase-import
+22 verbose request where is https://registry.npmjs.org/firebase-import
+23 info trying registry request attempt 1 at 00:37:22
+24 http GET https://registry.npmjs.org/firebase-import
+25 http 200 https://registry.npmjs.org/firebase-import
+26 silly registry.get cb [ 200,
+26 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+26 silly registry.get     etag: '"CIMFQY4KT48SE571PMU6XSBCG"',
+26 silly registry.get     'content-type': 'application/json',
+26 silly registry.get     'cache-control': 'max-age=300',
+26 silly registry.get     'content-length': '6707',
+26 silly registry.get     'accept-ranges': 'bytes',
+26 silly registry.get     date: 'Mon, 29 Feb 2016 05:37:23 GMT',
+26 silly registry.get     via: '1.1 varnish',
+26 silly registry.get     age: '0',
+26 silly registry.get     connection: 'keep-alive',
+26 silly registry.get     'x-served-by': 'cache-atl6248-ATL',
+26 silly registry.get     'x-cache': 'MISS',
+26 silly registry.get     'x-cache-hits': '0',
+26 silly registry.get     'x-timer': 'S1456724243.582687,VS0,VE131',
+26 silly registry.get     vary: 'Accept' } ]
+27 silly addNameRange number 2 { name: 'firebase-import', range: '*', hasData: true }
+28 silly addNameRange versions [ 'firebase-import', [ '1.0.0', '1.1.1', '1.1.2', '1.1.3' ] ]
+29 verbose addNamed [ 'firebase-import', '1.1.3' ]
+30 verbose addNamed [ '1.1.3', '1.1.3' ]
+31 silly lockFile 1d02ed55-firebase-import-1-1-3 firebase-import@1.1.3
+32 verbose lock firebase-import@1.1.3 /Users/arthuraraujo/.npm/1d02ed55-firebase-import-1-1-3.lock
+33 silly lockFile 1f824554-import-firebase-import-1-1-3-tgz https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz
+34 verbose lock https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz /Users/arthuraraujo/.npm/1f824554-import-firebase-import-1-1-3-tgz.lock
+35 verbose addRemoteTarball [ 'https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz',
+35 verbose addRemoteTarball   '2e289b6e380c5bff691863341cda648d91af363a' ]
+36 info retry fetch attempt 1 at 00:37:23
+37 verbose fetch to= /var/folders/p3/d8mny3092jb4wcglp_7wc0sh0000gn/T/npm-13045-g9DcQ52Q/registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz
+38 http GET https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz
+39 http 200 https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz
+40 silly lockFile 1f824554-import-firebase-import-1-1-3-tgz https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz
+41 silly lockFile 1f824554-import-firebase-import-1-1-3-tgz https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz
+42 silly lockFile 1d02ed55-firebase-import-1-1-3 firebase-import@1.1.3
+43 silly lockFile 1d02ed55-firebase-import-1-1-3 firebase-import@1.1.3
+44 silly lockFile 402e7dbe-firebase-import firebase-import@
+45 silly lockFile 402e7dbe-firebase-import firebase-import@
+46 silly resolved [ { name: 'firebase-import',
+46 silly resolved     description: 'npm config for Firebase Import',
+46 silly resolved     version: '1.1.3',
+46 silly resolved     dependencies: { firebase: '~1.0.15', optimist: '~0.5.2', progress: '~0.1.0' },
+46 silly resolved     devDependencies: {},
+46 silly resolved     repository:
+46 silly resolved      { type: 'git',
+46 silly resolved        url: 'git://github.com/firebase/firebase-import.git' },
+46 silly resolved     keywords: [ 'firebase', 'import' ],
+46 silly resolved     author: { name: 'Firebase' },
+46 silly resolved     license: 'BSD',
+46 silly resolved     bin: { 'firebase-import': './bin/firebase-import.js' },
+46 silly resolved     gitHead: '77c2a800c1b75c2209ec95869848d274a722f5a9',
+46 silly resolved     bugs: { url: 'https://github.com/firebase/firebase-import/issues' },
+46 silly resolved     homepage: 'https://github.com/firebase/firebase-import',
+46 silly resolved     _id: 'firebase-import@1.1.3',
+46 silly resolved     scripts: {},
+46 silly resolved     _shasum: '2e289b6e380c5bff691863341cda648d91af363a',
+46 silly resolved     _from: 'firebase-import@',
+46 silly resolved     _npmVersion: '2.7.5',
+46 silly resolved     _nodeVersion: '0.10.38',
+46 silly resolved     _npmUser: { name: 'firebase', email: 'operations@firebase.com' },
+46 silly resolved     maintainers: [ [Object] ],
+46 silly resolved     dist:
+46 silly resolved      { shasum: '2e289b6e380c5bff691863341cda648d91af363a',
+46 silly resolved        tarball: 'http://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz' },
+46 silly resolved     directories: {},
+46 silly resolved     _resolved: 'https://registry.npmjs.org/firebase-import/-/firebase-import-1.1.3.tgz' } ]
+47 info install firebase-import@1.1.3 into /usr/local/lib
+48 info installOne firebase-import@1.1.3
+49 verbose lib/node_modules/firebase-import unbuild
+50 verbose tar unpack /Users/arthuraraujo/.npm/firebase-import/1.1.3/package.tgz
+51 silly lockFile b925ffb4-lib-node-modules-firebase-import tar:///usr/local/lib/node_modules/firebase-import
+52 verbose lock tar:///usr/local/lib/node_modules/firebase-import /Users/arthuraraujo/.npm/b925ffb4-lib-node-modules-firebase-import.lock
+53 silly lockFile 738bd330-irebase-import-1-1-3-package-tgz tar:///Users/arthuraraujo/.npm/firebase-import/1.1.3/package.tgz
+54 verbose lock tar:///Users/arthuraraujo/.npm/firebase-import/1.1.3/package.tgz /Users/arthuraraujo/.npm/738bd330-irebase-import-1-1-3-package-tgz.lock
+55 silly gunzTarPerm modes [ '755', '644' ]
+56 error Error: EACCES, mkdir '/usr/local/lib/node_modules/firebase-import'
+56 error  { [Error: EACCES, mkdir '/usr/local/lib/node_modules/firebase-import']
+56 error   errno: 3,
+56 error   code: 'EACCES',
+56 error   path: '/usr/local/lib/node_modules/firebase-import',
+56 error   fstream_type: 'Directory',
+56 error   fstream_path: '/usr/local/lib/node_modules/firebase-import',
+56 error   fstream_class: 'DirWriter',
+56 error   fstream_stack:
+56 error    [ '/usr/local/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23',
+56 error      '/usr/local/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53',
+56 error      'Object.oncomplete (fs.js:107:15)' ] }
+57 error Please try running this command again as root/Administrator.
+58 error System Darwin 15.3.0
+59 error command "node" "/usr/local/bin/npm" "install" "-g" "firebase-import"
+60 error cwd /Users/arthuraraujo/Desktop/GeoTrailRepo/GeoTrail
+61 error node -v v0.10.31
+62 error npm -v 1.4.23
+63 error path /usr/local/lib/node_modules/firebase-import
+64 error fstream_path /usr/local/lib/node_modules/firebase-import
+65 error fstream_type Directory
+66 error fstream_class DirWriter
+67 error code EACCES
+68 error errno 3
+69 error stack Error: EACCES, mkdir '/usr/local/lib/node_modules/firebase-import'
+70 error fstream_stack /usr/local/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23
+70 error fstream_stack /usr/local/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53
+70 error fstream_stack Object.oncomplete (fs.js:107:15)
+71 verbose exit [ 3, true ]

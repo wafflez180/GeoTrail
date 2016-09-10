@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AD_UNIT_ID_FOR_BANNER_TEST</key>
+	<string>ca-app-pub-3940256099942544/2934735716</string>
+	<key>AD_UNIT_ID_FOR_INTERSTITIAL_TEST</key>
+	<string>ca-app-pub-3940256099942544/4411468910</string>
+	<key>CLIENT_ID</key>
+	<string>321859219583-ova9a8gltfnokik1pan7v8bh56k9s9ql.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.321859219583-ova9a8gltfnokik1pan7v8bh56k9s9ql</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAFZ9nqrf9S5_B6TKQlueole_S3u_qYE8U</string>
+	<key>GCM_SENDER_ID</key>
+	<string>321859219583</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.ArthurDeAraujo.GeoTrail</string>
+	<key>PROJECT_ID</key>
+	<string>root-grammar-93022</string>
+	<key>STORAGE_BUCKET</key>
+	<string>root-grammar-93022.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<true/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<false/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:321859219583:ios:630f5cc052383eca</string>
+	<key>DATABASE_URL</key>
+	<string>https://root-grammar-93022.firebaseio.com</string>
+</dict>
+</plist>

@@ -7,14 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <Firebase/Firebase.h>
+
+@import Firebase;
 
 @interface TabBarController : UITabBarController
 
-@property (strong,nonatomic) FAuthData *currentUser;
+@property (strong,nonatomic) FIRUser *currentUser;
 @property (strong,nonatomic) NSMutableArray *contactsArray;
 @property (strong,nonatomic) NSMutableArray *contactIDsArray;
-@property (strong,nonatomic) Firebase *firebaseRef;
+@property (strong,nonatomic) FIRStorage *firebaseRef;
 @property (strong,nonatomic) NSNumber *currentHexLat;
 @property (strong,nonatomic) NSNumber *currentHexLong;
 

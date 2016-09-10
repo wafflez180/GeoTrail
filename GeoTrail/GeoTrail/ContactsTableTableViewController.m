@@ -7,9 +7,10 @@
 //
 
 #import "ContactsTableTableViewController.h"
-#import <Firebase/Firebase.h>
 #import "TabBarController.h"
 #import "Contact.h"
+
+@import Firebase;
 
 @interface ContactsTableTableViewController ()
 
@@ -20,7 +21,7 @@
     NSString *userUID;
     NSMutableArray *contactsArray;
     NSMutableArray *contactIDsArray;
-    Firebase *firebaseRef;
+    FIRStorage *firebaseRef;
 }
 
 - (void)viewDidLoad {
@@ -58,20 +59,21 @@
         UITextField *userNameTextField = textFields[0];
         NSString *username = userNameTextField.text;
         // Get a reference to our users
-        Firebase* tempRef1 = [firebaseRef childByAppendingPath:@"users"];
+        FIRDatabaseReference *usersRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"users"]];
+//        Firebase* tempRef1 = [firebaseRef childByAppendingPath:@"users"];
         
         // Attach a block to read the data at our users reference
-        [tempRef1 observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+        [usersRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
             //GET ALL THE USERS AND THEN QUERY FROM THERE
-            Firebase* tempRef2 = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", snapshot.key]];
+//            Firebase* tempRef2 = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", snapshot.key]];
+            FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", snapshot.key]]];
 
-            [tempRef2 queryEqualToValue:username childKey:@"displayName"];
+            [userRef queryEqualToValue:username childKey:@"displayName"];
             // Attach a block to read the data at our users reference
-            [tempRef2 observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+            [userRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
                 NSLog(@"\nADDED USER: %@", snapshot.value[@"displayName"]);
                 // Success!
                 //GO TO THE USER AND UPDATE THEIR CONTACTS
-                Firebase *userRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", userUID]];
                 [contactIDsArray addObject:snapshot.key];
                 NSDictionary *contacts = @{
                                            @"contacts": [NSArray arrayWithArray:contactIDsArray],
@@ -106,8 +108,10 @@
         // Attach a block to read the data at our users
         
         //Get the contact that matches with the contactID
-        Firebase *ref = [[Firebase alloc] initWithUrl:[NSString stringWithFormat:@"https://incandescent-inferno-4410.firebaseio.com/users/%@",contactIDsArray[i]]];
-        [ref observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+//        Firebase *ref = [[Firebase alloc] initWithUrl:[NSString stringWithFormat:@"https://incandescent-inferno-4410.firebaseio.com/users/%@",contactIDsArray[i]]];
+        FIRDatabaseReference *userContactRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", contactIDsArray[i]]]];
+
+        [userContactRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
             //TO DO: ADD EVERY VALUE OF CONTACT
             Contact *currentContact = [[Contact alloc] initWithName:snapshot.value[@"displayName"] uid:snapshot.key  unlockedHexsLatitude:[snapshot.value[@"unlockedHexsLatitude"] doubleValue]unlockedHexsLongitude: [snapshot.value[@"unlockedHexsLongitude"] doubleValue]];
             [contactsArray addObject:currentContact];

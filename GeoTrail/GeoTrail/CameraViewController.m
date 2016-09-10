@@ -18,7 +18,7 @@
 #import "ViewController.h"
 #import "TabBarController.h"
 
-#import <Firebase/Firebase.h>
+@import Firebase;
 
 @interface CameraViewController ()
 @property (weak, nonatomic) IBOutlet UIImageView *imageOutputView;
@@ -37,7 +37,7 @@
     NSData *currentImageData;
     bool camViewPosBack; //MAKE NSUSERDEFAULT LATER
     NSString *userUID;
-    Firebase *firebaseRef;
+    FIRStorage *firebaseRef;
     NSNumber *currentHexLat;
     NSNumber *currentHexLong;
 }
@@ -95,11 +95,13 @@
                            @"dateCreated": date
                            };
 
-    Firebase *picsRef = [firebaseRef childByAppendingPath: @"postedpictures"];
-    picsRef = [picsRef childByAutoId];
+//    Firebase *picsRef = [firebaseRef childByAppendingPath: @"postedpictures"];
+    FIRDatabaseReference *postedpicsRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"postedpictures"]];
+    
+    postedpicsRef = [postedpicsRef childByAutoId];
     //NSLog(@"Posted To: \n%@",picsRef);
 
-    [picsRef setValue: post];
+    [postedpicsRef setValue: post];
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;

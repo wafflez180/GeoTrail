@@ -7,20 +7,19 @@
 //
 
 #import "AppDelegate.h"
-#import <Firebase/Firebase.h>
 #import <Fabric/Fabric.h>
 #import <Crashlytics/Crashlytics.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 
-@interface AppDelegate ()
-
-@end
+@import Firebase;
 
 @implementation AppDelegate
 
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Use Firebase library to configure APIs
+    [FIRApp configure];
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
     [[FBSDKApplicationDelegate sharedInstance] application:application
                              didFinishLaunchingWithOptions:launchOptions];
     

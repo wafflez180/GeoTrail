@@ -1,0 +1,15 @@
+source 'https://github.com/CocoaPods/Specs.git'
+platform :ios, '9.2'
+pod 'Firebase'
+pod 'Firebase/Core’
+pod 'Firebase/Database'
+pod 'Firebase/Crash'
+pod 'Firebase/Auth'
+pod 'Firebase/Storage’
+pod ‘Google/SignIn’
+pod 'FBSDKCoreKit'
+pod 'FBSDKLoginKit'
+pod 'FBSDKShareKit'
+pod 'Fabric'
+pod 'Crashlytics'
+link_with 'GeoTrail', 'GeoTrailTests'
