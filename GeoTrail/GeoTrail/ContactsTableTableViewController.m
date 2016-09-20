@@ -21,7 +21,7 @@
     NSString *userUID;
     NSMutableArray *contactsArray;
     NSMutableArray *contactIDsArray;
-    FIRStorage *firebaseRef;
+    FIRStorageReference *firebaseStorRef;
 }
 
 - (void)viewDidLoad {
@@ -34,7 +34,7 @@
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     TabBarController *tabBarController = (TabBarController *)self.tabBarController;
     userUID = tabBarController.currentUser.uid;
-    firebaseRef = tabBarController.firebaseRef;
+    firebaseStorRef = tabBarController.firebaseStorRef;
     contactsArray = [[NSMutableArray alloc] initWithArray:tabBarController.contactsArray];
     contactIDsArray = [[NSMutableArray alloc] initWithArray:tabBarController.contactIDsArray];
     
@@ -59,14 +59,14 @@
         UITextField *userNameTextField = textFields[0];
         NSString *username = userNameTextField.text;
         // Get a reference to our users
-        FIRDatabaseReference *usersRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"users"]];
+        FIRDatabaseReference *usersRef = [[FIRDatabase database] referenceWithPath:@"/users"];
 //        Firebase* tempRef1 = [firebaseRef childByAppendingPath:@"users"];
         
         // Attach a block to read the data at our users reference
         [usersRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
             //GET ALL THE USERS AND THEN QUERY FROM THERE
 //            Firebase* tempRef2 = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", snapshot.key]];
-            FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", snapshot.key]]];
+            FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/users/%@", snapshot.key]];
 
             [userRef queryEqualToValue:username childKey:@"displayName"];
             // Attach a block to read the data at our users reference
@@ -109,7 +109,7 @@
         
         //Get the contact that matches with the contactID
 //        Firebase *ref = [[Firebase alloc] initWithUrl:[NSString stringWithFormat:@"https://incandescent-inferno-4410.firebaseio.com/users/%@",contactIDsArray[i]]];
-        FIRDatabaseReference *userContactRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", contactIDsArray[i]]]];
+        FIRDatabaseReference *userContactRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/users/%@", contactIDsArray[i]]];
 
         [userContactRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
             //TO DO: ADD EVERY VALUE OF CONTACT

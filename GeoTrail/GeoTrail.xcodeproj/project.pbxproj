@@ -72,7 +72,7 @@
 		A7B2A8C41C83FD7F0093D65C /* TabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B2A8C31C83FD7F0093D65C /* TabBarController.m */; };
 		A7CEC6BD1B1132870077D6E4 /* eye.png in Resources */ = {isa = PBXBuildFile; fileRef = A7CEC6BC1B1132870077D6E4 /* eye.png */; };
 		C9C3125E5BFEB7FE43D69244 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 21A3B1B8F7B6DAB9F34DEE69 /* libPods.a */; };
-		CAA1482B1D83C20B009CAD7D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CAA1482A1D83C20B009CAD7D /* GoogleService-Info.plist */; };
+		CA8817001D90CF8800506EA1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA8816FF1D90CF8800506EA1 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -163,7 +163,7 @@
 		A7B3E8451AE724E900FBEACD /* GeoTrail.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeoTrail.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B3E85E1AE724E900FBEACD /* GeoTrailTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GeoTrailTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7CEC6BC1B1132870077D6E4 /* eye.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = eye.png; path = GeoTrail/eye.png; sourceTree = SOURCE_ROOT; };
-		CAA1482A1D83C20B009CAD7D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "GeoTrail/GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
+		CA8816FF1D90CF8800506EA1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "GeoTrail/GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -298,7 +298,7 @@
 				A76CAEA21B3CAD4F00A0F598 /* bottomBarCamera.png */,
 				A76CAEA41B3CAE0F00A0F598 /* bottomBarContacts.png */,
 				A72B64351AEF051F00C84DE5 /* viewButton.png */,
-				CAA1482A1D83C20B009CAD7D /* GoogleService-Info.plist */,
+				CA8816FF1D90CF8800506EA1 /* GoogleService-Info.plist */,
 			);
 			name = GeoTrail;
 			path = SnapTrail;
@@ -467,7 +467,7 @@
 				A71EC0E71C9F3A920099AACA /* SF-UI-Text-BoldItalic.otf in Resources */,
 				A71EC0EB1C9F3A920099AACA /* SF-UI-Text-LightItalic.otf in Resources */,
 				A71EC0EC1C9F3A920099AACA /* SF-UI-Text-Medium.otf in Resources */,
-				CAA1482B1D83C20B009CAD7D /* GoogleService-Info.plist in Resources */,
+				CA8817001D90CF8800506EA1 /* GoogleService-Info.plist in Resources */,
 				A7A0EEE61B3479370044AB3B /* infoViewsIcon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

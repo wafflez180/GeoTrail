@@ -15,7 +15,7 @@
 @property (strong,nonatomic) FIRUser *currentUser;
 @property (strong,nonatomic) NSMutableArray *contactsArray;
 @property (strong,nonatomic) NSMutableArray *contactIDsArray;
-@property (strong,nonatomic) FIRStorage *firebaseRef;
+@property (strong,nonatomic) FIRStorageReference *firebaseStorRef;
 @property (strong,nonatomic) NSNumber *currentHexLat;
 @property (strong,nonatomic) NSNumber *currentHexLong;
 

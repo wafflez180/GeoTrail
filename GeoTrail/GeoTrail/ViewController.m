@@ -90,7 +90,8 @@ const double ONE_MILE_IN_METERS = 1609.344;
     NSMutableArray *hexButtonArray;
     
     //ALL FIREBASE USER INFO
-    FIRStorage *firebaseRef;
+    FIRStorage *firebaseStor;
+    FIRDatabaseReference *firebaseStorRef;
     FIRUser *currentUser;
     NSMutableArray *unlockedHexsLatitude;
     NSMutableArray *unlockedHexsLongitude;
@@ -117,7 +118,11 @@ const double ONE_MILE_IN_METERS = 1609.344;
     
     //[self addHexagons];
     //[self logIntoFacebook];
-    FBSDKLoginButton *loginButton = [[FBSDKLoginButton alloc] init];
+    firebaseStor = [FIRStorage storage];
+    //firebaseStorRef = [firebaseStor referenceForURL:@"https://root-grammar-93022.firebaseio.com/"];
+    firebaseStorRef = [FIRDatabase database].reference;
+    
+    FBSDKLoginButton *loginButton = [[FBSDKLoginButton alloc] initWithFrame:CGRectMake(0, 100, 200, 300)];
     loginButton.delegate = self;
 }
 
@@ -137,6 +142,8 @@ const double ONE_MILE_IN_METERS = 1609.344;
     postedPictureLocations = [[NSMutableArray alloc]init];
     infoWindows = [[NSMutableArray alloc] init];
     GMSMarkersArray = [[NSMutableArray alloc]init];
+    unlockedHexsLatitude = [[NSMutableArray alloc]init];
+    unlockedHexsLongitude = [[NSMutableArray alloc]init];
 }
 
 -(void)setMapViewCustomizations{
@@ -159,6 +166,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
 }
 
 - (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation      {
+    NSLog(@"UPDATED USER LOCATION: %f,%f", userLocation.coordinate.latitude, userLocation.coordinate.longitude);
     userLoc = [[CLLocation alloc] initWithLatitude:userLocation.coordinate.latitude longitude:userLocation.coordinate.longitude];
 }
 
@@ -172,10 +180,6 @@ const double ONE_MILE_IN_METERS = 1609.344;
 - (void)loginButton:(FBSDKLoginButton *)loginButton
 didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
               error:(NSError *)error {
-
-    firebaseRef = [FIRStorage storage];
-    FIRStorageReference *storageRef = [firebaseRef referenceForURL:@"https://incandescent-inferno-4410.firebaseio.com/"];
-
     if (error == nil) {
         FIRAuthCredential *credential = [FIRFacebookAuthProvider
                                          credentialWithAccessToken:[FBSDKAccessToken currentAccessToken]
@@ -185,7 +189,7 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
                                       currentUser = user;
                                       TabBarController *tabBarController = (TabBarController *)self.tabBarController;
                                       tabBarController.currentUser = currentUser;
-                                      tabBarController.firebaseRef = firebaseRef;
+                                      tabBarController.firebaseStorRef = firebaseStorRef;
                                       [self checkUserData];
                                       [self loadDataOnScreen];
                                       
@@ -197,8 +201,8 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
 
 
 -(void)logIntoFacebook{/*
-    firebaseRef = [FIRStorage storage];
-    FIRStorageReference *storageRef = [firebaseRef referenceForURL:@"https://incandescent-inferno-4410.firebaseio.com/"];
+    firebaseStorRef = [FIRStorage storage];
+    FIRStorageReference *storageRef = [firebaseStorRef referenceForURL:@"https://incandescent-inferno-4410.firebaseio.com/"];
     
     if(facebookLoginManager == nil){
         facebookLoginManager = [[FBSDKLoginManager alloc] init];
@@ -251,14 +255,14 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
     NSDictionary *users = @{
                             currentUser.uid: newUser
                             };
-    [[firebaseRef.reference child:@"users"] setValue:newUser forKey:currentUser.uid];
+    [[firebaseStorRef child:@"users"] setValue:newUser forKey:currentUser.uid];
     NSLog(@"Created user: %@",newUser);
 }
 
 -(void)checkUserData{
     // Get a reference to our postedpictures
     //Firebase* tempRef = [firebaseRef childByAppendingPath:[NSString stringWithFormat:@"users/%@", currentUser.uid]];
-    FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", currentUser.uid]]];
+    FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/users/%@", currentUser.uid]];
     
     [userRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         if(snapshot.value != [NSNull null]){
@@ -289,11 +293,15 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
 -(void)uploadUserDataOnMap{
     //Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
 //    FIRStorageReference *postedpicsRef = [firebaseRef referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"postedpictures"]];
-    FIRDatabaseReference *postedpicsRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"postedpictures"]];
+    NSLog(@"URL PATH: %@",[firebaseStorRef.URL stringByAppendingString:@"postedpictures"]);
+    
+    FIRDatabaseReference *postedpicsRef = [[FIRDatabase database] referenceWithPath:@"/postedpictures"];
 
+    
     [postedpicsRef queryEqualToValue:currentUser.uid childKey:@"owner"];
     [postedpicsRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
         // make CLLocationCoordinate2D
+
         if(snapshot.value != [NSNull null]){
             for (int i = 0; i < snapshot.childrenCount; i++) {
                 FIRDataSnapshot *snapshotChild = [[snapshot.children allObjects] objectAtIndex:i];
@@ -369,6 +377,9 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
             }
         }else{
             NSLog(@"uploadUserDataOnMap: snapshot.value == null");
+            if(contactsArray.count == 0){//if there is no data, set up the hexs
+                [self loadHexsOnMap];
+            }
         }
     } withCancelBlock:^(NSError *error) {
         NSLog(@"uploadUserDataOnMap: %@", error.description);
@@ -380,14 +391,14 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
 }
 
 -(void)deletePic:(NSString *)key{
-    FIRDatabaseReference *picToDeleteRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"postedpictures/%@", key]]];
+    FIRDatabaseReference *picToDeleteRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/postedpictures/%@", key]];
 
     [picToDeleteRef removeValue];
 }
 
 -(void)uploadContactDataOnMap{
     // Get a reference to our postedpictures
-    FIRDatabaseReference *postedPicRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"postedpictures"]];
+    FIRDatabaseReference *postedPicRef = [[FIRDatabase database] referenceWithPath:@"/postedpictures"];
 
 //    Firebase* tempRef = [firebaseRef childByAppendingPath:@"postedpictures"];
     
@@ -529,7 +540,7 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
     [unlockedHexsLatitude addObject:[NSNumber numberWithDouble: closestHexCenter.coordinate.latitude]];
     [unlockedHexsLongitude addObject:[NSNumber numberWithDouble: closestHexCenter.coordinate.longitude]];
 
-    FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", currentUser.uid]]];
+    FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/users/%@", currentUser.uid]];
     
     NSDictionary *post = @{
                            @"unlockedHexsLatitude": [NSArray arrayWithArray:unlockedHexsLatitude],
@@ -1012,7 +1023,7 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
 
 -(void)loadContactList{
     // Get a reference to our users
-    FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", currentUser.uid]]];
+    FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/users/%@", currentUser.uid]];
     
     // Attach a block to read the data at our users reference
     [userRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
@@ -1033,7 +1044,7 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
         // Attach a block to read the data at our users
         if (![contactIDsArray[i]  isEqual: @"Temp"]) {
             //Get the contact that matches with the contactID
-            FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:[NSString stringWithFormat:@"users/%@", contactIDsArray[i]]]];
+            FIRDatabaseReference *userRef = [[FIRDatabase database] referenceWithPath:[NSString stringWithFormat:@"/users/%@", contactIDsArray[i]]];
 
             [userRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
                 //TO DO: ADD EVERY VALUE OF CONTACT

@@ -37,7 +37,8 @@
     NSData *currentImageData;
     bool camViewPosBack; //MAKE NSUSERDEFAULT LATER
     NSString *userUID;
-    FIRStorage *firebaseRef;
+    FIRStorageReference *firebaseStorRef;
+    FIRStorage *firebaseStor;
     NSNumber *currentHexLat;
     NSNumber *currentHexLong;
 }
@@ -48,9 +49,10 @@
     
     TabBarController *tabBarController = (TabBarController *)self.tabBarController;
     userUID = tabBarController.currentUser.uid;
-    firebaseRef = tabBarController.firebaseRef;
+    firebaseStorRef = tabBarController.firebaseStorRef;
     currentHexLat = tabBarController.currentHexLat;
     currentHexLong = tabBarController.currentHexLong;
+    firebaseStor = [FIRStorage storage];
     
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
@@ -74,6 +76,22 @@
 - (IBAction)PostPicture:(id)sender {
     _CameraView.image = currentImageTaken;
     
+    // Create a storage reference from our storage service
+    FIRStorageReference *firStorPicsRef = [firebaseStor referenceForURL:@"gs://incandescent-inferno-4410.appspot.com/postedpictures"];
+    
+    // Upload the file to the path "images/rivers.jpg"
+    FIRStorageUploadTask *uploadTask = [firStorPicsRef putData:currentImageData metadata:nil completion:^(FIRStorageMetadata* metadata, NSError* error) {
+        if (error != nil) {
+            // Uh-oh, an error occurred!
+        } else {
+            // Metadata contains file metadata such as size, content-type, and download URL.
+            NSURL *downloadURL = metadata.downloadURL;
+            [self savePostedPictureURL:downloadURL];
+        }
+    }];
+}
+
+-(void)savePostedPictureURL:(NSURL*)url{
     // using base64StringFromData method, we are able to convert data to string
     //NSString *imageString = [[NSString alloc] initWithData:currentImageData encoding:NSUTF8StringEncoding];
     
@@ -83,7 +101,7 @@
     
     NSDictionary *post = @{
                            @"owner": userUID,
-                           @"imageData": currentImageData.base64Encoding,
+                           @"imageURL": url.absoluteString,
                            @"latitude": currentHexLat,
                            @"longitude": currentHexLong,
                            @"likes": [NSNumber numberWithInt:0],
@@ -94,13 +112,13 @@
                            @"whoViewedIDs": [NSArray arrayWithObject:@"Temp"],
                            @"dateCreated": date
                            };
-
-//    Firebase *picsRef = [firebaseRef childByAppendingPath: @"postedpictures"];
-    FIRDatabaseReference *postedpicsRef = [[FIRDatabase database] referenceWithPath:[firebaseRef.reference.fullPath stringByAppendingString:@"postedpictures"]];
+    
+    //    Firebase *picsRef = [firebaseRef childByAppendingPath: @"postedpictures"];
+    FIRDatabaseReference *postedpicsRef = [[FIRDatabase database] referenceWithPath:@"/postedpictures"];
     
     postedpicsRef = [postedpicsRef childByAutoId];
     //NSLog(@"Posted To: \n%@",picsRef);
-
+    
     [postedpicsRef setValue: post];
     
     _imageOutputView.image = nil;
@@ -108,6 +126,7 @@
     self.postPicButton.hidden = true;
     
     //SET UP A "POSTED :)" MESSAGE WHEN FINSIHED
+
 }
 
 - (IBAction)TappedOnCameraButton:(id)sender {
