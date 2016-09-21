@@ -76,28 +76,33 @@
 - (IBAction)PostPicture:(id)sender {
     _CameraView.image = currentImageTaken;
     
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    
     // Create a storage reference from our storage service
-    FIRStorageReference *firStorPicsRef = [firebaseStor referenceForURL:@"gs://incandescent-inferno-4410.appspot.com/postedpictures"];
+    FIRStorageReference *firStorPicsRef = [firebaseStor referenceForURL:@"gs://incandescent-inferno-4410.appspot.com/postedpictures/"];
+    FIRStorageReference *firStorPicsRefChild = [firStorPicsRef child:[NSString stringWithFormat:@"%@===%@",tabBarController.currentUser.uid,[NSDate date]]];
     
     // Upload the file to the path "images/rivers.jpg"
-    FIRStorageUploadTask *uploadTask = [firStorPicsRef putData:currentImageData metadata:nil completion:^(FIRStorageMetadata* metadata, NSError* error) {
+    FIRStorageUploadTask *uploadTask = [firStorPicsRefChild putData:currentImageData metadata:nil completion:^(FIRStorageMetadata* metadata, NSError* error) {
         if (error != nil) {
             // Uh-oh, an error occurred!
         } else {
             // Metadata contains file metadata such as size, content-type, and download URL.
             NSURL *downloadURL = metadata.downloadURL;
-            [self savePostedPictureURL:downloadURL];
+            [self savePostedPictureInfo:downloadURL];
         }
     }];
 }
 
--(void)savePostedPictureURL:(NSURL*)url{
+-(void)savePostedPictureInfo:(NSURL*)url{
     // using base64StringFromData method, we are able to convert data to string
     //NSString *imageString = [[NSString alloc] initWithData:currentImageData encoding:NSUTF8StringEncoding];
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"MM/dd/yyyy HH:mm"];
     NSString *date = [dateFormatter stringFromDate:[NSDate date]];
+    
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
     
     NSDictionary *post = @{
                            @"owner": userUID,

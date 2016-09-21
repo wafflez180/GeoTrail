@@ -122,8 +122,29 @@ const double ONE_MILE_IN_METERS = 1609.344;
     //firebaseStorRef = [firebaseStor referenceForURL:@"https://root-grammar-93022.firebaseio.com/"];
     firebaseStorRef = [FIRDatabase database].reference;
     
-    FBSDKLoginButton *loginButton = [[FBSDKLoginButton alloc] initWithFrame:CGRectMake(0, 100, 200, 300)];
+    if ([FBSDKAccessToken currentAccessToken]) {
+        // User is logged in, do work such as go to next view controller.
+        [self signInUserWithFacebook];
+    }
+    
+    FBSDKLoginButton *loginButton = [[FBSDKLoginButton alloc] init];
+    loginButton.center = self.view.center;
+    loginButton.readPermissions = @[@"email",@"user_friends",@"public_profile"];
     loginButton.delegate = self;
+    [self.view addSubview:loginButton];
+}
+
+-(void)signInUserWithFacebook{
+    TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    FIRAuthCredential *credential = [FIRFacebookAuthProvider
+                                     credentialWithAccessToken:[FBSDKAccessToken currentAccessToken]
+                                     .tokenString];
+    [[FIRAuth auth] signInWithCredential:credential
+                              completion:^(FIRUser *user, NSError *error) {
+                                  [self loadHexsOnMap];
+                                  currentUser = user;
+                                  tabBarController.currentUser = currentUser;
+                              }];
 }
 
 -(void)initArrays{
@@ -1057,10 +1078,9 @@ didCompleteWithResult:(FBSDKLoginManagerLoginResult *)result
             } withCancelBlock:^(NSError *error) {
                 NSLog(@"loadContactListData: %@", error.description);
             }];
-        }else{
-            [self loadHexsOnMap];
         }
     }
+    [self loadHexsOnMap];
 }
 
 # pragma mark - Info Window Methods
