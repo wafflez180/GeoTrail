@@ -28,6 +28,8 @@
 @property (nonatomic) CLLocationCoordinate2D userLocation;
 @property (weak, nonatomic) IBOutlet UIButton *retakePicButton;
 @property (weak, nonatomic) IBOutlet UIButton *postPicButton;
+@property (weak, nonatomic) IBOutlet UIButton *flashButton;
+@property (weak, nonatomic) IBOutlet UIButton *switchCamButton;
 @end
 
 @implementation CameraViewController{
@@ -41,6 +43,8 @@
     FIRStorage *firebaseStor;
     NSNumber *currentHexLat;
     NSNumber *currentHexLong;
+    UIImage *tabBarBGImage;
+    UIImage *tabBarShadowImage;
 }
 
 - (void)viewDidLoad {
@@ -53,10 +57,52 @@
     currentHexLat = tabBarController.currentHexLat;
     currentHexLong = tabBarController.currentHexLong;
     firebaseStor = [FIRStorage storage];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    self.tabBarController.tabBar.barTintColor = [UIColor clearColor];
+    self.tabBarController.tabBar.tintColor = [UIColor clearColor];
+    self.tabBarController.tabBar.backgroundColor = [UIColor clearColor];
+    tabBarBGImage = self.tabBarController.tabBar.backgroundImage;
+    tabBarShadowImage = self.tabBarController.tabBar.shadowImage;
+    self.tabBarController.tabBar.backgroundImage = [UIImage new];
+    self.tabBarController.tabBar.shadowImage = [UIImage new];
     
+    [self.tabBarController.view addSubview:self.CameraButton];
+    NSLayoutConstraint *centerHorizontallyConstraint = [NSLayoutConstraint
+                                                        constraintWithItem:self.CameraButton
+                                                        attribute:NSLayoutAttributeCenterX
+                                                        relatedBy:NSLayoutRelationEqual
+                                                        toItem:self.tabBarController.view
+                                                        attribute:NSLayoutAttributeCenterX
+                                                        multiplier:1.0
+                                                        constant:0];
+    [self.tabBarController.view addConstraint:centerHorizontallyConstraint];
+    NSLayoutConstraint *contrainToBottom = [NSLayoutConstraint
+                                            constraintWithItem:self.CameraButton
+                                            attribute:NSLayoutAttributeBottom
+                                            relatedBy:NSLayoutRelationEqual
+                                            toItem:self.tabBarController.view
+                                            attribute:NSLayoutAttributeBottom
+                                            multiplier:1.0
+                                            constant:-5];
+    [self.tabBarController.view addConstraint:contrainToBottom];
+
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
     self.postPicButton.hidden = true;
+
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [self.CameraButton removeFromSuperview];
+    [self.view addSubview:self.CameraButton];
+    self.tabBarController.tabBar.backgroundImage = tabBarBGImage;
+    self.tabBarController.tabBar.shadowImage = tabBarShadowImage;
+    self.tabBarController.tabBar.hidden = false;
+    self.tabBarController.tabBar.tintColor = [UIColor whiteColor];
+    self.tabBarController.tabBar.barTintColor = [UIColor whiteColor];
+    self.tabBarController.tabBar.backgroundColor = [UIColor whiteColor];
 }
 
 -(BOOL)prefersStatusBarHidden{
@@ -71,6 +117,14 @@
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
     self.postPicButton.hidden = true;
+    [self setCaptureElementsHide:false];
+}
+
+-(void)setCaptureElementsHide:(bool)hide{
+    _flashButton.hidden = hide;
+    _switchCamButton.hidden = hide;
+    _CameraButton.hidden = hide;
+    self.tabBarController.tabBar.hidden = hide;
 }
 
 - (IBAction)PostPicture:(id)sender {
@@ -90,6 +144,7 @@
             // Metadata contains file metadata such as size, content-type, and download URL.
             NSURL *downloadURL = metadata.downloadURL;
             [self savePostedPictureInfo:downloadURL];
+            [self setCaptureElementsHide:false];
         }
     }];
 }
@@ -139,6 +194,7 @@
         
   //  }else{//IF IT IS PRESS IN CAMERA VIEW: TAKE PICTURE
         if (_capturesession.running) {
+            [self setCaptureElementsHide:true];
             [self captureStillImage];
         }
   //  }

@@ -128,7 +128,7 @@ const double ONE_MILE_IN_METERS = 1609.344;
     }
     
     FBSDKLoginButton *loginButton = [[FBSDKLoginButton alloc] init];
-    loginButton.center = self.view.center;
+    loginButton.center = CGPointMake(self.view.center.x, self.view.center.y*1.5);
     loginButton.readPermissions = @[@"email",@"user_friends",@"public_profile"];
     loginButton.delegate = self;
     [self.view addSubview:loginButton];

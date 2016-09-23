@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="16A320" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="hgO-cL-8gP">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="16A320" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="hgO-cL-8gP">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--GeoTrail-->
@@ -17,19 +18,19 @@
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="MKMapView">
-                                <rect key="frame" x="4" y="0.0" width="592" height="600"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="MKMapView">
+                                <frame key="frameInset" minX="4" width="592" height="600"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" updatesFrequently="YES"/>
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
-                                <rect key="frame" x="542" y="396" width="46" height="45"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
+                                <frame key="frameInset" minX="542" minY="396" width="46" height="45"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Vjy-Bm-JDV" secondAttribute="height" multiplier="23:22" id="PFW-9r-Qzy"/>
                                     <constraint firstAttribute="height" constant="50" id="Rgi-lG-g4R"/>
@@ -39,7 +40,7 @@
                                     <constraint firstAttribute="height" constant="45" id="voS-Ef-ast"/>
                                 </constraints>
                                 <state key="normal" image="Compass">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -53,8 +54,8 @@
                                     <action selector="pressedCompass:" destination="BYZ-38-t0r" eventType="touchUpInside" id="o9j-ik-NDk"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
-                                <rect key="frame" x="549" y="320" width="32" height="46"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
+                                <frame key="frameInset" minX="549" minY="320" width="32" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="16:23" id="BVW-0R-PsD"/>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="25:34" id="DCE-xb-Zg6"/>
@@ -63,7 +64,7 @@
                                     <constraint firstAttribute="height" constant="50" id="zQ3-Oq-ods"/>
                                 </constraints>
                                 <state key="normal" image="Pin">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -77,7 +78,7 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <gestureRecognizers/>
                         <constraints>
                             <constraint firstItem="ROK-pp-MPu" firstAttribute="bottom" secondItem="8bC-Xf-vdC" secondAttribute="bottomMargin" id="0EZ-WF-exL"/>
@@ -101,17 +102,16 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="GeoTrail" id="n87-AH-cdt">
                         <barButtonItem key="leftBarButtonItem" image="Refresh" id="w3G-AN-efJ">
-                            <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="deviceRGB"/>
+                            <color key="tintColor" red="1" green="0.99997437000274658" blue="0.99999129772186279" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <connections>
                                 <action selector="TappedRefresh:" destination="BYZ-38-t0r" id="Ban-pP-ibN"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" image="Gear" style="plain" id="oXu-F0-Mxz">
-                            <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         </barButtonItem>
                     </navigationItem>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <connections>
                         <outlet property="goToUserLocButton" destination="Vjy-Bm-JDV" id="cdD-bn-JUu"/>
                         <outlet property="mapView_" destination="ROK-pp-MPu" id="6vL-Zq-lR8"/>
@@ -136,20 +136,14 @@
                         <viewControllerLayoutGuide type="bottom" id="nft-oL-UBF"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="F80-6G-f2a">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6Lu-eg-6vb">
-                                <rect key="frame" x="4" y="0.0" width="592" height="600"/>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bnS-Sa-Rdc">
-                                <rect key="frame" x="4" y="0.0" width="592" height="600"/>
-                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6Lu-eg-6vb"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bnS-Sa-Rdc"/>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S1I-og-1fL" userLabel="Camera Button">
-                                <rect key="frame" x="260" y="446" width="80" height="80"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="80" id="MuV-zU-jhB"/>
-                                    <constraint firstAttribute="width" constant="80" id="Ylz-T8-5ps"/>
                                     <constraint firstAttribute="width" constant="80" id="YtU-cZ-ZW2"/>
                                     <constraint firstAttribute="width" secondItem="S1I-og-1fL" secondAttribute="height" multiplier="1:1" id="g0g-3o-HnE"/>
                                     <constraint firstAttribute="width" secondItem="S1I-og-1fL" secondAttribute="height" multiplier="1:1" id="t2h-Rp-GcQ"/>
@@ -158,7 +152,7 @@
                                     <constraint firstAttribute="width" secondItem="S1I-og-1fL" secondAttribute="height" id="zpo-an-2Mc"/>
                                 </constraints>
                                 <state key="normal" image="CameraIconSelected">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -173,31 +167,12 @@
                                     <action selector="TappedOnCameraButton:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="Gju-7m-92e"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OfA-8u-L5e" userLabel="Front Camera Button">
-                                <rect key="frame" x="498" y="25" width="60" height="60"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bZ0-wr-7ZD" userLabel="CancelPhotoButton">
                                 <constraints>
-                                    <constraint firstAttribute="width" secondItem="OfA-8u-L5e" secondAttribute="height" multiplier="1:1" id="2CC-en-u6Y"/>
-                                    <constraint firstAttribute="width" constant="60" id="Qv9-CP-5US"/>
-                                    <constraint firstAttribute="height" constant="60" id="YuC-MF-rGK"/>
-                                </constraints>
-                                <state key="normal" title="Button" image="frontCamera.png">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="changeCamView:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="dN3-JM-SIh"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bZ0-wr-7ZD" userLabel="X Button">
-                                <rect key="frame" x="35" y="446" width="80" height="80"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="80" id="Utd-ur-rSR"/>
-                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="80" id="Zw4-sr-Gxo"/>
                                     <constraint firstAttribute="width" secondItem="bZ0-wr-7ZD" secondAttribute="height" multiplier="167:166" id="rbM-HL-W00"/>
-                                    <constraint firstAttribute="width" secondItem="bZ0-wr-7ZD" secondAttribute="height" multiplier="1:1" id="zfn-WT-onL"/>
                                 </constraints>
-                                <inset key="imageEdgeInsets" minX="20" minY="20" maxX="20" maxY="20"/>
-                                <state key="normal" image="Xbutton.png" backgroundImage="mainButton.png">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                <state key="normal" image="CancelButton">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -209,19 +184,14 @@
                                     <action selector="retakePicture:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="M0M-hf-bLq"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eUe-Z5-wn6" userLabel="Check Button">
-                                <rect key="frame" x="485" y="445" width="80" height="80"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eUe-Z5-wn6" userLabel="PostPicButton">
                                 <constraints>
-                                    <constraint firstAttribute="width" secondItem="eUe-Z5-wn6" secondAttribute="height" multiplier="1:1" id="Ojl-nq-qaj"/>
                                     <constraint firstAttribute="width" constant="80" id="RFL-cM-oyJ"/>
                                     <constraint firstAttribute="width" secondItem="eUe-Z5-wn6" secondAttribute="height" multiplier="167:166" id="SnR-hh-dSB"/>
-                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="80" id="Xl1-c0-G1h"/>
                                     <constraint firstAttribute="height" constant="80" id="hzq-4f-sAT"/>
-                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="80" id="vzk-Hz-uwe"/>
                                 </constraints>
-                                <inset key="imageEdgeInsets" minX="17" minY="22" maxX="17" maxY="22"/>
-                                <state key="normal" image="checkButton.png" backgroundImage="mainButton.png">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                <state key="normal" image="PostButton">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -234,45 +204,65 @@
                                     <action selector="PostPicture:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="R1r-Oy-973"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OfA-8u-L5e" userLabel="SwitchCamButton">
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="33" id="RBf-Hb-8cy"/>
+                                    <constraint firstAttribute="width" constant="33" id="Vib-fx-s9p"/>
+                                </constraints>
+                                <state key="normal" image="SwitchCamButton">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="changeCamView:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="dN3-JM-SIh"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BhG-CC-R6D" userLabel="FlashButton">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="25" id="41B-aO-Hi8"/>
+                                    <constraint firstAttribute="height" constant="33" id="yMx-zr-9m0"/>
+                                </constraints>
+                                <state key="normal" image="FlashButton">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                            </button>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="6Lu-eg-6vb" firstAttribute="leading" secondItem="F80-6G-f2a" secondAttribute="leadingMargin" constant="-16" id="33C-Rg-Ubn"/>
                             <constraint firstItem="bnS-Sa-Rdc" firstAttribute="leading" secondItem="F80-6G-f2a" secondAttribute="leadingMargin" constant="-16" id="3sp-Dq-qVA"/>
                             <constraint firstItem="6Lu-eg-6vb" firstAttribute="top" secondItem="4Si-Bd-Vmp" secondAttribute="top" id="41W-xO-Vww"/>
                             <constraint firstAttribute="trailingMargin" secondItem="eUe-Z5-wn6" secondAttribute="trailing" constant="25" id="4xJ-MR-KOH"/>
                             <constraint firstItem="S1I-og-1fL" firstAttribute="top" secondItem="F80-6G-f2a" secondAttribute="topMargin" constant="25" id="5Z7-ju-c3M"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="eUe-Z5-wn6" secondAttribute="trailing" constant="15" id="7j4-Er-OJc"/>
-                            <constraint firstItem="bZ0-wr-7ZD" firstAttribute="leading" secondItem="F80-6G-f2a" secondAttribute="leadingMargin" constant="15" id="CRA-J0-REa"/>
+                            <constraint firstItem="S1I-og-1fL" firstAttribute="centerX" secondItem="F80-6G-f2a" secondAttribute="centerX" id="96V-kn-i6b"/>
                             <constraint firstAttribute="centerX" secondItem="S1I-og-1fL" secondAttribute="centerX" id="E9M-7a-pP3"/>
                             <constraint firstAttribute="trailingMargin" secondItem="6Lu-eg-6vb" secondAttribute="trailing" constant="-16" id="Eka-ZY-glX"/>
-                            <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="bZ0-wr-7ZD" secondAttribute="centerY" constant="65" id="Grd-7j-wWr"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="OfA-8u-L5e" secondAttribute="trailing" constant="22" id="Hg9-XA-XL7"/>
                             <constraint firstItem="4Si-Bd-Vmp" firstAttribute="bottom" secondItem="S1I-og-1fL" secondAttribute="bottom" constant="25" id="IdC-oD-KzO"/>
                             <constraint firstAttribute="trailingMargin" secondItem="bnS-Sa-Rdc" secondAttribute="trailing" constant="-16" id="KW0-c3-xSr"/>
                             <constraint firstAttribute="centerX" secondItem="bnS-Sa-Rdc" secondAttribute="centerX" id="Li6-tF-a4d"/>
+                            <constraint firstItem="OfA-8u-L5e" firstAttribute="top" secondItem="4Si-Bd-Vmp" secondAttribute="bottom" constant="15" id="OPT-Ow-wHh"/>
                             <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="eUe-Z5-wn6" secondAttribute="bottom" constant="25" id="Of7-LX-gUd"/>
                             <constraint firstAttribute="centerY" secondItem="6Lu-eg-6vb" secondAttribute="centerY" id="PlM-AL-1hb"/>
-                            <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="S1I-og-1fL" secondAttribute="centerY" constant="65" id="Q0R-6I-uzC"/>
+                            <constraint firstItem="BhG-CC-R6D" firstAttribute="leading" secondItem="F80-6G-f2a" secondAttribute="leadingMargin" constant="5" id="Qt2-02-OnL"/>
                             <constraint firstItem="4Si-Bd-Vmp" firstAttribute="top" secondItem="S1I-og-1fL" secondAttribute="bottom" constant="25" id="RM7-Ze-V0L"/>
-                            <constraint firstItem="S1I-og-1fL" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="bZ0-wr-7ZD" secondAttribute="trailing" constant="20" id="Ted-Fk-Vtz"/>
                             <constraint firstAttribute="centerX" secondItem="6Lu-eg-6vb" secondAttribute="centerX" id="UMf-fI-Ode"/>
                             <constraint firstItem="bnS-Sa-Rdc" firstAttribute="bottom" secondItem="F80-6G-f2a" secondAttribute="bottomMargin" id="Uf0-ea-0Pk"/>
                             <constraint firstItem="S1I-og-1fL" firstAttribute="width" secondItem="S1I-og-1fL" secondAttribute="height" id="Ul5-48-5HA"/>
-                            <constraint firstItem="eUe-Z5-wn6" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="S1I-og-1fL" secondAttribute="trailing" constant="20" id="Z3h-93-iYU"/>
+                            <constraint firstItem="bZ0-wr-7ZD" firstAttribute="centerX" secondItem="F80-6G-f2a" secondAttribute="centerX" constant="-75" id="W7R-zg-bH4"/>
                             <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="bnS-Sa-Rdc" secondAttribute="bottom" constant="-49" id="af4-en-XmO"/>
                             <constraint firstItem="S1I-og-1fL" firstAttribute="top" secondItem="bZ0-wr-7ZD" secondAttribute="bottom" constant="25" id="dkL-zO-soK"/>
-                            <constraint firstAttribute="centerX" secondItem="S1I-og-1fL" secondAttribute="centerX" id="gGZ-Tn-tnh"/>
+                            <constraint firstItem="bZ0-wr-7ZD" firstAttribute="centerY" secondItem="F80-6G-f2a" secondAttribute="centerY" id="hVG-ZO-5W5"/>
                             <constraint firstAttribute="centerX" secondItem="eUe-Z5-wn6" secondAttribute="centerX" constant="-200" id="hfd-at-6Z7"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="S1I-og-1fL" secondAttribute="bottom" constant="10" id="hnw-uP-3m8"/>
                             <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="eUe-Z5-wn6" secondAttribute="centerY" constant="65" id="iaq-PM-D1d"/>
                             <constraint firstItem="bnS-Sa-Rdc" firstAttribute="top" secondItem="4Si-Bd-Vmp" secondAttribute="top" id="jQh-RH-tha"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="OfA-8u-L5e" secondAttribute="trailing" constant="5" id="jWz-Tc-j9b"/>
+                            <constraint firstItem="BhG-CC-R6D" firstAttribute="top" secondItem="4Si-Bd-Vmp" secondAttribute="bottom" constant="15" id="kxh-NE-5Gk"/>
                             <constraint firstAttribute="trailingMargin" secondItem="eUe-Z5-wn6" secondAttribute="trailing" constant="25" id="lFn-hh-npO"/>
-                            <constraint firstItem="OfA-8u-L5e" firstAttribute="top" secondItem="F80-6G-f2a" secondAttribute="topMargin" constant="25" id="mMC-ba-luV"/>
                             <constraint firstAttribute="centerY" secondItem="bnS-Sa-Rdc" secondAttribute="centerY" id="oJb-Aw-vDk"/>
+                            <constraint firstItem="eUe-Z5-wn6" firstAttribute="centerY" secondItem="F80-6G-f2a" secondAttribute="centerY" id="oQq-DR-7OW"/>
                             <constraint firstAttribute="bottomMargin" secondItem="6Lu-eg-6vb" secondAttribute="bottom" id="ocl-9B-liz"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="eUe-Z5-wn6" secondAttribute="centerY" constant="115" id="rXP-89-kRv"/>
-                            <constraint firstItem="OfA-8u-L5e" firstAttribute="top" secondItem="4Si-Bd-Vmp" secondAttribute="bottom" constant="25" id="tPc-0S-7Hb"/>
                             <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="S1I-og-1fL" secondAttribute="bottom" constant="25" id="u9f-jk-e76"/>
+                            <constraint firstItem="eUe-Z5-wn6" firstAttribute="centerX" secondItem="F80-6G-f2a" secondAttribute="centerX" constant="75" id="zbu-m2-eOR"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -282,7 +272,9 @@
                                 <exclude reference="UMf-fI-Ode"/>
                                 <exclude reference="Li6-tF-a4d"/>
                                 <exclude reference="oJb-Aw-vDk"/>
-                                <exclude reference="tPc-0S-7Hb"/>
+                                <exclude reference="4xJ-MR-KOH"/>
+                                <exclude reference="hfd-at-6Z7"/>
+                                <exclude reference="lFn-hh-npO"/>
                                 <exclude reference="5Z7-ju-c3M"/>
                                 <exclude reference="E9M-7a-pP3"/>
                                 <exclude reference="Ul5-48-5HA"/>
@@ -291,9 +283,6 @@
                                 <exclude reference="af4-en-XmO"/>
                                 <exclude reference="iaq-PM-D1d"/>
                                 <exclude reference="u9f-jk-e76"/>
-                                <exclude reference="4xJ-MR-KOH"/>
-                                <exclude reference="hfd-at-6Z7"/>
-                                <exclude reference="lFn-hh-npO"/>
                             </mask>
                         </variation>
                     </view>
@@ -306,29 +295,31 @@
                     <connections>
                         <outlet property="CameraButton" destination="S1I-og-1fL" id="l2l-B7-P3C"/>
                         <outlet property="CameraView" destination="6Lu-eg-6vb" id="4Gv-OA-GrV"/>
+                        <outlet property="flashButton" destination="BhG-CC-R6D" id="i2Y-qZ-B5C"/>
                         <outlet property="imageOutputView" destination="bnS-Sa-Rdc" id="Nq9-Hi-Amn"/>
-                        <outlet property="postPicButton" destination="eUe-Z5-wn6" id="viN-Cn-y83"/>
+                        <outlet property="postPicButton" destination="eUe-Z5-wn6" id="tz0-gF-21g"/>
                         <outlet property="retakePicButton" destination="bZ0-wr-7ZD" id="enh-fl-t9b"/>
+                        <outlet property="switchCamButton" destination="OfA-8u-L5e" id="rMh-Mg-MRD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Afk-tT-h97" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3297" y="1114"/>
+            <point key="canvasLocation" x="3296.8000000000002" y="1113.1934032983509"/>
         </scene>
         <!--Contacts-->
         <scene sceneID="2KK-vR-tVE">
             <objects>
                 <tableViewController title="Contacts" id="QIl-W8-MDs" customClass="ContactsTableTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="D7d-8D-gLx">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="618"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="Pmo-jM-bQb">
-                                <rect key="frame" x="0.0" y="86" width="600" height="44"/>
+                                <rect key="frame" x="0.0" y="86" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Pmo-jM-bQb" id="0UQ-v8-YXk">
-                                    <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
+                                    <frame key="frameInset" width="375" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -360,12 +351,12 @@
                 <tabBarController automaticallyAdjustsScrollViewInsets="NO" id="hgO-cL-8gP" customClass="TabBarController" sceneMemberID="viewController">
                     <toolbarItems/>
                     <nil key="simulatedBottomBarMetrics"/>
-                    <tabBar key="tabBar" contentMode="scaleToFill" id="xDw-lt-R2Y">
+                    <tabBar key="tabBar" contentMode="scaleToFill" translucent="NO" id="xDw-lt-R2Y">
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" red="0.1647058874" green="0.73333334920000004" blue="0.61176472900000001" alpha="1" colorSpace="deviceRGB"/>
-                        <color key="tintColor" red="0.16470588743686676" green="0.73333334922790527" blue="0.61176472902297974" alpha="1" colorSpace="deviceRGB"/>
-                        <color key="barTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                        <color key="selectedImageTintColor" red="0.49411767721176147" green="0.54901963472366333" blue="0.55294120311737061" alpha="1" colorSpace="deviceRGB"/>
+                        <color key="backgroundColor" red="0.15634147822856903" green="0.68943536281585693" blue="0.54212260246276855" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="tintColor" red="0.15634147822856903" green="0.68943536281585693" blue="0.54212260246276855" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="barTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="selectedImageTintColor" red="0.42017519474029541" green="0.47633236646652222" blue="0.47941815853118896" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </tabBar>
                     <connections>
                         <segue destination="mzQ-oF-yxV" kind="relationship" relationship="viewControllers" id="YPR-CS-kiA"/>
@@ -386,13 +377,13 @@
                     </tabBarItem>
                     <toolbarItems/>
                     <nil key="simulatedBottomBarMetrics"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="CFV-EY-XAR">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" barStyle="black" id="CFV-EY-XAR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="barTintColor" red="0.16470588743686676" green="0.73333334922790527" blue="0.61176472902297974" alpha="1" colorSpace="deviceRGB"/>
+                        <color key="barTintColor" red="0.15634147822856903" green="0.68943536281585693" blue="0.54212260246276855" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <textAttributes key="titleTextAttributes">
                             <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="21"/>
-                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </textAttributes>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -412,13 +403,13 @@
                         <inset key="imageInsets" minX="0.0" minY="5" maxX="0.0" maxY="-5"/>
                     </tabBarItem>
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="EbX-3M-fqT">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" barStyle="black" id="EbX-3M-fqT">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="barTintColor" red="0.1647058874" green="0.73333334920000004" blue="0.61176472900000001" alpha="1" colorSpace="deviceRGB"/>
+                        <color key="barTintColor" red="0.15634147822856903" green="0.68943536281585693" blue="0.54212260246276855" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <textAttributes key="titleTextAttributes">
                             <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="21"/>
-                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </textAttributes>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -434,15 +425,15 @@
     <resources>
         <image name="CameraIcon" width="36" height="37"/>
         <image name="CameraIconSelected" width="71" height="71"/>
+        <image name="CancelButton" width="102" height="41"/>
         <image name="Compass" width="46" height="45"/>
         <image name="ContactsIcon" width="34" height="28"/>
+        <image name="FlashButton" width="20" height="33"/>
         <image name="Gear" width="25" height="24"/>
         <image name="HomeIcon" width="34" height="33"/>
         <image name="Pin" width="32" height="46"/>
+        <image name="PostButton" width="102" height="41"/>
         <image name="Refresh" width="19" height="21"/>
-        <image name="Xbutton.png" width="71" height="71"/>
-        <image name="checkButton.png" width="88" height="65"/>
-        <image name="frontCamera.png" width="300" height="300"/>
-        <image name="mainButton.png" width="167" height="166"/>
+        <image name="SwitchCamButton" width="34" height="33"/>
     </resources>
 </document>
