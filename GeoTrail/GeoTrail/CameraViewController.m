@@ -100,7 +100,7 @@
     self.tabBarController.tabBar.backgroundImage = tabBarBGImage;
     self.tabBarController.tabBar.shadowImage = tabBarShadowImage;
     self.tabBarController.tabBar.hidden = false;
-    self.tabBarController.tabBar.tintColor = [UIColor whiteColor];
+    self.tabBarController.tabBar.tintColor = [UIColor grayColor];
     self.tabBarController.tabBar.barTintColor = [UIColor whiteColor];
     self.tabBarController.tabBar.backgroundColor = [UIColor whiteColor];
 }
@@ -338,7 +338,6 @@
                                                              [[NSNotificationCenter defaultCenter] postNotificationName:@"imageCapturedSuccessfully" object:nil];
                                                              
                                                              [_imageOutputView setHidden:FALSE];
-                                                             
                                                              _imageOutputView.image = currentImageTaken;
                                                              self.retakePicButton.hidden = false;
                                                              self.postPicButton.hidden = false;
