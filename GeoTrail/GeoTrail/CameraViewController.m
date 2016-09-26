@@ -30,6 +30,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *postPicButton;
 @property (weak, nonatomic) IBOutlet UIButton *flashButton;
 @property (weak, nonatomic) IBOutlet UIButton *switchCamButton;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *botImageViewConstraint;
 @end
 
 @implementation CameraViewController{
@@ -52,6 +53,7 @@
     self.navigationController.navigationBarHidden = true;
     
     TabBarController *tabBarController = (TabBarController *)self.tabBarController;
+    _botImageViewConstraint.constant = self.tabBarController.tabBar.frame.size.height;
     userUID = tabBarController.currentUser.uid;
     firebaseStorRef = tabBarController.firebaseStorRef;
     currentHexLat = tabBarController.currentHexLat;
@@ -91,7 +93,6 @@
     _imageOutputView.image = nil;
     self.retakePicButton.hidden = true;
     self.postPicButton.hidden = true;
-
 }
 
 -(void)viewWillDisappear:(BOOL)animated{

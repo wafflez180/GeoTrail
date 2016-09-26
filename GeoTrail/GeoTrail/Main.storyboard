@@ -21,16 +21,14 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="MKMapView">
-                                <frame key="frameInset" minX="4" width="592" height="600"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ROK-pp-MPu" customClass="MKMapView">
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" updatesFrequently="YES"/>
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
-                                <frame key="frameInset" minX="542" minY="396" width="46" height="45"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vjy-Bm-JDV" userLabel="Compass Button">
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Vjy-Bm-JDV" secondAttribute="height" multiplier="23:22" id="PFW-9r-Qzy"/>
                                     <constraint firstAttribute="height" constant="50" id="Rgi-lG-g4R"/>
@@ -54,8 +52,7 @@
                                     <action selector="pressedCompass:" destination="BYZ-38-t0r" eventType="touchUpInside" id="o9j-ik-NDk"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
-                                <frame key="frameInset" minX="549" minY="320" width="32" height="46"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GuM-m0-6T0" userLabel="Pin Button">
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="16:23" id="BVW-0R-PsD"/>
                                     <constraint firstAttribute="width" secondItem="GuM-m0-6T0" secondAttribute="height" multiplier="25:34" id="DCE-xb-Zg6"/>
@@ -180,7 +177,6 @@
                                     </mask>
                                 </variation>
                                 <connections>
-                                    <action selector="PostPicture:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="IcL-2g-RVz"/>
                                     <action selector="retakePicture:" destination="Psg-XC-Bkt" eventType="touchUpInside" id="M0M-hf-bLq"/>
                                 </connections>
                             </button>
@@ -245,7 +241,7 @@
                             <constraint firstItem="BhG-CC-R6D" firstAttribute="leading" secondItem="F80-6G-f2a" secondAttribute="leadingMargin" constant="5" id="Qt2-02-OnL"/>
                             <constraint firstItem="4Si-Bd-Vmp" firstAttribute="top" secondItem="S1I-og-1fL" secondAttribute="bottom" constant="25" id="RM7-Ze-V0L"/>
                             <constraint firstAttribute="centerX" secondItem="6Lu-eg-6vb" secondAttribute="centerX" id="UMf-fI-Ode"/>
-                            <constraint firstItem="bnS-Sa-Rdc" firstAttribute="bottom" secondItem="F80-6G-f2a" secondAttribute="bottomMargin" id="Uf0-ea-0Pk"/>
+                            <constraint firstItem="bnS-Sa-Rdc" firstAttribute="bottom" secondItem="F80-6G-f2a" secondAttribute="bottom" id="Uf0-ea-0Pk"/>
                             <constraint firstItem="S1I-og-1fL" firstAttribute="width" secondItem="S1I-og-1fL" secondAttribute="height" id="Ul5-48-5HA"/>
                             <constraint firstItem="bZ0-wr-7ZD" firstAttribute="centerX" secondItem="F80-6G-f2a" secondAttribute="centerX" constant="-75" id="W7R-zg-bH4"/>
                             <constraint firstItem="nft-oL-UBF" firstAttribute="top" secondItem="bnS-Sa-Rdc" secondAttribute="bottom" constant="-49" id="af4-en-XmO"/>
@@ -270,15 +266,15 @@
                                 <exclude reference="RM7-Ze-V0L"/>
                                 <exclude reference="PlM-AL-1hb"/>
                                 <exclude reference="UMf-fI-Ode"/>
+                                <exclude reference="5Z7-ju-c3M"/>
+                                <exclude reference="E9M-7a-pP3"/>
+                                <exclude reference="Ul5-48-5HA"/>
+                                <exclude reference="dkL-zO-soK"/>
                                 <exclude reference="Li6-tF-a4d"/>
                                 <exclude reference="oJb-Aw-vDk"/>
                                 <exclude reference="4xJ-MR-KOH"/>
                                 <exclude reference="hfd-at-6Z7"/>
                                 <exclude reference="lFn-hh-npO"/>
-                                <exclude reference="5Z7-ju-c3M"/>
-                                <exclude reference="E9M-7a-pP3"/>
-                                <exclude reference="Ul5-48-5HA"/>
-                                <exclude reference="dkL-zO-soK"/>
                                 <exclude reference="Of7-LX-gUd"/>
                                 <exclude reference="af4-en-XmO"/>
                                 <exclude reference="iaq-PM-D1d"/>
@@ -295,6 +291,7 @@
                     <connections>
                         <outlet property="CameraButton" destination="S1I-og-1fL" id="l2l-B7-P3C"/>
                         <outlet property="CameraView" destination="6Lu-eg-6vb" id="4Gv-OA-GrV"/>
+                        <outlet property="botImageViewConstraint" destination="Uf0-ea-0Pk" id="SbJ-S2-MHo"/>
                         <outlet property="flashButton" destination="BhG-CC-R6D" id="i2Y-qZ-B5C"/>
                         <outlet property="imageOutputView" destination="bnS-Sa-Rdc" id="Nq9-Hi-Amn"/>
                         <outlet property="postPicButton" destination="eUe-Z5-wn6" id="tz0-gF-21g"/>
@@ -352,6 +349,7 @@
                     <toolbarItems/>
                     <nil key="simulatedBottomBarMetrics"/>
                     <tabBar key="tabBar" contentMode="scaleToFill" translucent="NO" id="xDw-lt-R2Y">
+                        <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.15634147822856903" green="0.68943536281585693" blue="0.54212260246276855" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" red="0.15634147822856903" green="0.68943536281585693" blue="0.54212260246276855" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
